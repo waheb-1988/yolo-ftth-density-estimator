@@ -1,0 +1,86 @@
+{
+  "total_market_homes": 350000,
+  "market_shares": {
+    "Waheb": 10.0,
+    "RAMI": 35.0,
+    "Don": 25.0,
+    "Unserved": 30.0
+  },
+  "waheb_opportunity_zones": [
+    "Al Seeb City",
+    "Al Amerat",
+    "Sidab"
+  ],
+  "opportunity_zone_details": [
+    {
+      "zone": "Al Seeb City",
+      "waheb_cabinets": 0,
+      "competitor_cabinets": 0,
+      "opportunity_score": 12,
+      "est_annual_revenue_omr": 185031
+    },
+    {
+      "zone": "Al Amerat",
+      "waheb_cabinets": 0,
+      "competitor_cabinets": 0,
+      "opportunity_score": 12,
+      "est_annual_revenue_omr": 149688
+    },
+    {
+      "zone": "Sidab",
+      "waheb_cabinets": 0,
+      "competitor_cabinets": 4,
+      "opportunity_score": 8,
+      "est_annual_revenue_omr": 31185
+    }
+  ],
+  "competitive_intensity": {
+    "Ruwi CBD": "high",
+    "Mutrah Port": "high",
+    "Qurum Heights": "high",
+    "Al Khuwair": "high",
+    "Madinat Sultan Qaboos": "high",
+    "Shatti Al Qurum": "high",
+    "Al Azaiba": "high",
+    "Ghubra": "high",
+    "Bausher": "high",
+    "Al Wuttayyah": "high",
+    "Wadi Kabir": "high",
+    "Sidab": "medium",
+    "Al Seeb City": "low",
+    "Al Amerat": "low",
+    "Bowsher Hills": "high"
+  },
+  "cabinet_counts": {
+    "Waheb": {
+      "Madinat Sultan Qaboos": 5,
+      "Bausher": 6,
+      "Al Azaiba": 3,
+      "Shatti Al Qurum": 7,
+      "Qurum Heights": 10,
+      "Ghubra": 9,
+      "Al Khuwair": 4,
+      "Bowsher Hills": 1
+    },
+    "RAMI": {
+      "Ruwi CBD": 26,
+      "Al Wuttayyah": 28,
+      "Mutrah Port": 16,
+      "Wadi Kabir": 19,
+      "Sidab": 4,
+      "Al Azaiba": 1,
+      "Qurum Heights": 1
+    },
+    "Don": {
+      "Shatti Al Qurum": 8,
+      "Al Azaiba": 12,
+      "Al Khuwair": 8,
+      "Ghubra": 4,
+      "Bowsher Hills": 12,
+      "Qurum Heights": 12,
+      "Madinat Sultan Qaboos": 8,
+      "Al Wuttayyah": 3,
+      "Bausher": 3
+    }
+  }
+}

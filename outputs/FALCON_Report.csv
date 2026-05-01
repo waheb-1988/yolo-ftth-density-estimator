@@ -1,0 +1,16 @@
+Zone ID,Zone Name,Priority Score,Tier,Vehicles Detected,Density (veh/km²),Population,Area (km²),FTTH Coverage (%),4G Coverage (%),Coverage Gap (%),Commercial Density,Est. Investment (OMR),ROI Payback (yrs)
+Z13,Al Seeb City,53.61,Medium Priority,63,5.08,89000,12.4,22,74,78,high,773760,5.7
+Z14,Al Amerat,50.38,Medium Priority,50,3.29,72000,15.2,15,62,85,medium,1033600,13.8
+Z09,Bausher,44.58,Medium Priority,32,3.86,61000,8.3,25,78,75,medium,498000,4.7
+Z01,Ruwi CBD,42.36,Medium Priority,53,13.95,52000,3.8,48,92,52,high,158080,0.9
+Z15,Bowsher Hills,42.0,Medium Priority,20,2.06,48000,9.7,19,68,81,low,628560,9.9
+Z02,Mutrah Port,40.05,Medium Priority,40,9.76,38000,4.1,35,88,65,high,213200,2.3
+Z11,Wadi Kabir,39.08,Low Priority,12,2.35,34000,5.1,18,75,82,low,334559,7.9
+Z08,Ghubra,37.67,Low Priority,23,3.9,43000,5.9,32,82,68,medium,320960,3.4
+Z12,Sidab,35.98,Low Priority,5,1.79,15000,2.8,12,70,88,low,197120,15.8
+Z10,Al Wuttayyah,35.69,Low Priority,17,3.86,31000,4.4,29,80,71,medium,249920,4.0
+Z07,Al Azaiba,34.53,Low Priority,23,4.79,36000,4.8,38,83,62,medium,238079,2.5
+Z04,Al Khuwair,33.92,Low Priority,28,5.09,41000,5.5,44,87,56,medium,246400,2.0
+Z05,Madinat Sultan Qaboos,32.66,Low Priority,40,5.63,58000,7.1,61,91,39,high,221519,0.9
+Z03,Qurum Heights,31.53,Low Priority,27,4.35,45000,6.2,52,85,48,medium,238080,1.5
+Z06,Shatti Al Qurum,22.7,Low Priority,10,3.12,22000,3.2,58,90,42,medium,107520,1.2
