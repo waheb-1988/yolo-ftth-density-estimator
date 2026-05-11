@@ -1,0 +1,44 @@
+version: "3.9"
+
+# ── FALCON — Docker Compose ────────────────────────────────────────────────────
+# Services:
+#   falcon-dashboard  Streamlit dashboard  → http://localhost:8501
+#   falcon-api        FastAPI backend      → http://localhost:8000
+#
+# Usage:
+#   docker compose up --build
+#   docker compose up falcon-api        # API only
+#   docker compose down
+
+x-falcon-common: &falcon-common
+  build: .
+  env_file: .env
+  environment:
+    FALCON_DEMO_MODE: "1"
+    LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    LOG_TO_FILE: "true"
+  volumes:
+    - ./data:/app/data
+    - ./outputs:/app/outputs
+    - ./logs:/app/logs
+  restart: unless-stopped
+
+services:
+
+  falcon-dashboard:
+    <<: *falcon-common
+    container_name: falcon-dashboard
+    ports:
+      - "${DASHBOARD_PORT:-8501}:8501"
+    command: python run.py --demo --no-browser
+
+  falcon-api:
+    <<: *falcon-common
+    container_name: falcon-api
+    ports:
+      - "${API_PORT:-8000}:8000"
+    command: >
+      uvicorn api.main:app
+      --host 0.0.0.0
+      --port 8000
+      --workers 2

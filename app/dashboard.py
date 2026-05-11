@@ -1,4 +1,4 @@
-"""FALCON — Streamlit dashboard (5 tabs: Map | Rankings | Detection | Business Case | Competitive Intel)."""
+"""FALCON — Streamlit dashboard (6 tabs: Map | Rankings | Detection | Business Case | Competitive Intel | AI Insights)."""
 from __future__ import annotations
 
 import os
@@ -7,6 +7,12 @@ from pathlib import Path
 
 # Ensure project root is on path when run via `streamlit run app/dashboard.py`
 sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from app.logger import setup_logging
+from app.config import LOG_LEVEL, LOG_TO_FILE, LOGS_DIR
+setup_logging(level=LOG_LEVEL, log_to_file=LOG_TO_FILE, log_dir=LOGS_DIR)
+import logging
+_log = logging.getLogger(__name__)
 
 import pandas as pd
 import plotly.express as px
@@ -89,6 +95,25 @@ def _load_results(demo: bool):
 @st.cache_data(show_spinner="Loading competitive network data …", ttl=300)
 def _load_network_data():
     return load_network_data()
+
+
+@st.cache_data(show_spinner="Running telecom simulation …", ttl=600)
+def _load_telecom_sim(zones_json_str: str):
+    """Cached telecom simulation — re-runs only when zones data changes."""
+    import json
+    from app.telecom_simulator import TelecomSimulator
+    zones_data = json.loads(zones_json_str)
+    sim = TelecomSimulator()
+    return sim.simulate_all(zones_data)
+
+
+@st.cache_data(show_spinner="Running zone clustering …", ttl=600)
+def _load_clusters(scored_tuple, zones_json_str: str, n_clusters: int):
+    import json
+    from app.forecaster import cluster_zones
+    scored = [dict(s) if not isinstance(s, dict) else s for s in scored_tuple]
+    zones_data = json.loads(zones_json_str)
+    return cluster_zones(scored, zones_data, n_clusters=n_clusters)
 
 
 @st.cache_data(show_spinner=False)
@@ -380,8 +405,17 @@ def render_detection_tab(results: dict, zones_data: dict):
 
     st.markdown("---")
     st.subheader("🔍 Test YOLOv8 on Your Own Image")
+
+    aerial_mode = st.checkbox(
+        "Aerial / satellite mode (Google Earth, drone imagery)",
+        value=True,
+        help="Upscales 4× and uses sliding-window tiling — required for "
+             "satellite images where vehicles are only 5–10 px wide.",
+        key="aerial_mode_checkbox",
+    )
+
     uploaded = st.file_uploader(
-        "Upload an aerial or street-level image",
+        "Upload a satellite or street-level image",
         type=["jpg", "jpeg", "png"],
         key="yolo_upload",
     )
@@ -397,15 +431,22 @@ def render_detection_tab(results: dict, zones_data: dict):
 
                 det = get_detector("n")
                 if det.available:
-                    res = det.detect_image_object(img_pil, conf=0.25)
+                    if aerial_mode:
+                        res = det.detect_aerial(img_pil)
+                        mode_label = "YOLO aerial (4× upscale + tiling)"
+                    else:
+                        res = det.detect_image_object(img_pil, conf=0.25)
+                        mode_label = "YOLO standard"
+
                     annotated = draw_detections_on_image(img_pil, res.boxes,
                                                           box_color=(0, 230, 0))
                     col2.image(annotated,
-                               caption=f"Detected {res.count} vehicles (YOLO)",
+                               caption=f"Detected {res.count} vehicles ({mode_label})",
                                use_container_width=True)
-                    st.success(f"YOLOv8 detected **{res.count}** vehicles.")
+                    st.success(
+                        f"YOLOv8 detected **{res.count}** vehicles "
+                        f"using **{mode_label}**.")
                 else:
-                    from app.image_generator import draw_detections_on_image
                     st.warning(
                         "YOLOv8 model not available. "
                         "Ensure `ultralytics` is installed and internet is available.")
@@ -509,7 +550,7 @@ def render_business_case_tab(results: dict, zones_data: dict):
         years = list(range(1, 6))
         fig_roi = go.Figure()
         for z in high:
-            annual_rev = (z["population"] / 4) * 0.42 * 5.5 * 12
+            annual_rev = (z["population"] / HOUSEHOLD_SIZE) * FTTH_UPTAKE_RATE * ARPU_MONTHLY_OMR * 12
             cum_rev = [annual_rev * y for y in years]
             inv_line = [z["recommended_investment_omr"]] * 5
             fig_roi.add_trace(go.Scatter(
@@ -529,7 +570,7 @@ def render_business_case_tab(results: dict, zones_data: dict):
 
     bc_rows = []
     for s in sorted(filtered, key=lambda x: x["priority_score"], reverse=True):
-        annual_rev = (s["population"] / 4) * 0.42 * 5.5 * 12
+        annual_rev = (s["population"] / HOUSEHOLD_SIZE) * FTTH_UPTAKE_RATE * ARPU_MONTHLY_OMR * 12
         bc_rows.append({
             "Zone": s["zone_name"],
             "Tier": s["tier"],
@@ -757,6 +798,271 @@ def render_competitive_tab(network_data: dict | None, zones_data: dict):
         st.success("You are at or above the target share. Defend current position.")
 
 
+# ── Tab 6 — AI Insights ─────────────────────────────────────────────────────────
+
+def render_ai_insights_tab(results: dict, zones_data: dict):
+    """
+    Tab 6: ML-powered insights.
+    Sections:
+      1. Telecom market simulation (5G / FTTH / mobile KPIs)
+      2. Zone clustering
+      3. Demand prediction scores vs YOLO scores
+      4. Revenue forecast comparison
+      5. Traffic trend projection
+    """
+    import json
+    from app.forecaster import (forecast_revenue, market_share_projection,
+                                 predict_demand_score, traffic_trend)
+
+    scored = results["scored_zones"]
+    zones_json_str = json.dumps(zones_data)
+
+    st.subheader("AI-Powered Market Intelligence")
+    st.caption(
+        "Combines ML clustering, demand prediction, revenue forecasting, "
+        "and telecom simulation. All data is simulated.")
+
+    # ── Section 1 — Telecom simulation KPIs ──────────────────────────────────
+    st.markdown("#### Telecom Market Simulation")
+    sim_data = _load_telecom_sim(zones_json_str)
+    totals   = sim_data.get("market_totals", {})
+
+    k1, k2, k3, k4, k5 = st.columns(5)
+    k1.metric("Mobile Subscribers", f"{totals.get('total_mobile_subscribers', 0):,}")
+    k2.metric("FTTH Subscribers",   f"{totals.get('total_ftth_subscribers', 0):,}")
+    k3.metric("5G Subscribers",     f"{totals.get('total_5g_subscribers', 0):,}")
+    k4.metric("Monthly Revenue (OMR)",
+              f"{totals.get('total_monthly_revenue_omr', 0):,.0f}")
+    k5.metric("Annual Revenue (OMR)",
+              f"{totals.get('total_annual_revenue_omr', 0):,.0f}")
+
+    # Telecom breakdown table
+    profiles = sim_data.get("zone_profiles", {})
+    if profiles:
+        tele_rows = []
+        for zid, p in profiles.items():
+            tele_rows.append({
+                "Zone":            p["zone_name"],
+                "Mobile Subs":     p["mobile_subscribers"],
+                "FTTH Subs":       p["ftth_subscribers"],
+                "5G Subs":         p["subscribers_5g"],
+                "5G Penetration":  f"{p['penetration_5g_pct']}%",
+                "ARPU (OMR)":      p["arpu_blended"],
+                "Monthly Rev.":    f"{p['monthly_revenue_omr']:,.0f}",
+                "Avg Data (GB)":   p["avg_data_gb_per_user_month"],
+            })
+        tele_df = pd.DataFrame(tele_rows).sort_values("Monthly Rev.", ascending=False)
+        with st.expander("Zone-level telecom profiles", expanded=False):
+            st.dataframe(tele_df, use_container_width=True,
+                         height=360, hide_index=True)
+
+    st.markdown("---")
+
+    # ── Section 2 — Clustering ────────────────────────────────────────────────
+    st.markdown("#### Zone Cluster Analysis (K-Means)")
+    n_clusters = st.slider("Number of clusters", 2, 5, 3, key="cluster_n")
+
+    scored_tuple = tuple(tuple(s.items()) for s in scored)
+    cluster_df = _load_clusters(scored_tuple, zones_json_str, n_clusters)
+
+    if not cluster_df.empty:
+        _cluster_colors = {
+            "High Opportunity":   WAHEB_COLOR,
+            "Moderate Potential": "#fd7e14",
+            "Low Priority":       "#aaaaaa",
+            "Very Low Priority":  "#dddddd",
+            "Emerging":           "#9b59b6",
+        }
+
+        c_left, c_right = st.columns(2)
+        with c_left:
+            fig_clust = px.scatter(
+                cluster_df,
+                x="vehicle_density",
+                y="coverage_gap",
+                color="cluster_label",
+                size="priority_score",
+                hover_name="zone_name",
+                color_discrete_map=_cluster_colors,
+                labels={"vehicle_density": "Vehicle Density (veh/km²)",
+                        "coverage_gap":    "Coverage Gap (%)"},
+                title="Zone Clusters — Density vs Gap",
+            )
+            fig_clust.update_layout(height=350, margin=dict(t=40))
+            st.plotly_chart(fig_clust, use_container_width=True)
+
+        with c_right:
+            cluster_summary = (
+                cluster_df.groupby("cluster_label")
+                .agg(zones=("zone_id", "count"),
+                     avg_score=("priority_score", "mean"),
+                     avg_gap=("coverage_gap", "mean"))
+                .reset_index()
+                .rename(columns={"cluster_label": "Cluster",
+                                  "zones":         "# Zones",
+                                  "avg_score":     "Avg Score",
+                                  "avg_gap":       "Avg Gap %"})
+            )
+            cluster_summary["Avg Score"] = cluster_summary["Avg Score"].round(1)
+            cluster_summary["Avg Gap %"] = cluster_summary["Avg Gap %"].round(1)
+            st.markdown("**Cluster Summary**")
+            st.dataframe(cluster_summary, use_container_width=True,
+                         hide_index=True, height=200)
+
+            st.markdown("**Zone-Cluster Assignments**")
+            assign_df = cluster_df[["zone_name", "cluster_label", "priority_score"]]
+            assign_df.columns = ["Zone", "Cluster", "Score"]
+            st.dataframe(assign_df.sort_values("Score", ascending=False),
+                         use_container_width=True, hide_index=True, height=250)
+    else:
+        st.warning(
+            "K-Means clustering requires `scikit-learn`. "
+            "Install with: `pip install scikit-learn`")
+
+    st.markdown("---")
+
+    # ── Section 3 — Demand score comparison ──────────────────────────────────
+    st.markdown("#### Demand Prediction vs YOLO Score")
+    st.caption(
+        "YOLO score = vehicle-density-weighted algorithm. "
+        "Demand score = population density + coverage gap + commercial activity. "
+        "Agreement validates zone priority.")
+
+    demand_rows = []
+    zone_meta = {z["id"]: z for z in zones_data["zones"]}
+    for s in scored:
+        z = zone_meta.get(s["zone_id"], {})
+        demand_rows.append({
+            "Zone":          s["zone_name"],
+            "YOLO Score":    s["priority_score"],
+            "Demand Score":  predict_demand_score(z),
+            "Delta":         round(s["priority_score"] - predict_demand_score(z), 1),
+            "Tier":          s["tier"],
+        })
+    demand_df = pd.DataFrame(demand_rows).sort_values("YOLO Score", ascending=False)
+
+    fig_comp = px.scatter(
+        demand_df,
+        x="Demand Score",
+        y="YOLO Score",
+        color="Tier",
+        hover_name="Zone",
+        color_discrete_map={
+            "High Priority":   "#dc3545",
+            "Medium Priority": "#fd7e14",
+            "Low Priority":    "#28a745",
+        },
+        text="Zone",
+        size_max=12,
+        title="Demand Score vs YOLO Priority Score",
+    )
+    fig_comp.update_traces(textposition="top center", textfont_size=9)
+    fig_comp.add_shape(type="line", x0=0, y0=0, x1=100, y1=100,
+                       line=dict(dash="dot", color="gray", width=1))
+    fig_comp.update_layout(height=380, margin=dict(t=40))
+    st.plotly_chart(fig_comp, use_container_width=True)
+
+    st.markdown("---")
+
+    # ── Section 4 — Revenue forecast ─────────────────────────────────────────
+    st.markdown("#### 5-Year Revenue Forecast (Compound Growth Model)")
+    growth_rate = st.slider("Annual subscriber growth rate (%)",
+                             min_value=1, max_value=30, value=8,
+                             key="growth_slider") / 100
+
+    high_zones = [s for s in scored if s["tier"] == "High Priority"]
+    if not high_zones:
+        high_zones = sorted(scored, key=lambda x: x["priority_score"], reverse=True)[:3]
+
+    fig_fc = go.Figure()
+    for z in high_zones:
+        fc = forecast_revenue(z, years=5, growth_rate=growth_rate)
+        fig_fc.add_trace(go.Scatter(
+            x=fc["years"],
+            y=fc["cumulative_revenue"],
+            mode="lines+markers",
+            name=z["zone_name"],
+            line=dict(width=2),
+        ))
+        if fc["breakeven_year"]:
+            fig_fc.add_vline(
+                x=fc["breakeven_year"],
+                line_dash="dot",
+                line_color="gray",
+                annotation_text=f"{z['zone_name'][:8]} break-even",
+                annotation_font_size=9,
+            )
+    fig_fc.update_layout(
+        xaxis_title="Year",
+        yaxis_title="Cumulative Revenue (OMR)",
+        height=360,
+        margin=dict(t=10),
+        legend=dict(orientation="h", yanchor="bottom", y=1.01),
+    )
+    st.plotly_chart(fig_fc, use_container_width=True)
+
+    st.markdown("---")
+
+    # ── Section 5 — Market share S-curve ─────────────────────────────────────
+    st.markdown("#### Market Share Growth Projection (S-Curve)")
+    col_a, col_b = st.columns(2)
+    with col_a:
+        ms_target = st.slider("Target market share (%)",
+                               min_value=int(WAHEB_MARKET_SHARE),
+                               max_value=45, value=25,
+                               key="ms_target_ai")
+    with col_b:
+        ms_years = st.slider("Projection years", 3, 8, 5, key="ms_years_ai")
+
+    shares = market_share_projection(
+        WAHEB_MARKET_SHARE, ms_target, years=ms_years)
+    fig_ms = go.Figure()
+    fig_ms.add_trace(go.Scatter(
+        x=list(range(1, ms_years + 1)),
+        y=shares,
+        mode="lines+markers",
+        line=dict(color=WAHEB_COLOR, width=3),
+        fill="tozeroy",
+        fillcolor=f"rgba(2,195,154,0.15)",
+        name="Waheb Market Share",
+    ))
+    fig_ms.add_hline(y=ms_target, line_dash="dash",
+                     line_color="gray",
+                     annotation_text=f"Target {ms_target}%")
+    fig_ms.update_layout(
+        xaxis_title="Year",
+        yaxis_title="Market Share (%)",
+        height=300,
+        margin=dict(t=10),
+    )
+    st.plotly_chart(fig_ms, use_container_width=True)
+
+    # ── Section 6 — Traffic trend ─────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown("#### Network Traffic Growth Trend (35 % YoY)")
+    st.caption("ITU benchmark: data consumption grows ~35 % per year in GCC markets.")
+
+    if profiles:
+        from app.forecaster import traffic_trend
+        top_profiles = [
+            p for p in list(profiles.values())[:6]
+        ]
+        trend_rows = traffic_trend(top_profiles, years=5)
+        trend_df = pd.DataFrame(trend_rows)
+        fig_traf = px.line(
+            trend_df,
+            x="year",
+            y="peak_gbps",
+            color="zone_name",
+            markers=True,
+            labels={"year": "Year", "peak_gbps": "Peak Traffic (Gbps)",
+                    "zone_name": "Zone"},
+        )
+        fig_traf.update_layout(height=320, margin=dict(t=10),
+                                legend=dict(orientation="h", yanchor="bottom", y=1.02))
+        st.plotly_chart(fig_traf, use_container_width=True)
+
+
 # ── Main ─────────────────────────────────────────────────────────────────────────
 
 def main():
@@ -786,12 +1092,13 @@ def main():
 
     network_data = _load_network_data()
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "🗺️  Map",
         "📊  Rankings",
         "🔍  Detection",
         "💼  Business Case",
         "⚔️  Competitive Intel",
+        "🤖  AI Insights",
     ])
 
     with tab1:
@@ -804,6 +1111,8 @@ def main():
         render_business_case_tab(results, zones_data)
     with tab5:
         render_competitive_tab(network_data, zones_data)
+    with tab6:
+        render_ai_insights_tab(results, zones_data)
 
 
 if __name__ == "__main__":

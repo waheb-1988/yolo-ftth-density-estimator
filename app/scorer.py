@@ -19,11 +19,14 @@ def _recommended_investment(zone: dict, coverage_gap_pct: float) -> int:
                * COST_PER_COVERAGE_POINT_OMR)
 
 
-def _roi_years(investment: int, zone: dict) -> float:
+def _roi_years(investment: int, zone: dict, gap_pct: float | None = None) -> float:
     if investment <= 0:
         return 0.0
+    if gap_pct is None:
+        gap_pct = 100.0 - zone.get("ftth_coverage_pct", 50)
     households = zone["population"] / HOUSEHOLD_SIZE
-    new_subs = households * FTTH_UPTAKE_RATE * (zone.get("ftth_coverage_pct", 50) / 100)
+    # New subscribers come from the uncovered portion, not existing coverage
+    new_subs = households * FTTH_UPTAKE_RATE * (gap_pct / 100)
     annual_rev = new_subs * ARPU_MONTHLY_OMR * 12
     if annual_rev <= 0:
         return 99.0
@@ -65,7 +68,7 @@ class ZoneScorer:
             "priority_score": priority_score,
             "tier": _tier(priority_score),
             "recommended_investment_omr": inv,
-            "roi_years": _roi_years(inv, zone),
+            "roi_years": _roi_years(inv, zone, gap_pct=gap_pct),
         }
 
     def score_all_zones(self, vehicle_counts: dict) -> list[dict]:

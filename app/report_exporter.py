@@ -6,6 +6,8 @@ from datetime import datetime
 
 import pandas as pd
 
+from app.config import ARPU_MONTHLY_OMR, FTTH_UPTAKE_RATE, HOUSEHOLD_SIZE
+
 
 def build_dataframe(scored_zones: list, zones_data: dict) -> pd.DataFrame:
     zone_meta = {z["id"]: z for z in zones_data["zones"]}
@@ -108,7 +110,7 @@ def generate_executive_summary(scored_zones: list, zones_data: dict) -> str:
     ]
 
     for z in high:
-        annual_rev = (z["population"] / 4) * 0.42 * 5.5 * 12
+        annual_rev = (z["population"] / HOUSEHOLD_SIZE) * FTTH_UPTAKE_RATE * ARPU_MONTHLY_OMR * 12
         rev_5yr = annual_rev * 5
         lines.append(
             f"  {z['zone_name']:<28} "

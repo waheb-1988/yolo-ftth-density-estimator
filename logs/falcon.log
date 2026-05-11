@@ -1,0 +1,4 @@
+2026-05-11 20:13:04 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 567973 mobile subs | 31886 FTTH subs
+2026-05-11 20:13:11 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-05-11 20:16:05 [INFO    ] app.detector                   YOLOv8-n loaded
+2026-05-11 20:16:12 [INFO    ] app.detector                   Aerial detection: 14 raw → 10 after NMS (scale=4x, tiles=55)
