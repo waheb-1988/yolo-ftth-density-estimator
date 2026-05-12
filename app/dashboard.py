@@ -344,67 +344,7 @@ def render_rankings_tab(results: dict, zones_data: dict):
 # ── Tab 3 — Detection ───────────────────────────────────────────────────────────
 
 def render_detection_tab(results: dict, zones_data: dict):
-    scored = results["scored_zones"]
-    img_results = results.get("image_results", {})
-    zone_meta = {z["id"]: z for z in zones_data["zones"]}
-
-    st.subheader("Vehicle Detection — Synthetic Aerial Imagery")
-    st.caption(
-        "640 × 640 synthetic aerial images generated per zone. "
-        "Green boxes = detected vehicles. "
-        "In production mode, replace with real satellite imagery.")
-
-    col_a, col_b, col_c = st.columns(3)
-    total_v = sum(d["vehicle_count"] for d in img_results.values())
-    avg_v = total_v / max(len(img_results), 1)
-    top_zone = max(img_results.items(), key=lambda x: x[1]["vehicle_count"],
-                   default=(None, {"vehicle_count": 0}))
-    col_a.metric("Total Vehicles", f"{total_v:,}")
-    col_b.metric("Avg Vehicles / Zone", f"{avg_v:.1f}")
-    if top_zone[0]:
-        col_c.metric("Busiest Zone",
-                     zone_meta.get(top_zone[0], {}).get("name", top_zone[0]),
-                     f"{top_zone[1]['vehicle_count']} vehicles")
-
-    st.markdown("---")
-
-    # Zone image grid — 3 columns
-    sorted_by_count = sorted(
-        img_results.items(), key=lambda x: x[1]["vehicle_count"], reverse=True)
-    cols_per_row = 3
-    rows = [sorted_by_count[i:i + cols_per_row]
-            for i in range(0, len(sorted_by_count), cols_per_row)]
-
-    for row in rows:
-        grid_cols = st.columns(cols_per_row)
-        for col, (zid, idata) in zip(grid_cols, row):
-            ann_path = idata.get("annotated_path", "")
-            img_path = idata.get("image_path", "")
-            zname = zone_meta.get(zid, {}).get("name", zid)
-            vcount = idata["vehicle_count"]
-            tier = next((s["tier"] for s in scored if s["zone_id"] == zid), "")
-            tc = TIER_COLORS.get(tier, "#555")
-
-            if Path(ann_path).exists():
-                disp_path = ann_path
-            elif Path(img_path).exists():
-                disp_path = img_path
-            else:
-                col.warning(f"No image for {zname}")
-                continue
-
-            img = Image.open(disp_path)
-            col.image(img, use_container_width=True)
-            col.markdown(
-                f"<div class='img-caption'>"
-                f"<span style='color:{tc};'>●</span> "
-                f"<b>{zname}</b> — {vcount} vehicles"
-                f"</div>",
-                unsafe_allow_html=True,
-            )
-
-    st.markdown("---")
-    st.subheader("🔍 Test YOLOv8 on Your Own Image")
+    st.subheader("🔍 YOLOv8 Vehicle Detection")
 
     aerial_mode = st.checkbox(
         "Aerial / satellite mode (Google Earth, drone imagery)",
