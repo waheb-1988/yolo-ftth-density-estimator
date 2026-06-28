@@ -1,0 +1,7 @@
+path: C:/Abdelouaheb/perso/Data_science_2024_projects/2026/yolo-ftth-density-estimator/data/ftth_yolo_dataset
+train: images/train
+val:   images/valid
+test:  images/test
+
+nc: 2
+names: ['building', 'car']

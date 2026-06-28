@@ -18,7 +18,11 @@ from PIL import Image, ImageEnhance
 
 logger = logging.getLogger(__name__)
 
+# Classes used by the generic COCO pre-trained YOLOv8 weights
 VEHICLE_CLASSES = {2: "car", 3: "motorcycle", 5: "bus", 7: "truck"}
+
+# Classes produced by scripts/train_yolo.py (custom FTTH dataset)
+CUSTOM_CLASSES  = {0: "building", 1: "car"}
 
 # Aerial detection parameters
 _AERIAL_SCALE    = 4       # upscale factor before tiling
@@ -67,17 +71,28 @@ def _nms(boxes: list, iou_thresh: float = _AERIAL_NMS_IOU) -> list:
 
 class VehicleDetector:
     def __init__(self, model_size: str = "n"):
-        self._model      = None
-        self._model_size = model_size
-        self._available  = False
+        self._model        = None
+        self._model_size   = model_size
+        self._available    = False
+        self._class_map    = VEHICLE_CLASSES  # updated when custom model is loaded
         self._load()
 
     def _load(self) -> None:
         try:
             from ultralytics import YOLO
-            self._model    = YOLO(f"yolov8{self._model_size}.pt")
+            from app.config import YOLO_CUSTOM_MODEL_PATH
+
+            custom = Path(YOLO_CUSTOM_MODEL_PATH)
+            if custom.exists():
+                self._model     = YOLO(str(custom))
+                self._class_map = CUSTOM_CLASSES
+                logger.info("Custom FTTH model loaded from %s", custom)
+            else:
+                self._model     = YOLO(f"yolov8{self._model_size}.pt")
+                self._class_map = VEHICLE_CLASSES
+                logger.info("YOLOv8-%s (COCO pre-trained) loaded", self._model_size)
+
             self._available = True
-            logger.info("YOLOv8-%s loaded", self._model_size)
         except Exception as exc:
             logger.warning("YOLO model unavailable: %s", exc)
 
@@ -164,7 +179,7 @@ class VehicleDetector:
                 for r in results:
                     for box in r.boxes:
                         cls_id = int(box.cls.item())
-                        if cls_id not in VEHICLE_CLASSES:
+                        if cls_id not in self._class_map:
                             continue
                         bx1, by1, bx2, by2 = [int(v) for v in box.xyxy[0].tolist()]
                         # Map back to original (non-upscaled) coordinates
@@ -174,7 +189,7 @@ class VehicleDetector:
                         oy2 = (by2 + y) / scale
                         raw_boxes.append((
                             ox1, oy1, ox2, oy2,
-                            VEHICLE_CLASSES[cls_id],
+                            self._class_map[cls_id],
                             round(float(box.conf.item()), 3),
                         ))
 
@@ -197,12 +212,12 @@ class VehicleDetector:
         for r in results:
             for box in r.boxes:
                 cls_id = int(box.cls.item())
-                if cls_id not in VEHICLE_CLASSES:
+                if cls_id not in self._class_map:
                     continue
                 x1, y1, x2, y2 = [int(v) for v in box.xyxy[0].tolist()]
                 boxes.append((
                     x1, y1, x2, y2,
-                    VEHICLE_CLASSES[cls_id],
+                    self._class_map[cls_id],
                     round(float(box.conf.item()), 3),
                 ))
         return boxes

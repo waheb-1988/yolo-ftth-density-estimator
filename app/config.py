@@ -82,8 +82,13 @@ TOTAL_MUSCAT_HOMES      = int(os.getenv("TOTAL_MUSCAT_HOMES",        "350000"))
 WAHEB_TARGET_SHARE_2026 = float(os.getenv("WAHEB_TARGET_SHARE_2026", "25.0"))
 
 # ── YOLO model ─────────────────────────────────────────────────────────────────
-YOLO_MODEL_SIZE = os.getenv("YOLO_MODEL_SIZE", "n")   # n / s / m / l / x
-YOLO_CONF       = float(os.getenv("YOLO_CONF", "0.25"))
+YOLO_MODEL_SIZE        = os.getenv("YOLO_MODEL_SIZE", "n")   # n / s / m / l / x
+YOLO_CONF              = float(os.getenv("YOLO_CONF", "0.25"))
+
+# Custom-trained model (produced by scripts/train_yolo.py).
+# When the file exists the detector uses it instead of the generic COCO weights.
+_default_custom = str(PROJECT_ROOT / "models" / "best.pt")
+YOLO_CUSTOM_MODEL_PATH = os.getenv("YOLO_CUSTOM_MODEL_PATH", _default_custom)
 
 # ── Satellite tile provider ────────────────────────────────────────────────────
 TILE_PROVIDER   = os.getenv("TILE_PROVIDER", "osm")

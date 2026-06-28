@@ -341,59 +341,294 @@ def render_rankings_tab(results: dict, zones_data: dict):
     st.plotly_chart(fig_bar, use_container_width=True)
 
 
-# ── Tab 3 — Detection ───────────────────────────────────────────────────────────
+# ── Tab 3 — FTTH Site Analysis ──────────────────────────────────────────────────
+
+# Midan Residence, Ghubrah — anchor coordinates for fiber simulation
+_MIDAN_LAT = 23.6074
+_MIDAN_LON = 58.5122
+
+# Simulated fiber infrastructure around Midan Residence
+_FIBER_POINTS = {
+    "olt": {
+        "lat": _MIDAN_LAT, "lon": _MIDAN_LON,
+        "label": "OLT Cabinet — Midan Residence",
+        "icon": "star", "color": "red",
+    },
+    "splitters": [
+        {"lat": 23.6083, "lon": 58.5107, "label": "Splitter A", "homes": 32},
+        {"lat": 23.6063, "lon": 58.5138, "label": "Splitter B", "homes": 28},
+        {"lat": 23.6091, "lon": 58.5133, "label": "Splitter C", "homes": 35},
+        {"lat": 23.6058, "lon": 58.5112, "label": "Splitter D", "homes": 24},
+        {"lat": 23.6079, "lon": 58.5148, "label": "Splitter E", "homes": 30},
+    ],
+}
+
+
+def _build_fiber_map() -> object:
+    """Return a Folium map with simulated FTTH fiber points near Midan Residence."""
+    import folium
+
+    m = folium.Map(
+        location=[_MIDAN_LAT, _MIDAN_LON],
+        zoom_start=16,
+        tiles="OpenStreetMap",
+    )
+
+    olt = _FIBER_POINTS["olt"]
+    folium.Marker(
+        [olt["lat"], olt["lon"]],
+        popup=folium.Popup(olt["label"], max_width=200),
+        tooltip=olt["label"],
+        icon=folium.Icon(color=olt["color"], icon=olt["icon"], prefix="fa"),
+    ).add_to(m)
+
+    for sp in _FIBER_POINTS["splitters"]:
+        folium.CircleMarker(
+            [sp["lat"], sp["lon"]],
+            radius=9,
+            popup=folium.Popup(f"{sp['label']} — {sp['homes']} homes", max_width=180),
+            tooltip=f"{sp['label']} ({sp['homes']} homes)",
+            color="#0055AA",
+            fill=True,
+            fill_color="#0099FF",
+            fill_opacity=0.85,
+        ).add_to(m)
+        folium.PolyLine(
+            [[olt["lat"], olt["lon"]], [sp["lat"], sp["lon"]]],
+            color="#02C39A",
+            weight=2.5,
+            opacity=0.85,
+            dash_array="6 4",
+        ).add_to(m)
+
+    folium.LayerControl().add_to(m)
+    return m
+
+
+def _ftth_priority(building_count: int) -> tuple[str, str, str]:
+    """Return (label, color, advice) based on detected building count."""
+    if building_count >= 25:
+        return ("High Priority", "#dc3545",
+                "Immediate deployment recommended — high building density detected.")
+    if building_count >= 12:
+        return ("Medium Priority", "#fd7e14",
+                "Plan fiber rollout within 6 months.")
+    return ("Low Priority", "#28a745",
+            "Include in Phase 2 expansion plan.")
+
 
 def render_detection_tab(results: dict, zones_data: dict):
-    st.subheader("🔍 YOLOv8 Vehicle Detection")
+    st.subheader("FTTH Site Analysis — Ghubrah / Midan Residence")
+    st.caption(
+        "Upload an aerial screenshot of any Ghubrah location. "
+        "The custom YOLOv8 model counts **buildings** and **cars** "
+        "to estimate fiber deployment priority.")
 
-    aerial_mode = st.checkbox(
-        "Aerial / satellite mode (Google Earth, drone imagery)",
-        value=True,
-        help="Upscales 4× and uses sliding-window tiling — required for "
-             "satellite images where vehicles are only 5–10 px wide.",
-        key="aerial_mode_checkbox",
-    )
+    # ── Row 1: fiber map + upload controls ────────────────────────────────────
+    col_map, col_ctrl = st.columns([1, 1])
 
+    with col_map:
+        st.markdown("##### Simulated Fiber Network — Midan Residence, Ghubrah")
+        st.caption(
+            "Red star = OLT cabinet &nbsp;|&nbsp; "
+            "Blue circles = distribution splitters &nbsp;|&nbsp; "
+            "Dashed green = fiber routes")
+        try:
+            from streamlit_folium import st_folium
+            fiber_map = _build_fiber_map()
+            st_folium(fiber_map, height=340, use_container_width=True,
+                      returned_objects=[])
+        except Exception as e:
+            st.info(f"Map unavailable: {e}")
+
+        total_homes = sum(sp["homes"] for sp in _FIBER_POINTS["splitters"])
+        m1, m2 = st.columns(2)
+        m1.metric("Simulated Splitters", len(_FIBER_POINTS["splitters"]))
+        m2.metric("Homes Passed (sim)", total_homes)
+
+    with col_ctrl:
+        st.markdown("##### Upload Aerial Screenshot")
+        st.caption(
+            "Take a screenshot near the fiber location "
+            "(Google Maps satellite view, drone photo, etc.)")
+
+        aerial_mode = st.checkbox(
+            "Aerial / satellite mode (4x upscale + tiling)",
+            value=True,
+            help="Required for Google Earth / satellite images "
+                 "where buildings and cars appear small.",
+            key="aerial_mode_checkbox",
+        )
+        conf_thresh = st.slider(
+            "Detection confidence threshold", 0.10, 0.60, 0.20, 0.05,
+            key="conf_thresh_slider",
+        )
+
+        st.markdown("""
+        <div style="background:#f0f7ff;border-radius:8px;padding:10px 14px;
+                    border-left:4px solid #0055AA;font-size:0.82rem;">
+          <b>Color legend:</b><br>
+          <span style="color:#FF8C00;">&#9632;</span> <b>Building</b> — counted for FTTH density score<br>
+          <span style="color:#00DCFF;">&#9632;</span> <b>Car</b> — counted for traffic activity score
+        </div>
+        """, unsafe_allow_html=True)
+
+    # ── Row 2: uploader ────────────────────────────────────────────────────────
+    st.markdown("---")
     uploaded = st.file_uploader(
-        "Upload a satellite or street-level image",
+        "Drop your screenshot here",
         type=["jpg", "jpeg", "png"],
         key="yolo_upload",
+        label_visibility="collapsed",
     )
-    if uploaded is not None:
-        img_pil = Image.open(uploaded).convert("RGB")
-        col1, col2 = st.columns(2)
-        col1.image(img_pil, caption="Uploaded Image", use_container_width=True)
 
-        with st.spinner("Running YOLOv8 detection …"):
-            try:
-                from app.detector import get_detector
-                from app.image_generator import draw_detections_on_image
+    if uploaded is None:
+        st.info(
+            "No image uploaded yet. "
+            "Take a satellite screenshot of the Ghubrah area "
+            "(e.g. Google Maps in satellite mode) and upload it above.")
+        return
 
-                det = get_detector("n")
-                if det.available:
-                    if aerial_mode:
-                        res = det.detect_aerial(img_pil)
-                        mode_label = "YOLO aerial (4× upscale + tiling)"
-                    else:
-                        res = det.detect_image_object(img_pil, conf=0.25)
-                        mode_label = "YOLO standard"
+    img_pil = Image.open(uploaded).convert("RGB")
+    W, H = img_pil.size
 
-                    annotated = draw_detections_on_image(img_pil, res.boxes,
-                                                          box_color=(0, 230, 0))
-                    col2.image(annotated,
-                               caption=f"Detected {res.count} vehicles ({mode_label})",
-                               use_container_width=True)
-                    st.success(
-                        f"YOLOv8 detected **{res.count}** vehicles "
-                        f"using **{mode_label}**.")
-                else:
-                    st.warning(
-                        "YOLOv8 model not available. "
-                        "Ensure `ultralytics` is installed and internet is available.")
-                    col2.image(img_pil, caption="No detection (model unavailable)",
-                               use_container_width=True)
-            except Exception as e:
-                st.error(f"Detection error: {e}")
+    # ── Row 3: run detection ───────────────────────────────────────────────────
+    with st.spinner("Running YOLOv8 detection on custom FTTH model ..."):
+        try:
+            from app.detector import get_detector
+            from app.image_generator import draw_detections_on_image
+
+            det = get_detector("n")
+            if not det.available:
+                st.error("YOLOv8 model not available. "
+                         "Ensure `ultralytics` is installed.")
+                return
+
+            if aerial_mode:
+                res = det.detect_aerial(img_pil, conf=conf_thresh)
+                mode_label = "aerial (4x upscale + tiling)"
+            else:
+                res = det.detect_image_object(img_pil, conf=conf_thresh)
+                mode_label = "standard"
+
+            annotated = draw_detections_on_image(img_pil, res.boxes, width=2)
+
+        except Exception as e:
+            st.error(f"Detection error: {e}")
+            return
+
+    # ── Row 4: side-by-side images ─────────────────────────────────────────────
+    img_col, ann_col = st.columns(2)
+    img_col.image(img_pil,    caption=f"Original ({W}x{H})",
+                  use_container_width=True)
+    ann_col.image(annotated,
+                  caption=f"Detected — {res.count} objects ({mode_label})",
+                  use_container_width=True)
+
+    # ── Row 5: per-class counts ────────────────────────────────────────────────
+    buildings = [b for b in res.boxes if b[4] == "building"]
+    cars      = [b for b in res.boxes if b[4] == "car"]
+    n_buildings, n_cars = len(buildings), len(cars)
+    priority_label, priority_color, priority_advice = _ftth_priority(n_buildings)
+
+    st.markdown("---")
+    k1, k2, k3, k4 = st.columns(4)
+    k1.markdown(f"""
+    <div style="background:#fff8f0;border-radius:10px;padding:16px;
+                border-left:5px solid #FF8C00;text-align:center;">
+      <div style="font-size:2.4rem;font-weight:800;color:#FF8C00;">{n_buildings}</div>
+      <div style="font-weight:600;font-size:0.9rem;margin-top:2px;">Buildings Detected</div>
+      <div style="font-size:0.75rem;color:#888;margin-top:4px;">FTTH candidate units</div>
+    </div>""", unsafe_allow_html=True)
+
+    k2.markdown(f"""
+    <div style="background:#f0fbff;border-radius:10px;padding:16px;
+                border-left:5px solid #00AACC;text-align:center;">
+      <div style="font-size:2.4rem;font-weight:800;color:#00AACC;">{n_cars}</div>
+      <div style="font-weight:600;font-size:0.9rem;margin-top:2px;">Cars Detected</div>
+      <div style="font-size:0.75rem;color:#888;margin-top:4px;">Traffic density signal</div>
+    </div>""", unsafe_allow_html=True)
+
+    k3.markdown(f"""
+    <div style="background:#f8f9fa;border-radius:10px;padding:16px;
+                border-left:5px solid #555;text-align:center;">
+      <div style="font-size:2.4rem;font-weight:800;color:#333;">{res.count}</div>
+      <div style="font-weight:600;font-size:0.9rem;margin-top:2px;">Total Objects</div>
+      <div style="font-size:0.75rem;color:#888;margin-top:4px;">Model: custom FTTH</div>
+    </div>""", unsafe_allow_html=True)
+
+    k4.markdown(f"""
+    <div style="background:#f9f9f9;border-radius:10px;padding:16px;
+                border-left:5px solid {priority_color};text-align:center;">
+      <div style="font-size:1.3rem;font-weight:800;color:{priority_color};">
+        {priority_label}</div>
+      <div style="font-weight:600;font-size:0.9rem;margin-top:4px;">FTTH Priority</div>
+      <div style="font-size:0.75rem;color:#888;margin-top:4px;">
+        Based on building count</div>
+    </div>""", unsafe_allow_html=True)
+
+    # ── Row 6: recommendation + breakdown ─────────────────────────────────────
+    st.markdown("---")
+    left, right = st.columns([2, 1])
+
+    with left:
+        st.markdown(f"""
+        <div style="background:#f0fff4;border-radius:10px;padding:16px 20px;
+                    border-left:5px solid {priority_color};">
+          <b style="font-size:1.05rem;">FTTH Deployment Recommendation</b><br><br>
+          {priority_advice}<br><br>
+          <b>Estimated homes to connect:</b> {n_buildings}<br>
+          <b>Nearest simulated OLT:</b> Midan Residence Cabinet
+            ({_MIDAN_LAT:.4f} N, {_MIDAN_LON:.4f} E)<br>
+          <b>Estimated cabinets needed:</b>
+            {max(1, round(n_buildings / 32))} distribution splitter(s)<br>
+          <b>Detection mode:</b> {mode_label}
+        </div>
+        """, unsafe_allow_html=True)
+
+    with right:
+        st.markdown("**Detection Breakdown**")
+        total = max(res.count, 1)
+        breakdown = []
+        if n_buildings:
+            breakdown.append({
+                "Class": "building",
+                "Count": n_buildings,
+                "% of total": f"{n_buildings / total * 100:.0f}%",
+                "Box color": "Orange",
+            })
+        if n_cars:
+            breakdown.append({
+                "Class": "car",
+                "Count": n_cars,
+                "% of total": f"{n_cars / total * 100:.0f}%",
+                "Box color": "Cyan",
+            })
+        if breakdown:
+            st.dataframe(
+                pd.DataFrame(breakdown),
+                use_container_width=True,
+                hide_index=True,
+                height=120,
+            )
+        else:
+            st.info("No objects detected. Try lowering the confidence threshold.")
+
+    # ── Row 7: top detections table ────────────────────────────────────────────
+    if res.boxes:
+        with st.expander("All detected objects (coordinates)"):
+            rows = [
+                {
+                    "Class": b[4],
+                    "Confidence": f"{b[5]:.2f}",
+                    "x1": b[0], "y1": b[1], "x2": b[2], "y2": b[3],
+                    "Width px": b[2] - b[0],
+                    "Height px": b[3] - b[1],
+                }
+                for b in sorted(res.boxes, key=lambda x: x[5], reverse=True)
+            ]
+            st.dataframe(pd.DataFrame(rows), use_container_width=True,
+                         height=300, hide_index=True)
 
 
 # ── Tab 4 — Business Case ───────────────────────────────────────────────────────
@@ -1035,7 +1270,7 @@ def main():
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "🗺️  Map",
         "📊  Rankings",
-        "🔍  Detection",
+        "📡  FTTH Site Analysis",
         "💼  Business Case",
         "⚔️  Competitive Intel",
         "🤖  AI Insights",

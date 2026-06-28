@@ -183,18 +183,37 @@ def generate_aerial_image(zone_id: str, vehicle_count: int, seed: int = 42,
     return img, bboxes
 
 
+CLASS_BOX_COLORS: dict[str, tuple] = {
+    "building":   (255, 140,   0),   # orange
+    "car":        (  0, 220, 255),   # cyan
+    "motorcycle": (255,  60,  60),
+    "bus":        (255,  60,  60),
+    "truck":      (255,  60,  60),
+}
+_DEFAULT_BOX_COLOR = (0, 255, 0)
+
+
 def draw_detections_on_image(img: Image.Image, bboxes: list,
                               box_color=(0, 255, 0), width=2) -> Image.Image:
+    """Draw bounding boxes on a copy of img.
+
+    Each box tuple is (x1, y1, x2, y2, label, conf).
+    Color is chosen per-class from CLASS_BOX_COLORS; falls back to box_color.
+    """
     annotated = img.copy().convert("RGB")
     draw = ImageDraw.Draw(annotated)
     for b in bboxes:
-        x1, y1, x2, y2 = b[0], b[1], b[2], b[3]
-        conf = b[5] if len(b) > 5 else 1.0
-        draw.rectangle([x1, y1, x2, y2], outline=box_color, width=width)
-        label = f"{conf:.2f}"
-        lw = len(label) * 5 + 2
-        draw.rectangle([x1, max(0, y1 - 10), x1 + lw, y1], fill=box_color)
-        draw.text((x1 + 1, max(0, y1 - 9)), label, fill=(0, 0, 0))
+        x1, y1, x2, y2 = int(b[0]), int(b[1]), int(b[2]), int(b[3])
+        label_name = b[4] if len(b) > 4 else ""
+        conf       = b[5] if len(b) > 5 else 1.0
+        color      = CLASS_BOX_COLORS.get(label_name, box_color)
+        draw.rectangle([x1, y1, x2, y2], outline=color, width=width)
+        text = f"{label_name} {conf:.2f}" if label_name else f"{conf:.2f}"
+        lw   = len(text) * 6 + 4
+        lh   = 12
+        ty   = max(0, y1 - lh)
+        draw.rectangle([x1, ty, x1 + lw, ty + lh], fill=color)
+        draw.text((x1 + 2, ty + 1), text, fill=(0, 0, 0))
     return annotated
 
 
