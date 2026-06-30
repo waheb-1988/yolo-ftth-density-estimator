@@ -161,7 +161,7 @@ class TelecomSimulator:
     def simulate_competitors(
         self, zone: dict, market_data: dict | None = None
     ) -> list[CompetitorProfile]:
-        """Simulate Omantel/RAMI, Ooredoo/Don, and Waheb presence in a zone."""
+        """Simulate Omantel, Ooredoo, and Vodafone presence in a zone."""
         from app.config import (ARPU_MONTHLY_OMR, DON_MARKET_SHARE,
                                  HOMES_PER_CABINET, RAMI_MARKET_SHARE,
                                  WAHEB_MARKET_SHARE)
@@ -179,9 +179,9 @@ class TelecomSimulator:
 
         profiles: list[CompetitorProfile] = []
         for company_label, base_share, key in [
-            ("Omantel (RAMI)", RAMI_MARKET_SHARE, "RAMI"),
-            ("Ooredoo (Don)",  DON_MARKET_SHARE,  "Don"),
-            ("Waheb",          WAHEB_MARKET_SHARE, "Waheb"),
+            ("Omantel", RAMI_MARKET_SHARE, "RAMI"),
+            ("Ooredoo", DON_MARKET_SHARE,  "Don"),
+            ("Vodafone", WAHEB_MARKET_SHARE, "Waheb"),
         ]:
             share = min(50.0, base_share * rng.uniform(0.7, 1.3))
             subs = int(households * share / 100 * 0.42)

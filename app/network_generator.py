@@ -300,11 +300,11 @@ class NetworkGenerator:
         print(header)
         print("-" * 75)
         rows = [
-            ("Waheb",  waheb, WAHEB_MARKET_SHARE,
+            ("Vodafone", waheb, WAHEB_MARKET_SHARE,
              ", ".join(WAHEB_STRONG_ZONES[:2])),
-            ("RAMI",   rami,  RAMI_MARKET_SHARE,
+            ("Omantel",  rami,  RAMI_MARKET_SHARE,
              ", ".join(RAMI_STRONG_ZONES[:2])),
-            ("Don",    don,   DON_MARKET_SHARE,
+            ("Ooredoo",  don,   DON_MARKET_SHARE,
              ", ".join(DON_STRONG_ZONES[:2])),
         ]
         for name, assets, share, zones in rows:
@@ -313,7 +313,7 @@ class NetworkGenerator:
                   f"{counts(assets,'home'):>7,} "
                   f"{share:>7.0f}%  {zones}")
         print("-" * 75)
-        print(f"\n  Opportunity zones for Waheb:")
+        print(f"\n  Opportunity zones for Vodafone:")
         for oz in ms.get("opportunity_zone_details", [])[:4]:
             print(f"    * {oz['zone']:<28} "
                   f"opp={oz['opportunity_score']}  "

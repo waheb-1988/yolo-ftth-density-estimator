@@ -214,7 +214,7 @@ def render_map_tab(zones_data: dict, results: dict):
         st.subheader("Competitive Network Map — Muscat City")
         st.caption(
             "Toggle layers via control (top-right). "
-            "Green=Waheb | Blue=RAMI | Red=Don | Gold=Opportunity zones.")
+            "Green=Vodafone | Blue=Omantel | Red=Ooredoo | Gold=Opportunity zones.")
     else:
         st.subheader("Interactive Priority Map — Muscat City")
         st.caption(
@@ -782,8 +782,8 @@ def _zone_shares(zname: str, intensity: str) -> dict:
         f = 72 / total
         rami, don, waheb = rami * f, don * f, waheb * f
     unserved = 100 - rami - don - waheb
-    return {"Waheb": round(waheb, 1), "RAMI": round(rami, 1),
-            "Don": round(don, 1), "Unserved": round(max(0, unserved), 1)}
+    return {"Vodafone": round(waheb, 1), "Omantel": round(rami, 1),
+            "Ooredoo": round(don, 1), "Unserved": round(max(0, unserved), 1)}
 
 
 def render_competitive_tab(network_data: dict | None, zones_data: dict):
@@ -826,11 +826,11 @@ def render_competitive_tab(network_data: dict | None, zones_data: dict):
             {subtitle}</div>
         </div>""", unsafe_allow_html=True)
 
-    _kpi(k1, "Waheb Market Share",
+    _kpi(k1, "Vodafone Market Share",
          f"{WAHEB_MARKET_SHARE:.0f}%", "Target: 25% by 2026", WAHEB_COLOR)
-    _kpi(k2, "RAMI Market Share",
+    _kpi(k2, "Omantel Market Share",
          f"{RAMI_MARKET_SHARE:.0f}%", "Dominant competitor", RAMI_COLOR)
-    _kpi(k3, "Don Market Share",
+    _kpi(k3, "Ooredoo Market Share",
          f"{DON_MARKET_SHARE:.0f}%", "Growing in Seeb/Azaiba", DON_COLOR)
     _kpi(k4, "Unserved Market",
          f"{UNSERVED_MARKET_SHARE:.0f}%",
@@ -856,8 +856,8 @@ def render_competitive_tab(network_data: dict | None, zones_data: dict):
         fig_bar = px.bar(
             bar_df, x="Zone", y="Share (%)", color="Company",
             color_discrete_map={
-                "Waheb": WAHEB_COLOR, "RAMI": RAMI_COLOR,
-                "Don": DON_COLOR, "Unserved": "#cccccc"},
+                "Vodafone": WAHEB_COLOR, "Omantel": RAMI_COLOR,
+                "Ooredoo": DON_COLOR, "Unserved": "#cccccc"},
             barmode="stack",
         )
         fig_bar.update_layout(
@@ -875,18 +875,18 @@ def render_competitive_tab(network_data: dict | None, zones_data: dict):
         dc = cab_counts.get("Don", {}).get(zn, 0)
         opp_score = max(0, 12 - rc - dc - wc)
         opp_rows.append({"Zone": zn, "Opportunity Score": opp_score,
-                          "Waheb": wc, "RAMI": rc, "Don": dc})
+                          "Vodafone": wc, "Omantel": rc, "Ooredoo": dc})
     opp_df = pd.DataFrame(opp_rows).sort_values(
         "Opportunity Score", ascending=True).tail(10)
 
     with right:
-        st.subheader("Waheb Opportunity Score by Zone")
+        st.subheader("Vodafone Opportunity Score by Zone")
         fig_opp = px.bar(
             opp_df, x="Opportunity Score", y="Zone",
             orientation="h",
             color="Opportunity Score",
             color_continuous_scale=[[0, "#d4f5e9"], [1, WAHEB_COLOR]],
-            hover_data=["Waheb", "RAMI", "Don"],
+            hover_data=["Vodafone", "Omantel", "Ooredoo"],
         )
         fig_opp.update_layout(height=340, margin=dict(t=10, l=10),
                                coloraxis_showscale=False)
@@ -899,7 +899,7 @@ def render_competitive_tab(network_data: dict | None, zones_data: dict):
 
     def _action(wc):
         if wc == 0:
-            return "URGENT — No Waheb presence"
+            return "URGENT — No Vodafone presence"
         if wc < 3:
             return "EXPAND — Low coverage"
         return "DEFEND — Hold position"
@@ -921,17 +921,17 @@ def render_competitive_tab(network_data: dict | None, zones_data: dict):
         sh = _zone_shares(zn, intensity_map.get(zn, "medium"))
         action = _action(wc)
         gap_rows.append({
-            "Zone":            zn,
-            "Waheb Cab.":      wc,
-            "RAMI Cab.":       rc,
-            "Don Cab.":        dc,
-            "Waheb Share %":   sh["Waheb"],
-            "Gap to Leader":   f"{max(rc,dc) - wc:+d}",
-            "Action":          action,
+            "Zone":              zn,
+            "Vodafone Cab.":    wc,
+            "Omantel Cab.":     rc,
+            "Ooredoo Cab.":     dc,
+            "Vodafone Share %": sh["Vodafone"],
+            "Gap to Leader":    f"{max(rc,dc) - wc:+d}",
+            "Action":           action,
         })
 
     # Sort: URGENT first, EXPAND second, DEFEND last
-    order = {"URGENT — No Waheb presence": 0,
+    order = {"URGENT — No Vodafone presence": 0,
              "EXPAND — Low coverage": 1,
              "DEFEND — Hold position": 2}
     gap_rows.sort(key=lambda r: order.get(r["Action"], 9))
@@ -1199,7 +1199,7 @@ def render_ai_insights_tab(results: dict, zones_data: dict):
         line=dict(color=WAHEB_COLOR, width=3),
         fill="tozeroy",
         fillcolor=f"rgba(2,195,154,0.15)",
-        name="Waheb Market Share",
+        name="Vodafone Market Share",
     ))
     fig_ms.add_hline(y=ms_target, line_dash="dash",
                      line_color="gray",

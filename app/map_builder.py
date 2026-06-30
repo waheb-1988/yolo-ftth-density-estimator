@@ -224,17 +224,17 @@ _MARKET_LEGEND = f"""
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
     <div style="width:13px;height:13px;border-radius:50%;
                 background:{WAHEB_COLOR};"></div>
-    <span>Waheb: {WAHEB_MARKET_SHARE:.0f}%</span>
+    <span>Vodafone: {WAHEB_MARKET_SHARE:.0f}%</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
     <div style="width:13px;height:13px;border-radius:50%;
                 background:{RAMI_COLOR};"></div>
-    <span>RAMI: {RAMI_MARKET_SHARE:.0f}%</span>
+    <span>Omantel: {RAMI_MARKET_SHARE:.0f}%</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
     <div style="width:13px;height:13px;border-radius:50%;
                 background:{DON_COLOR};"></div>
-    <span>Don: {DON_MARKET_SHARE:.0f}%</span>
+    <span>Ooredoo: {DON_MARKET_SHARE:.0f}%</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;">
     <div style="width:13px;height:13px;border-radius:50%;
@@ -257,11 +257,11 @@ def _info_panel_html(waheb: list, rami: list, don: list) -> str:
             font-size:12px;line-height:1.7;">
   <b>FTTH Asset Count</b><br>
   <span style="color:{WAHEB_COLOR};font-weight:700;">
-    Waheb: {cab(waheb)} cab | {exch(waheb)} exch</span><br>
+    Vodafone: {cab(waheb)} cab | {exch(waheb)} exch</span><br>
   <span style="color:{RAMI_COLOR};font-weight:700;">
-    RAMI:  {cab(rami)} cab | {exch(rami)} exch</span><br>
+    Omantel:  {cab(rami)} cab | {exch(rami)} exch</span><br>
   <span style="color:{DON_COLOR};font-weight:700;">
-    Don:   {cab(don)} cab | {exch(don)} exch</span>
+    Ooredoo:  {cab(don)} cab | {exch(don)} exch</span>
 </div>
 """
 
@@ -287,9 +287,9 @@ def build_map(zones_data: dict, scored_zones: list,
         don   = network_data.get("don",   [])
         ms    = network_data.get("market_summary", {})
 
-        _add_company_layer(m, waheb, "Waheb", WAHEB_COLOR, "🟢")
-        _add_company_layer(m, rami,  "RAMI",  RAMI_COLOR,  "🔵")
-        _add_company_layer(m, don,   "Don",   DON_COLOR,   "🔴")
+        _add_company_layer(m, waheb, "Vodafone", WAHEB_COLOR, "🟢")
+        _add_company_layer(m, rami,  "Omantel",  RAMI_COLOR,  "🔵")
+        _add_company_layer(m, don,   "Ooredoo",  DON_COLOR,   "🔴")
         _add_home_layer(m, waheb, rami, don)
         if ms:
             _add_opportunity_layer(m, zones_data, ms)
