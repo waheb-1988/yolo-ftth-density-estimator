@@ -1,0 +1,298 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 190" width="640" height="190" role="img" aria-label="Ooredoo Falcon Logo">
+  <defs>
+
+    <!-- ── Background gradient (dark navy) ── -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="#0D0D1A"/>
+      <stop offset="100%" stop-color="#1E1032"/>
+    </linearGradient>
+
+    <!-- ── Red radial accent (top-right corner) ── -->
+    <radialGradient id="accentGlow" cx="92%" cy="8%" r="38%" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="#E10A0A" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#E10A0A" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- ── Subtle red radial accent (bottom-left) ── -->
+    <radialGradient id="accentGlow2" cx="5%" cy="95%" r="30%" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="#E10A0A" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#E10A0A" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- ── Red node glow ── -->
+    <filter id="nodeGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- ── Subtle white glow (eye) ── -->
+    <filter id="eyeGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- ── Soft drop shadow for text ── -->
+    <filter id="textShadow" x="-5%" y="-5%" width="110%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#E10A0A" flood-opacity="0.25"/>
+    </filter>
+
+    <!-- ── Clip path for rounded background ── -->
+    <clipPath id="bgClip">
+      <rect width="640" height="190" rx="16"/>
+    </clipPath>
+
+    <!-- ── Grid dot pattern ── -->
+    <pattern id="dotGrid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="12" cy="12" r="0.8" fill="rgba(255,255,255,0.045)"/>
+    </pattern>
+
+    <!-- ── Falcon body gradient ── -->
+    <linearGradient id="falconBodyGrad" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="#FF2020"/>
+      <stop offset="100%" stop-color="#8B0000"/>
+    </linearGradient>
+
+    <!-- ── Divider line gradient ── -->
+    <linearGradient id="divGrad" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="#E10A0A" stop-opacity="0"/>
+      <stop offset="30%"  stop-color="#E10A0A" stop-opacity="0.7"/>
+      <stop offset="70%"  stop-color="#E10A0A" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#E10A0A" stop-opacity="0"/>
+    </linearGradient>
+
+  </defs>
+
+  <!-- ════════════════════════════════════════ -->
+  <!--  BACKGROUND                             -->
+  <!-- ════════════════════════════════════════ -->
+  <g clip-path="url(#bgClip)">
+    <rect width="640" height="190" fill="url(#bgGrad)"/>
+    <rect width="640" height="190" fill="url(#accentGlow)"/>
+    <rect width="640" height="190" fill="url(#accentGlow2)"/>
+    <rect width="640" height="190" fill="url(#dotGrid)"/>
+
+    <!-- ── Thin horizontal scan line (subtle) ── -->
+    <line x1="0" y1="95" x2="640" y2="95" stroke="rgba(225,10,10,0.04)" stroke-width="60"/>
+  </g>
+
+  <!-- ════════════════════════════════════════ -->
+  <!--  FALCON ICON  (icon box 0–205px)        -->
+  <!--  Center pivot: (103, 97)                -->
+  <!-- ════════════════════════════════════════ -->
+
+  <!-- ── Long fibre lines radiating from body hub ── -->
+  <!-- Left long wing (outer leading edge) -->
+  <line x1="103" y1="95" x2="20"  y2="50"  stroke="#E10A0A" stroke-width="1.8" opacity="0.55"/>
+  <!-- Left wing (inner, secondary feather) -->
+  <line x1="84"  y1="84" x2="30"  y2="65"  stroke="#E10A0A" stroke-width="1.0" opacity="0.28"/>
+  <!-- Left wingtip to tail node (body arc) -->
+  <line x1="20"  y1="50" x2="50"  y2="80"  stroke="#E10A0A" stroke-width="0.8" opacity="0.20" stroke-dasharray="3,3"/>
+
+  <!-- Right wing (swept back – shorter) -->
+  <line x1="103" y1="95" x2="175" y2="118" stroke="#E10A0A" stroke-width="1.8" opacity="0.55"/>
+  <!-- Right wing secondary feather -->
+  <line x1="122" y1="92" x2="168" y2="107" stroke="#E10A0A" stroke-width="1.0" opacity="0.28"/>
+
+  <!-- Body axis (spine) -->
+  <line x1="103" y1="68"  x2="103" y2="145" stroke="#E10A0A" stroke-width="1.6" opacity="0.40"/>
+
+  <!-- Neck to head -->
+  <line x1="103" y1="68" x2="128" y2="38"  stroke="#E10A0A" stroke-width="1.5" opacity="0.45"/>
+
+  <!-- Tail fan -->
+  <line x1="103" y1="145" x2="72"  y2="170" stroke="#E10A0A" stroke-width="1.3" opacity="0.42"/>
+  <line x1="103" y1="145" x2="87"  y2="172" stroke="#E10A0A" stroke-width="1.1" opacity="0.32"/>
+  <line x1="103" y1="145" x2="103" y2="174" stroke="#E10A0A" stroke-width="1.1" opacity="0.32"/>
+  <line x1="103" y1="145" x2="119" y2="172" stroke="#E10A0A" stroke-width="1.1" opacity="0.32"/>
+  <line x1="103" y1="145" x2="134" y2="170" stroke="#E10A0A" stroke-width="1.3" opacity="0.42"/>
+
+  <!-- Dashed fibre cross-links (network mesh) -->
+  <line x1="20"  y1="50"  x2="175" y2="118" stroke="#E10A0A" stroke-width="0.7" opacity="0.09" stroke-dasharray="5,5"/>
+  <line x1="20"  y1="50"  x2="72"  y2="170" stroke="#E10A0A" stroke-width="0.7" opacity="0.09" stroke-dasharray="5,5"/>
+  <line x1="128" y1="38"  x2="134" y2="170" stroke="#E10A0A" stroke-width="0.7" opacity="0.09" stroke-dasharray="5,5"/>
+
+  <!-- ── Falcon body (semi-transparent filled shape) ── -->
+  <path d="M 103 68
+           C  86 70,  72 82,  72 97
+           C  72 112,  84 132, 103 145
+           C 122 132, 134 112, 134 97
+           C 134 82, 120 70, 103 68 Z"
+        fill="url(#falconBodyGrad)" opacity="0.13"/>
+  <path d="M 103 68
+           C  86 70,  72 82,  72 97
+           C  72 112,  84 132, 103 145
+           C 122 132, 134 112, 134 97
+           C 134 82, 120 70, 103 68 Z"
+        fill="none" stroke="#E10A0A" stroke-width="1.6" opacity="0.65"/>
+
+  <!-- ── Left wing surface fill ── -->
+  <path d="M 103 93 L 20 50 L 44 76 Z"
+        fill="#E10A0A" opacity="0.07"/>
+  <path d="M 103 93 L 20 50 L 44 76 Z"
+        fill="none" stroke="#E10A0A" stroke-width="1.0" opacity="0.35"/>
+
+  <!-- ── Right wing surface fill ── -->
+  <path d="M 103 93 L 175 118 L 150 97 Z"
+        fill="#E10A0A" opacity="0.07"/>
+  <path d="M 103 93 L 175 118 L 150 97 Z"
+        fill="none" stroke="#E10A0A" stroke-width="1.0" opacity="0.35"/>
+
+  <!-- ── Head shape ── -->
+  <ellipse cx="124" cy="40" rx="18" ry="20"
+           fill="#12102A" stroke="#E10A0A" stroke-width="2.0" opacity="0.95"/>
+
+  <!-- ── Feather crest on head ── -->
+  <path d="M 118 24 L 114 15 L 122 26" fill="none" stroke="#E10A0A" stroke-width="1.4" opacity="0.7"/>
+  <path d="M 124 22 L 122 13 L 128 24" fill="none" stroke="#E10A0A" stroke-width="1.2" opacity="0.5"/>
+
+  <!-- ── Beak (sharp hook) ── -->
+  <path d="M 139 44 L 157 48 L 140 54 Z" fill="#E10A0A"/>
+  <path d="M 139 44 L 157 48 L 140 54 Z" fill="none" stroke="#FF3333" stroke-width="0.5"/>
+
+  <!-- ── Eye (glowing network node) ── -->
+  <circle cx="125" cy="38" r="6"  fill="#0D0D1A"/>
+  <circle cx="125" cy="38" r="4"  fill="#E10A0A" opacity="0.25"/>
+  <circle cx="125" cy="38" r="2.5" fill="white"  filter="url(#eyeGlow)"/>
+  <circle cx="125" cy="38" r="1"  fill="#E10A0A"/>
+
+  <!-- ════ NETWORK NODES ════ -->
+
+  <!-- Body hub (main) -->
+  <circle cx="103" cy="95" r="9"  fill="#E10A0A" opacity="0.12"/>
+  <circle cx="103" cy="95" r="5.5" fill="#E10A0A" filter="url(#nodeGlow)" opacity="0.9"/>
+  <circle cx="103" cy="95" r="2.5" fill="white"/>
+
+  <!-- Neck node -->
+  <circle cx="103" cy="68" r="3.5" fill="#E10A0A" opacity="0.8" filter="url(#nodeGlow)"/>
+  <circle cx="103" cy="68" r="1.5" fill="white" opacity="0.7"/>
+
+  <!-- Left wing-tip node -->
+  <circle cx="20"  cy="50"  r="6"  fill="#E10A0A" opacity="0.15"/>
+  <circle cx="20"  cy="50"  r="3.5" fill="#E10A0A" filter="url(#nodeGlow)" opacity="0.85"/>
+  <circle cx="20"  cy="50"  r="1.5" fill="white"  opacity="0.8"/>
+
+  <!-- Right wing-tip node -->
+  <circle cx="175" cy="118" r="6"  fill="#E10A0A" opacity="0.15"/>
+  <circle cx="175" cy="118" r="3.5" fill="#E10A0A" filter="url(#nodeGlow)" opacity="0.85"/>
+  <circle cx="175" cy="118" r="1.5" fill="white"  opacity="0.8"/>
+
+  <!-- Tail base node -->
+  <circle cx="103" cy="145" r="4"  fill="#E10A0A" opacity="0.8" filter="url(#nodeGlow)"/>
+  <circle cx="103" cy="145" r="1.8" fill="white" opacity="0.7"/>
+
+  <!-- Tail tip nodes -->
+  <circle cx="72"  cy="170" r="2.5" fill="#E10A0A" opacity="0.55"/>
+  <circle cx="134" cy="170" r="2.5" fill="#E10A0A" opacity="0.55"/>
+  <circle cx="103" cy="174" r="2.0" fill="#E10A0A" opacity="0.40"/>
+
+  <!-- Inner wing nodes -->
+  <circle cx="44"  cy="76"  r="2.5" fill="#E10A0A" opacity="0.50"/>
+  <circle cx="150" cy="97"  r="2.5" fill="#E10A0A" opacity="0.50"/>
+
+  <!-- ════════════════════════════════════════ -->
+  <!--  DIVIDER                                -->
+  <!-- ════════════════════════════════════════ -->
+  <rect x="207" y="18" width="1" height="155" fill="url(#divGrad)"/>
+  <circle cx="207" cy="18"  r="2.5" fill="#E10A0A" opacity="0.5"/>
+  <circle cx="207" cy="173" r="2.5" fill="#E10A0A" opacity="0.5"/>
+
+  <!-- ════════════════════════════════════════ -->
+  <!--  TYPOGRAPHY                             -->
+  <!-- ════════════════════════════════════════ -->
+
+  <!-- "OOREDOO" — red, uppercase, bold, wide tracking -->
+  <text x="228" y="74"
+        font-family="'Segoe UI', 'Arial Black', 'Helvetica', sans-serif"
+        font-size="22" font-weight="800"
+        fill="#E10A0A"
+        letter-spacing="8">OOREDOO</text>
+
+  <!-- Thin red rule under OOREDOO -->
+  <line x1="228" y1="82" x2="450" y2="82"
+        stroke="#E10A0A" stroke-width="1" opacity="0.40"/>
+
+  <!-- "FALCON" — white, extra-large, ultra-bold, dramatic -->
+  <text x="222" y="138"
+        font-family="'Segoe UI', 'Arial Black', 'Impact', 'Helvetica', sans-serif"
+        font-size="56" font-weight="900"
+        fill="#FFFFFF"
+        letter-spacing="5"
+        filter="url(#textShadow)">FALCON</text>
+
+  <!-- Tagline -->
+  <text x="228" y="162"
+        font-family="'Segoe UI', 'Arial', 'Helvetica', sans-serif"
+        font-size="10.5" font-weight="500"
+        fill="#8892A4"
+        letter-spacing="3.5">AI-POWERED FTTH INTELLIGENCE PLATFORM</text>
+
+  <!-- ════════════════════════════════════════ -->
+  <!--  FTTH SIGNAL ARCS  (right section)      -->
+  <!-- Center: (562, 130)                      -->
+  <!-- ════════════════════════════════════════ -->
+
+  <!-- Outermost arc -->
+  <path d="M 510 130 A 52 52 0 0 1 614 130"
+        stroke="#E10A0A" stroke-width="1.8" fill="none" opacity="0.18"
+        stroke-linecap="round"/>
+
+  <!-- Middle arc -->
+  <path d="M 523 130 A 39 39 0 0 1 601 130"
+        stroke="#E10A0A" stroke-width="2.2" fill="none" opacity="0.40"
+        stroke-linecap="round"/>
+
+  <!-- Inner arc -->
+  <path d="M 536 130 A 26 26 0 0 1 588 130"
+        stroke="#E10A0A" stroke-width="2.8" fill="none" opacity="0.70"
+        stroke-linecap="round"/>
+
+  <!-- Innermost arc -->
+  <path d="M 549 130 A 13 13 0 0 1 575 130"
+        stroke="#E10A0A" stroke-width="3.2" fill="none" opacity="0.95"
+        stroke-linecap="round"/>
+
+  <!-- Signal source node -->
+  <circle cx="562" cy="133" r="7"   fill="#E10A0A" opacity="0.2"/>
+  <circle cx="562" cy="133" r="4.5" fill="#E10A0A" filter="url(#nodeGlow)"/>
+  <circle cx="562" cy="133" r="2"   fill="white"/>
+
+  <!-- Vertical signal pole -->
+  <line x1="562" y1="133" x2="562" y2="155"
+        stroke="#E10A0A" stroke-width="1.5" opacity="0.35"/>
+
+  <!-- FTTH label -->
+  <text x="547" y="168"
+        font-family="'Segoe UI', 'Arial', sans-serif"
+        font-size="12" font-weight="700"
+        fill="#E10A0A"
+        letter-spacing="4">FTTH</text>
+
+  <text x="543" y="180"
+        font-family="'Segoe UI', 'Arial', sans-serif"
+        font-size="9.5" font-weight="400"
+        fill="#606880"
+        letter-spacing="2">OMAN</text>
+
+  <!-- Dashed fibre line connecting text to signal -->
+  <line x1="460" y1="110" x2="505" y2="110"
+        stroke="#E10A0A" stroke-width="0.8" opacity="0.18" stroke-dasharray="4,4"/>
+
+  <!-- ════════════════════════════════════════ -->
+  <!--  OUTER BORDER                           -->
+  <!-- ════════════════════════════════════════ -->
+  <rect width="640" height="190" rx="16"
+        fill="none" stroke="#E10A0A" stroke-width="1" opacity="0.18"/>
+
+  <!-- Corner accents -->
+  <path d="M 16 0 L 0 0 L 0 16"  fill="none" stroke="#E10A0A" stroke-width="1.5" opacity="0.5"/>
+  <path d="M 624 0 L 640 0 L 640 16" fill="none" stroke="#E10A0A" stroke-width="1.5" opacity="0.5"/>
+  <path d="M 0 174 L 0 190 L 16 190"  fill="none" stroke="#E10A0A" stroke-width="1.5" opacity="0.5"/>
+  <path d="M 640 174 L 640 190 L 624 190" fill="none" stroke="#E10A0A" stroke-width="1.5" opacity="0.5"/>
+
+</svg>
