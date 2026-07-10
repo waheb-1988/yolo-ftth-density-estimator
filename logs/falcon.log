@@ -12,3 +12,17 @@
 2026-06-28 21:57:53 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
 2026-06-28 22:00:51 [INFO    ] app.detector                   Custom FTTH model loaded from C:\Abdelouaheb\perso\Data_science_2024_projects\2026\yolo-ftth-density-estimator\models\best.pt
 2026-06-28 22:00:54 [INFO    ] app.detector                   Aerial detection: 105 raw → 66 after NMS (scale=4x, tiles=18)
+2026-06-30 20:13:30 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 572316 mobile subs | 31956 FTTH subs
+2026-06-30 20:13:41 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-06-30 20:15:14 [INFO    ] app.detector                   Custom FTTH model loaded from C:\Abdelouaheb\perso\Data_science_2024_projects\2026\yolo-ftth-density-estimator\models\best.pt
+2026-06-30 20:15:30 [INFO    ] app.detector                   Aerial detection: 517 raw → 289 after NMS (scale=4x, tiles=66)
+2026-07-10 18:06:55 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 561832 mobile subs | 31511 FTTH subs
+2026-07-10 18:07:01 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-07-10 18:11:46 [INFO    ] app.detector                   Custom FTTH model loaded from C:\Abdelouaheb\perso\Data_science_2024_projects\2026\yolo-ftth-density-estimator\models\best.pt
+2026-07-10 18:11:58 [INFO    ] app.detector                   Aerial detection: 631 raw → 348 after NMS (scale=4x, tiles=72)
+2026-07-10 18:34:59 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 561832 mobile subs | 31511 FTTH subs
+2026-07-10 18:34:59 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-07-10 19:03:22 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 561832 mobile subs | 31511 FTTH subs
+2026-07-10 19:03:22 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-07-10 19:26:51 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 561832 mobile subs | 31511 FTTH subs
+2026-07-10 19:26:51 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters

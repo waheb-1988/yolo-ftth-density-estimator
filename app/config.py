@@ -70,16 +70,32 @@ COST_PER_CABINET_OMR        = float(os.getenv("COST_PER_CABINET_OMR",        "25
 HOMES_PER_CABINET           = int(os.getenv("HOMES_PER_CABINET",            "150"))
 
 # ── Competitive landscape ──────────────────────────────────────────────────────
-WAHEB_COLOR  = os.getenv("WAHEB_COLOR", "#02C39A")
-RAMI_COLOR   = os.getenv("RAMI_COLOR",  "#065A82")
-DON_COLOR    = os.getenv("DON_COLOR",   "#E84545")
+WAHEB_COLOR  = os.getenv("WAHEB_COLOR", "#00A651")   # Awasr green
+RAMI_COLOR   = os.getenv("RAMI_COLOR",  "#065A82")   # Omantel blue
+DON_COLOR    = os.getenv("DON_COLOR",   "#E10A0A")   # Ooredoo red
 
-WAHEB_MARKET_SHARE      = float(os.getenv("WAHEB_MARKET_SHARE",      "10.0"))
-RAMI_MARKET_SHARE       = float(os.getenv("RAMI_MARKET_SHARE",       "35.0"))
-DON_MARKET_SHARE        = float(os.getenv("DON_MARKET_SHARE",        "25.0"))
-UNSERVED_MARKET_SHARE   = float(os.getenv("UNSERVED_MARKET_SHARE",   "30.0"))
+# ── Operator brand names ────────────────────────────────────────────────────────
+WAHEB_BRAND_NAME    = os.getenv("WAHEB_BRAND_NAME",  "Awasr")
+RAMI_BRAND_NAME     = os.getenv("RAMI_BRAND_NAME",   "Omantel")
+DON_BRAND_NAME      = os.getenv("DON_BRAND_NAME",    "Ooredoo")
+OTHERS_BRAND_NAME   = os.getenv("OTHERS_BRAND_NAME", "Others")
+
+# ── Market shares (Ooredoo 20%, Omantel 40%, Awasr 30%, Others 10%) ───────────
+WAHEB_MARKET_SHARE      = float(os.getenv("WAHEB_MARKET_SHARE",      "30.0"))   # Awasr
+RAMI_MARKET_SHARE       = float(os.getenv("RAMI_MARKET_SHARE",       "40.0"))   # Omantel
+DON_MARKET_SHARE        = float(os.getenv("DON_MARKET_SHARE",        "20.0"))   # Ooredoo
+UNSERVED_MARKET_SHARE   = float(os.getenv("UNSERVED_MARKET_SHARE",   "10.0"))   # Others
 TOTAL_MUSCAT_HOMES      = int(os.getenv("TOTAL_MUSCAT_HOMES",        "350000"))
-WAHEB_TARGET_SHARE_2026 = float(os.getenv("WAHEB_TARGET_SHARE_2026", "25.0"))
+WAHEB_TARGET_SHARE_2026 = float(os.getenv("WAHEB_TARGET_SHARE_2026", "30.0"))
+
+# ── Market potential & customer acquisition ────────────────────────────────────
+HOUSEHOLDS_PER_BUILDING   = float(os.getenv("HOUSEHOLDS_PER_BUILDING",   "3.5"))
+OOREDOO_DEFAULT_SHARE     = float(os.getenv("OOREDOO_DEFAULT_SHARE",     str(DON_MARKET_SHARE)))
+COMPETITORS_DEFAULT_SHARE = float(os.getenv("COMPETITORS_DEFAULT_SHARE",
+                                             str(WAHEB_MARKET_SHARE + RAMI_MARKET_SHARE)))
+AWASR_DEFAULT_SHARE       = WAHEB_MARKET_SHARE
+OMANTEL_DEFAULT_SHARE     = RAMI_MARKET_SHARE
+OTHERS_DEFAULT_SHARE      = UNSERVED_MARKET_SHARE
 
 # ── YOLO model ─────────────────────────────────────────────────────────────────
 YOLO_MODEL_SIZE        = os.getenv("YOLO_MODEL_SIZE", "n")   # n / s / m / l / x

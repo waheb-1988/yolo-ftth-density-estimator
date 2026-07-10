@@ -28,7 +28,9 @@ from app.config import (APP_ICON, APP_SUBTITLE, APP_TITLE, TIER_COLORS,
                          COST_PER_CABINET_OMR, HOMES_PER_CABINET,
                          ARPU_MONTHLY_OMR, HOUSEHOLD_SIZE, FTTH_UPTAKE_RATE,
                          HOUSEHOLDS_PER_BUILDING,
-                         OOREDOO_DEFAULT_SHARE, COMPETITORS_DEFAULT_SHARE)
+                         OOREDOO_DEFAULT_SHARE, COMPETITORS_DEFAULT_SHARE,
+                         WAHEB_BRAND_NAME, RAMI_BRAND_NAME, DON_BRAND_NAME,
+                         OTHERS_BRAND_NAME)
 from app.data_loader import load_network_data, load_or_generate_results, load_zones
 from app.map_builder import build_map
 from app.report_exporter import export_csv, generate_executive_summary
@@ -47,17 +49,26 @@ DEMO_MODE = os.environ.get("FALCON_DEMO_MODE", "1") == "1"
 DEMO_EMAIL    = "test@app.ai"
 DEMO_PASSWORD = "1234"
 
-# ── Load SVG logo assets ─────────────────────────────────────────────────────────
-def _load_svg(filename: str) -> str:
-    """Read an SVG file from data/ and return its content, or '' on missing."""
-    path = Path(__file__).parent.parent / "data" / filename
-    try:
-        return path.read_text(encoding="utf-8")
-    except FileNotFoundError:
-        return ""
+# ── Load SVG/image assets as base64 data URIs (avoids inline SVG ID conflicts) ──
+import base64 as _b64, mimetypes as _mime
 
-_LOGO_SVG  = _load_svg("ooredoo_falcon_logo.svg")   # 640×190 horizontal banner
-_ICON_SVG  = _load_svg("ooredoo_falcon_icon.svg")   # 200×200 square icon
+def _asset_as_data_uri(filename: str) -> str:
+    """Return a base64 data-URI for any file in data/, or '' on missing."""
+    path = Path(__file__).parent.parent / "data" / filename
+    if not path.exists():
+        return ""
+    m = _mime.guess_type(str(path))[0] or ("image/svg+xml" if filename.endswith(".svg") else "image/jpeg")
+    return f"data:{m};base64,{_b64.b64encode(path.read_bytes()).decode()}"
+
+_LOGO_URI  = _asset_as_data_uri("ooredoo_falcon_logo.svg")   # 640×190 banner
+_ICON_URI  = _asset_as_data_uri("ooredoo_falcon_icon.svg")   # 200×200 icon
+
+# Real falcon photo overrides the geometric icon if present
+_FALCON_PHOTO = (
+    _asset_as_data_uri("falcon_photo.jpg") or
+    _asset_as_data_uri("falcon_photo.png")
+)
+_ICON_URI = _FALCON_PHOTO or _ICON_URI   # prefer real photo
 
 # ── Comprehensive Ooredoo CSS ───────────────────────────────────────────────────
 OOREDOO_CSS = """
@@ -487,8 +498,9 @@ def render_landing_page():
 
     # ── Hero Section ──────────────────────────────────────────────────────────
     logo_html = (
-        f'<div style="max-width:560px;margin:0 auto 24px;">{_LOGO_SVG}</div>'
-        if _LOGO_SVG else
+        f'<div style="max-width:560px;margin:0 auto 24px;">'
+        f'<img src="{_LOGO_URI}" style="width:100%;height:auto;" alt="Ooredoo Falcon"/></div>'
+        if _LOGO_URI else
         '<div style="font-size:4rem;margin-bottom:16px;">🦅</div>'
         '<h1 style="font-size:3.2rem;font-weight:900;color:white;margin:0 0 12px;">'
         'Ooredoo Falcon</h1>'
@@ -672,11 +684,22 @@ def render_login_page():
     col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
         # White card header (pure HTML — no Streamlit form elements inside)
-        login_icon = (
-            f'<div style="width:90px;height:90px;margin:0 auto 10px;">{_ICON_SVG}</div>'
-            if _ICON_SVG else
-            '<div style="font-size:3.5rem;margin-bottom:10px;">🦅</div>'
-        )
+        if _ICON_URI:
+            _is_photo = bool(_FALCON_PHOTO)
+            _style = (
+                "width:100%;height:100%;object-fit:cover;"
+                if _is_photo else "width:100%;height:auto;"
+            )
+            _wrap = (
+                "border-radius:50%;overflow:hidden;border:3px solid #E10A0A;"
+                if _is_photo else ""
+            )
+            login_icon = (
+                f'<div style="width:90px;height:90px;margin:0 auto 10px;{_wrap}">'
+                f'<img src="{_ICON_URI}" style="{_style}" alt="Falcon"/></div>'
+            )
+        else:
+            login_icon = '<div style="font-size:3.5rem;margin-bottom:10px;">🦅</div>'
         st.markdown(f"""
         <div style="background:white;border-radius:16px 16px 0 0;padding:36px 36px 20px;
                     box-shadow:0 20px 60px rgba(0,0,0,0.35);text-align:center;">
@@ -739,10 +762,15 @@ def render_app_header():
         if DEMO_MODE
         else '<span class="mode-badge prod-badge">PRODUCTION</span>'
     )
-    icon_html = (
-        f'<div style="width:54px;height:54px;flex-shrink:0;">{_ICON_SVG}</div>'
-        if _ICON_SVG else '<span style="font-size:2.4rem;">🦅</span>'
-    )
+    if _ICON_URI:
+        _ph = bool(_FALCON_PHOTO)
+        icon_html = (
+            f'<div style="width:54px;height:54px;flex-shrink:0;'
+            f'{"border-radius:50%;overflow:hidden;border:2px solid rgba(225,10,10,0.6);" if _ph else ""}">'
+            f'<img src="{_ICON_URI}" style="width:100%;height:{"100%;object-fit:cover" if _ph else "auto"};" alt="Falcon"/></div>'
+        )
+    else:
+        icon_html = '<span style="font-size:2.4rem;">🦅</span>'
     st.markdown(f"""
     <div class="oo-header">
       <div class="oo-header-left" style="display:flex;align-items:center;gap:14px;">
@@ -768,10 +796,15 @@ def render_app_header():
 # ── Sidebar ─────────────────────────────────────────────────────────────────────
 
 def render_sidebar(results: dict, zones_data: dict):
-    icon_sidebar = (
-        f'<div style="width:72px;height:72px;margin:0 auto 6px;">{_ICON_SVG}</div>'
-        if _ICON_SVG else '<span style="font-size:2.8rem;">🦅</span><br>'
-    )
+    if _ICON_URI:
+        _ph = bool(_FALCON_PHOTO)
+        icon_sidebar = (
+            f'<div style="width:72px;height:72px;margin:0 auto 6px;'
+            f'{"border-radius:50%;overflow:hidden;border:3px solid #E10A0A;" if _ph else ""}">'
+            f'<img src="{_ICON_URI}" style="width:100%;height:{"100%;object-fit:cover" if _ph else "auto"};" alt="Falcon"/></div>'
+        )
+    else:
+        icon_sidebar = '<span style="font-size:2.8rem;">🦅</span><br>'
     st.markdown(f"""
     <div style="text-align:center;padding:14px 0 10px;">
       {icon_sidebar}
@@ -813,8 +846,8 @@ def render_sidebar(results: dict, zones_data: dict):
     competitors = [
         ("📡 Ooredoo",  f"{DON_MARKET_SHARE:.0f}%",       DON_COLOR,   "Main operator"),
         ("🔷 Omantel",  f"{RAMI_MARKET_SHARE:.0f}%",      RAMI_COLOR,  "Dominant competitor"),
-        ("🟢 Vodafone", f"{WAHEB_MARKET_SHARE:.0f}%",     WAHEB_COLOR, "Growing challenger"),
-        ("⬜ Unserved",  f"{UNSERVED_MARKET_SHARE:.0f}%", "#FFA500",   "Addressable market"),
+        ("🟢 Awasr",    f"{WAHEB_MARKET_SHARE:.0f}%",     WAHEB_COLOR, "Growing challenger"),
+        ("⬜ Others",   f"{UNSERVED_MARKET_SHARE:.0f}%",  "#FFA500",   "Addressable market"),
     ]
     for name, share, color, subtitle in competitors:
         st.markdown(f"""
@@ -905,7 +938,7 @@ def render_map_tab(zones_data: dict, results: dict):
         st.subheader("Competitive Network Map — Muscat City")
         st.caption(
             "Toggle layers via control (top-right). "
-            "Green=Vodafone | Blue=Omantel | Red=Ooredoo | Gold=Opportunity zones.")
+            "Green=Awasr | Blue=Omantel | Red=Ooredoo | Gold=Opportunity zones.")
     else:
         st.subheader("Interactive Priority Map — Muscat City")
         st.caption(
@@ -1361,7 +1394,7 @@ def render_detection_tab(results: dict, zones_data: dict):
             value=int(COMPETITORS_DEFAULT_SHARE),
             step=1,
             key="competitor_share_slider",
-            help="Combined market share of all other operators (Omantel + Vodafone)",
+            help="Combined market share of all other operators (Omantel + Awasr)",
         )
         unserved_share = max(0, 100 - ooredoo_share - competitor_share)
 
@@ -1635,8 +1668,8 @@ def _zone_shares(zname: str, intensity: str) -> dict:
         f = 72 / total
         rami, don, waheb = rami * f, don * f, waheb * f
     unserved = 100 - rami - don - waheb
-    return {"Vodafone": round(waheb, 1), "Omantel": round(rami, 1),
-            "Ooredoo": round(don, 1), "Unserved": round(max(0, unserved), 1)}
+    return {"Awasr": round(waheb, 1), "Omantel": round(rami, 1),
+            "Ooredoo": round(don, 1), "Others": round(max(0, unserved), 1)}
 
 
 def render_competitive_tab(network_data: dict | None, zones_data: dict):
@@ -1681,8 +1714,8 @@ def render_competitive_tab(network_data: dict | None, zones_data: dict):
           <div style="font-size:0.75rem;color:#888;margin-top:4px;">{subtitle}</div>
         </div>""", unsafe_allow_html=True)
 
-    _kpi(k1, "Vodafone Market Share",
-         f"{WAHEB_MARKET_SHARE:.0f}%", "Target: 25% by 2026", WAHEB_COLOR)
+    _kpi(k1, "Awasr Market Share",
+         f"{WAHEB_MARKET_SHARE:.0f}%", "Target: 35% by 2026", WAHEB_COLOR)
     _kpi(k2, "Omantel Market Share",
          f"{RAMI_MARKET_SHARE:.0f}%", "Dominant competitor", RAMI_COLOR)
     _kpi(k3, "Ooredoo Market Share",
@@ -1710,8 +1743,8 @@ def render_competitive_tab(network_data: dict | None, zones_data: dict):
         fig_bar = px.bar(
             bar_df, x="Zone", y="Share (%)", color="Company",
             color_discrete_map={
-                "Vodafone": WAHEB_COLOR, "Omantel": RAMI_COLOR,
-                "Ooredoo":  DON_COLOR,   "Unserved": "#cccccc"},
+                "Awasr":   WAHEB_COLOR, "Omantel": RAMI_COLOR,
+                "Ooredoo": DON_COLOR,   "Others":  "#cccccc"},
             barmode="stack",
         )
         fig_bar.update_layout(
@@ -1728,18 +1761,18 @@ def render_competitive_tab(network_data: dict | None, zones_data: dict):
         dc = cab_counts.get("Don",   {}).get(zn, 0)
         opp_score = max(0, 12 - rc - dc - wc)
         opp_rows.append({"Zone": zn, "Opportunity Score": opp_score,
-                          "Vodafone": wc, "Omantel": rc, "Ooredoo": dc})
+                          "Awasr": wc, "Omantel": rc, "Ooredoo": dc})
     opp_df = pd.DataFrame(opp_rows).sort_values(
         "Opportunity Score", ascending=True).tail(10)
 
     with right:
-        st.subheader("Vodafone Opportunity Score by Zone")
+        st.subheader("Awasr Opportunity Score by Zone")
         fig_opp = px.bar(
             opp_df, x="Opportunity Score", y="Zone",
             orientation="h",
             color="Opportunity Score",
             color_continuous_scale=[[0, "#d4f5e9"], [1, WAHEB_COLOR]],
-            hover_data=["Vodafone", "Omantel", "Ooredoo"],
+            hover_data=["Awasr", "Omantel", "Ooredoo"],
         )
         fig_opp.update_layout(height=340, margin=dict(t=10, l=10),
                                coloraxis_showscale=False)
@@ -1752,7 +1785,7 @@ def render_competitive_tab(network_data: dict | None, zones_data: dict):
 
     def _action(wc):
         if wc == 0:
-            return "URGENT — No Vodafone presence"
+            return "URGENT — No Awasr presence"
         if wc < 3:
             return "EXPAND — Low coverage"
         return "DEFEND — Hold position"
@@ -1773,16 +1806,16 @@ def render_competitive_tab(network_data: dict | None, zones_data: dict):
         sh     = _zone_shares(zn, intensity_map.get(zn, "medium"))
         action = _action(wc)
         gap_rows.append({
-            "Zone":              zn,
-            "Vodafone Cab.":    wc,
-            "Omantel Cab.":     rc,
-            "Ooredoo Cab.":     dc,
-            "Vodafone Share %": sh["Vodafone"],
-            "Gap to Leader":    f"{max(rc,dc) - wc:+d}",
-            "Action":           action,
+            "Zone":           zn,
+            "Awasr Cab.":     wc,
+            "Omantel Cab.":   rc,
+            "Ooredoo Cab.":   dc,
+            "Awasr Share %":  sh["Awasr"],
+            "Gap to Leader":  f"{max(rc,dc) - wc:+d}",
+            "Action":         action,
         })
 
-    order = {"URGENT — No Vodafone presence": 0,
+    order = {"URGENT — No Awasr presence": 0,
              "EXPAND — Low coverage": 1,
              "DEFEND — Hold position": 2}
     gap_rows.sort(key=lambda r: order.get(r["Action"], 9))
@@ -1821,7 +1854,7 @@ def render_competitive_tab(network_data: dict | None, zones_data: dict):
             f"generating **{annual_revenue_omr:,} OMR/year** — "
             f"payback in **{payback_months} months**.")
     else:
-        st.success("You are at or above the target share. Defend current position.")
+        st.success("You are at or above the target share. Defend current Awasr position.")
 
 
 # ── Tab 6 — AI Insights ─────────────────────────────────────────────────────────
@@ -2047,7 +2080,7 @@ def render_ai_insights_tab(results: dict, zones_data: dict):
         line=dict(color=WAHEB_COLOR, width=3),
         fill="tozeroy",
         fillcolor="rgba(2,195,154,0.15)",
-        name="Vodafone Market Share",
+        name="Ooredoo Market Share",
     ))
     fig_ms.add_hline(y=ms_target, line_dash="dash",
                      line_color="gray",
@@ -2078,6 +2111,425 @@ def render_ai_insights_tab(results: dict, zones_data: dict):
             height=320, margin=dict(t=10),
             legend=dict(orientation="h", yanchor="bottom", y=1.02))
         st.plotly_chart(fig_traf, use_container_width=True)
+
+
+# ── Tab 7 — AI Intelligence ─────────────────────────────────────────────────────
+
+def render_ai_intelligence_tab(results: dict, zones_data: dict):
+    """Tab 7: AI Business Intelligence — templated executive analysis per zone."""
+    st.markdown(
+        '<div class="oo-section-title">🤖 AI Business Intelligence — Executive Analysis</div>',
+        unsafe_allow_html=True)
+
+    zones        = zones_data["zones"]
+    zone_names   = [z["zone_name"] for z in zones] if "zone_name" in (zones[0] if zones else {}) \
+                   else [z.get("name", z.get("zone_name", f"Zone {i}")) for i, z in enumerate(zones)]
+    scored_map   = {s["zone_id"]: s for s in results["scored_zones"]}
+    zone_id_map  = {z.get("name", z.get("zone_name", "")): z for z in zones}
+
+    selected_name = st.selectbox("Select Zone for AI Analysis", zone_names, key="ai_intel_zone")
+    zone_meta     = zone_id_map.get(selected_name, {})
+    zone_id       = zone_meta.get("id", "")
+    scored        = scored_map.get(zone_id, {})
+
+    if st.button("Generate AI Analysis", key="ai_intel_btn"):
+        with st.spinner("Generating AI business analysis..."):
+            import time; time.sleep(0.6)   # simulate processing
+
+        priority_score = scored.get("priority_score", 72.0)
+        coverage_gap   = scored.get("coverage_gap_pct", 45.0)
+        population     = zone_meta.get("population", scored.get("population", 18000))
+        tier           = scored.get("tier", "Medium Priority")
+        investment_omr = scored.get("recommended_investment_omr", 750000)
+        roi_years      = scored.get("roi_years", 3.2)
+
+        households       = int(population / 3.5)
+        ooredoo_target   = int(households * DON_MARKET_SHARE / 100)
+        ftth_subs        = int(ooredoo_target * FTTH_UPTAKE_RATE)
+        annual_rev       = ftth_subs * ARPU_MONTHLY_OMR * 12
+        rev_yr3          = int(annual_rev * ((1 + 0.08) ** 3))
+
+        tier_color = {"High Priority": "#dc3545", "Medium Priority": "#fd7e14",
+                      "Low Priority": "#28a745"}.get(tier, "#fd7e14")
+
+        def _ai_card(title: str, body: str, accent: str = "#1A1A2E"):
+            st.markdown(f"""
+            <div style="background:white;border-radius:12px;padding:0;
+                        box-shadow:0 4px 16px rgba(0,0,0,0.08);margin-bottom:16px;overflow:hidden;">
+              <div style="background:{accent};padding:12px 20px;">
+                <span style="color:white;font-weight:700;font-size:1.0rem;">{title}</span>
+              </div>
+              <div style="padding:16px 20px;font-size:0.88rem;color:#333;line-height:1.65;">
+                {body}
+              </div>
+            </div>""", unsafe_allow_html=True)
+
+        _ai_card("📍 Area Overview",
+            f"<b>Zone:</b> {selected_name}, Muscat, Oman<br>"
+            f"<b>Population:</b> {population:,} residents<br>"
+            f"<b>Priority Score:</b> {priority_score:.1f} / 100<br>"
+            f"<b>Tier:</b> <span style='color:{tier_color};font-weight:700;'>{tier}</span><br>"
+            f"<b>Coverage Gap:</b> {coverage_gap:.0f}% of zone currently unserved by FTTH<br>"
+            f"<b>Characteristics:</b> Mixed residential and commercial density with established road network.")
+
+        _ai_card("👥 Customer Opportunity",
+            f"<b>Total Estimated Households:</b> {households:,} (population ÷ 3.5)<br>"
+            f"<b>Ooredoo Target Customers ({DON_MARKET_SHARE:.0f}% share):</b> {ooredoo_target:,}<br>"
+            f"<b>Estimated FTTH Subscribers ({FTTH_UPTAKE_RATE*100:.0f}% uptake):</b> {ftth_subs:,}<br>"
+            f"<b>Estimated Annual Revenue:</b> {annual_rev:,.0f} OMR/year "
+            f"(at {ARPU_MONTHLY_OMR} OMR ARPU/month)")
+
+        _ai_card("⚔️ Competitive Landscape",
+            f"<b>Market Structure — Muscat FTTH:</b><br>"
+            f"&bull; Omantel leads at <b>{RAMI_MARKET_SHARE:.0f}%</b> — dominant incumbent<br>"
+            f"&bull; Awasr holds <b>{WAHEB_MARKET_SHARE:.0f}%</b> — aggressive growth posture<br>"
+            f"&bull; Ooredoo at <b>{DON_MARKET_SHARE:.0f}%</b> — strong brand with expansion headroom<br>"
+            f"&bull; Others / Unserved: <b>{UNSERVED_MARKET_SHARE:.0f}%</b> — addressable greenfield<br>"
+            f"<b>Coverage Gap:</b> {coverage_gap:.0f}% of {selected_name} remains a competitive opportunity.")
+
+        strengths_body = ""
+        if priority_score > 70:
+            strengths_body += "&bull; <b>High building density</b> — favorable FTTH deployment economics<br>"
+        if coverage_gap > 40:
+            strengths_body += f"&bull; <b>Large coverage gap ({coverage_gap:.0f}%)</b> — first-mover advantage available<br>"
+        strengths_body += (
+            "&bull; <b>Ooredoo brand recognition</b> in Muscat market<br>"
+            "&bull; <b>Proven FTTH technology stack</b> already deployed in adjacent zones<br>"
+            "&bull; <b>Government broadband targets</b> align with residential expansion")
+        _ai_card("💪 Key Strengths", strengths_body)
+
+        inv_label = "Immediate deployment recommended" if tier == "High Priority" else \
+                    "Plan deployment within 6 months" if tier == "Medium Priority" else \
+                    "Include in Phase 2 expansion plan"
+        _ai_card("📋 Investment Recommendation",
+            f"<b>Recommendation:</b> {inv_label}<br>"
+            f"<b>Estimated Investment:</b> {investment_omr:,} OMR<br>"
+            f"<b>Expected ROI Payback:</b> {roi_years:.1f} years<br>"
+            f"<b>Rationale:</b> The combination of a {coverage_gap:.0f}% coverage gap, "
+            f"{population:,} residents, and a priority score of {priority_score:.1f}/100 "
+            f"places {selected_name} in the <b>{tier}</b> deployment tier.",
+            accent="#1A1A2E")
+
+        _ai_card("💰 Revenue Forecast (3-Year at 8% CAGR)",
+            f"<b>Year 1 Revenue:</b> {annual_rev:,.0f} OMR<br>"
+            f"<b>Year 2 Revenue:</b> {int(annual_rev * 1.08):,.0f} OMR<br>"
+            f"<b>Year 3 Revenue:</b> {rev_yr3:,.0f} OMR<br>"
+            f"<b>3-Year Cumulative:</b> {int(annual_rev + annual_rev*1.08 + rev_yr3):,.0f} OMR",
+            accent="#065A82")
+
+        _ai_card("📣 Marketing Opportunities",
+            f"&bull; <b>Door-to-door campaigns</b> in high-density residential blocks<br>"
+            f"&bull; <b>Digital targeting</b> using geo-fenced ads within {selected_name}<br>"
+            f"&bull; <b>SME outreach</b> for business FTTH packages (premium ARPU)<br>"
+            f"&bull; <b>Bundle promotions</b> combining FTTH + mobile for household conversion<br>"
+            f"&bull; <b>Referral incentives</b> from existing Ooredoo mobile subscribers",
+            accent="#28a745")
+
+    else:
+        st.info("Select a zone above and click **Generate AI Analysis** to produce an executive briefing.")
+
+    st.info(
+        "Connect a real LLM (OpenAI/Claude) by setting OPENAI_API_KEY or "
+        "ANTHROPIC_API_KEY environment variable for AI-generated analysis.")
+
+
+# ── Tab 8 — Marketing Strategy ───────────────────────────────────────────────────
+
+def render_marketing_strategy_tab(results: dict, zones_data: dict):
+    """Tab 8: AI Go-to-Market Strategy Generator."""
+    st.markdown(
+        '<div class="oo-section-title">📣 Marketing Strategy — AI Go-to-Market Generator</div>',
+        unsafe_allow_html=True)
+
+    zones       = zones_data["zones"]
+    zone_names  = [z.get("name", z.get("zone_name", f"Zone {i}")) for i, z in enumerate(zones)]
+    scored_map  = {s["zone_id"]: s for s in results["scored_zones"]}
+    zone_id_map = {z.get("name", z.get("zone_name", "")): z for z in zones}
+
+    selected_name = st.selectbox("Select Zone for Strategy", zone_names, key="mkt_strat_zone")
+    zone_meta     = zone_id_map.get(selected_name, {})
+    zone_id       = zone_meta.get("id", "")
+    scored        = scored_map.get(zone_id, {})
+
+    if st.button("Generate Strategy", key="mkt_strat_btn"):
+        with st.spinner("Building marketing strategy..."):
+            import time; time.sleep(0.5)
+
+        priority_score = scored.get("priority_score", 65.0)
+        tier           = scored.get("tier", "Medium Priority")
+        population     = zone_meta.get("population", scored.get("population", 18000))
+        households     = int(population / 3.5)
+        sales_team_sz  = max(3, int(households / 500))
+        budget_omr     = int(households * 8)
+        conv_rate      = "12-15%" if priority_score > 70 else "8-12%"
+
+        st.markdown("#### Target Customer Segments")
+        seg_cols = st.columns(4)
+        segments = [
+            ("👨‍👩‍👧‍👦", "Families", f"~{int(households*0.45):,} households — primary FTTH adopters, high data consumption"),
+            ("🏡", "High-income HH", f"~{int(households*0.20):,} households — premium packages, villas & large apartments"),
+            ("🏢", "SMEs", f"~{int(households*0.10):,} businesses — business FTTH, SLAs, premium ARPU"),
+            ("🏗️", "New Developments", f"~{int(households*0.15):,} units — developer partnerships, MDU bundles"),
+        ]
+        for col, (icon, title, desc) in zip(seg_cols, segments):
+            col.markdown(f"""
+            <div style="background:white;border-radius:10px;padding:16px;text-align:center;
+                        border-top:4px solid #E10A0A;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+              <div style="font-size:2rem;">{icon}</div>
+              <div style="font-weight:700;color:#1A1A2E;margin:8px 0 6px;">{title}</div>
+              <div style="font-size:0.78rem;color:#666;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+
+        st.markdown("---")
+        st.markdown("#### Marketing Channels")
+        chan_cols = st.columns(3)
+        channels = [
+            ("📱", "SMS Campaigns",    "Targeted bulk SMS to existing Ooredoo mobile subscribers in zone"),
+            ("💻", "Digital Marketing","Geo-fenced Google/Meta ads, SEO for Muscat FTTH queries"),
+            ("🤝", "Sales Teams",      f"{sales_team_sz} agents assigned to {selected_name} for direct outreach"),
+            ("🚪", "Door-to-Door",     "Residential canvassing in high-density blocks, villa compounds"),
+            ("🏪", "Retail Stores",    "Ooredoo stores in zone with dedicated FTTH promotion stands"),
+            ("📲", "Social Media",     "Instagram/X campaigns targeting Muscat residents, awareness content"),
+        ]
+        for i, (icon, title, desc) in enumerate(channels):
+            chan_cols[i % 3].markdown(f"""
+            <div style="background:#f8f9fa;border-radius:8px;padding:14px;margin-bottom:10px;
+                        border-left:3px solid #E10A0A;">
+              <div style="font-size:1.4rem;">{icon}</div>
+              <div style="font-weight:600;font-size:0.9rem;color:#1A1A2E;margin:4px 0 2px;">{title}</div>
+              <div style="font-size:0.78rem;color:#666;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+
+        st.markdown("---")
+        st.markdown("#### Campaign Message")
+        if priority_score > 70:
+            msg = (f"**Speed, reliability, and unbeatable value** — Ooredoo FTTH is now available in "
+                   f"{selected_name}. Enjoy fiber-optic internet with speeds up to 1 Gbps. "
+                   f"Limited-time offer: 3 months free for early adopters!")
+        else:
+            msg = (f"**Connect smarter in {selected_name}** — Ooredoo FTTH brings ultra-fast fiber "
+                   f"internet to your home. Flexible packages starting from 7 OMR/month. "
+                   f"Sign up today and get installation at no charge!")
+        st.markdown(f"""
+        <div style="background:#fff0f0;border-radius:10px;padding:16px 20px;
+                    border-left:5px solid #E10A0A;font-size:0.9rem;">
+          {msg}
+        </div>""", unsafe_allow_html=True)
+
+        st.markdown("---")
+        st.markdown("#### Recommended FTTH Packages")
+        pkg_cols = st.columns(3)
+        packages = [
+            ("Starter",    "10 Mbps",  "7 OMR",  "#28a745", "Basic browsing & streaming for 1-2 users"),
+            ("Home Plus",  "50 Mbps",  "12 OMR", "#065A82", "Family plan — 4K streaming, gaming, WFH"),
+            ("Premium",    "100 Mbps", "18 OMR", "#E10A0A", "Ultra-fast for large families & power users"),
+        ]
+        for col, (name, speed, price, color, desc) in zip(pkg_cols, packages):
+            col.markdown(f"""
+            <div style="background:white;border-radius:10px;padding:20px;text-align:center;
+                        border-top:4px solid {color};box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+              <div style="font-size:1.1rem;font-weight:700;color:{color};">{name}</div>
+              <div style="font-size:2.2rem;font-weight:800;color:#1A1A2E;margin:8px 0;">{speed}</div>
+              <div style="font-size:1.4rem;font-weight:700;color:{color};margin-bottom:8px;">{price}/mo</div>
+              <div style="font-size:0.78rem;color:#666;">{desc}</div>
+            </div>""", unsafe_allow_html=True)
+
+        st.markdown("---")
+        st.markdown("#### Operational Plan")
+        op_cols = st.columns(2)
+        with op_cols[0]:
+            st.markdown(f"""
+            <div style="background:white;border-radius:10px;padding:16px 20px;
+                        box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+              <div style="font-weight:700;color:#1A1A2E;margin-bottom:10px;">Rollout Timeline</div>
+              <div style="font-size:0.85rem;color:#333;line-height:1.7;">
+                <b>Phase 1 (Month 1-2):</b> Infrastructure & team setup<br>
+                <b>Phase 2 (Month 2-4):</b> Active sales campaigns begin<br>
+                <b>Phase 3 (Month 4-6):</b> Scale & optimize based on results
+              </div>
+            </div>""", unsafe_allow_html=True)
+        with op_cols[1]:
+            st.markdown(f"""
+            <div style="background:white;border-radius:10px;padding:16px 20px;
+                        box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+              <div style="font-weight:700;color:#1A1A2E;margin-bottom:10px;">Key Metrics</div>
+              <div style="font-size:0.85rem;color:#333;line-height:1.7;">
+                <b>Sales Team Size:</b> {sales_team_sz} agents<br>
+                <b>Campaign Budget:</b> ~{budget_omr:,} OMR<br>
+                <b>Expected Conversion:</b> {conv_rate}<br>
+                <b>Target Subscribers:</b> {int(households * 0.12):,} in 6 months
+              </div>
+            </div>""", unsafe_allow_html=True)
+    else:
+        st.info("Select a zone above and click **Generate Strategy** to produce a marketing plan.")
+
+
+# ── Tab 9 — Executive Report ─────────────────────────────────────────────────────
+
+def render_executive_report_tab(results: dict, zones_data: dict):
+    """Tab 9: Executive Report — Ooredoo FTTH Expansion."""
+    st.markdown(
+        '<div class="oo-section-title">📋 Executive Report — Ooredoo FTTH Expansion</div>',
+        unsafe_allow_html=True)
+
+    scored   = results["scored_zones"]
+    zones    = zones_data["zones"]
+    n_zones  = len(scored)
+    high     = [s for s in scored if s["tier"] == "High Priority"]
+    med      = [s for s in scored if s["tier"] == "Medium Priority"]
+    low      = [s for s in scored if s["tier"] == "Low Priority"]
+    top_zone = max(scored, key=lambda x: x["priority_score"], default={})
+
+    total_inv     = sum(s["recommended_investment_omr"] for s in high)
+    avg_gap       = sum(s["coverage_gap_pct"] for s in scored) / max(n_zones, 1)
+    total_pop     = sum(s.get("population", 0) for s in scored)
+    total_hh      = int(total_pop / 3.5)
+    ooredoo_hh    = int(total_hh * DON_MARKET_SHARE / 100)
+    omantel_hh    = int(total_hh * RAMI_MARKET_SHARE / 100)
+    awasr_hh      = int(total_hh * WAHEB_MARKET_SHARE / 100)
+    others_hh     = int(total_hh * UNSERVED_MARKET_SHARE / 100)
+    annual_rev_hi = sum((s.get("population", 0) / HOUSEHOLD_SIZE) *
+                        FTTH_UPTAKE_RATE * ARPU_MONTHLY_OMR * 12 for s in high)
+    roi_avg       = sum(s["roi_years"] for s in high) / max(len(high), 1)
+
+    st.markdown(f"""
+    <div style="background:#f8f9fa;border-radius:10px;padding:14px 20px;
+                margin-bottom:20px;font-size:0.82rem;color:#666;">
+      <b>Ooredoo Falcon Intelligence Platform</b> &bull;
+      Muscat, Oman &bull; 2026 &bull; Version 2.0 &bull; CONFIDENTIAL
+    </div>""", unsafe_allow_html=True)
+
+    def _report_card(title: str, body: str, accent: str = "#1A1A2E"):
+        st.markdown(f"""
+        <div style="background:white;border-radius:12px;margin-bottom:16px;
+                    box-shadow:0 4px 16px rgba(0,0,0,0.07);overflow:hidden;">
+          <div style="background:{accent};padding:10px 20px;">
+            <span style="color:white;font-weight:700;">{title}</span>
+          </div>
+          <div style="padding:16px 20px;font-size:0.88rem;color:#333;line-height:1.7;">
+            {body}
+          </div>
+        </div>""", unsafe_allow_html=True)
+
+    _report_card("1. Executive Summary",
+        f"Ooredoo Falcon analyzed <b>{n_zones} zones</b> across Muscat, Oman using "
+        f"AI-powered scoring combining vehicle density, FTTH coverage gaps, and population data. "
+        f"<b>{len(high)} High Priority</b> zones identified for immediate fiber deployment, "
+        f"<b>{len(med)} Medium Priority</b> for 6-month planning, and "
+        f"<b>{len(low)} Low Priority</b> for Phase 2. "
+        f"Top-ranked zone: <b>{top_zone.get('zone_name', 'N/A')}</b> "
+        f"(score: {top_zone.get('priority_score', 0):.1f}/100). "
+        f"Estimated total investment for High Priority zones: <b>{total_inv:,.0f} OMR</b>.")
+
+    _report_card("2. Geographic Analysis",
+        f"<b>Total Zones Analyzed:</b> {n_zones} across Muscat Governorate<br>"
+        f"<b>High Priority Zones:</b> {len(high)} — immediate deployment<br>"
+        f"<b>Medium Priority Zones:</b> {len(med)} — 6-month pipeline<br>"
+        f"<b>Low Priority Zones:</b> {len(low)} — Phase 2 expansion<br>"
+        f"<b>Average Coverage Gap:</b> {avg_gap:.1f}% across all zones<br>"
+        f"<b>Total Population Served:</b> {total_pop:,} residents")
+
+    _report_card("3. Computer Vision Findings",
+        "YOLOv8 satellite image analysis detected buildings, vehicles, and infrastructure "
+        "across all zones. Building density scores were used to weight FTTH deployment priority. "
+        "High-density residential clusters identified in top-tier zones. "
+        "Splitter placement recommendations generated for all High Priority zones.",
+        accent="#065A82")
+
+    _report_card("4. Market Potential",
+        f"<b>Total Addressable Households:</b> {total_hh:,}<br>"
+        f"<b>Ooredoo Target ({DON_MARKET_SHARE:.0f}%):</b> {ooredoo_hh:,} households<br>"
+        f"<b>Omantel ({RAMI_MARKET_SHARE:.0f}%):</b> {omantel_hh:,} households<br>"
+        f"<b>Awasr ({WAHEB_MARKET_SHARE:.0f}%):</b> {awasr_hh:,} households<br>"
+        f"<b>Others ({UNSERVED_MARKET_SHARE:.0f}%):</b> {others_hh:,} households")
+
+    _report_card("5. Competition Analysis",
+        f"<b>Omantel:</b> {RAMI_MARKET_SHARE:.0f}% — dominant incumbent with legacy DSL converting to fiber<br>"
+        f"<b>Awasr:</b> {WAHEB_MARKET_SHARE:.0f}% — aggressive pricing, growing residential footprint<br>"
+        f"<b>Ooredoo:</b> {DON_MARKET_SHARE:.0f}% — strong brand, mobile bundle advantage, expansion headroom<br>"
+        f"<b>Others / Unserved:</b> {UNSERVED_MARKET_SHARE:.0f}% — addressable greenfield opportunity<br>"
+        "Strategic recommendation: Prioritize zones with <40% Omantel presence for first-mover advantage.")
+
+    _report_card("6. Financial Opportunity",
+        f"<b>High Priority Zone Investment:</b> {total_inv:,.0f} OMR<br>"
+        f"<b>Expected Annual Revenue (High Priority):</b> {annual_rev_hi:,.0f} OMR/year<br>"
+        f"<b>Average ROI Payback:</b> {roi_avg:.1f} years<br>"
+        f"<b>5-Year Revenue Projection:</b> {annual_rev_hi * 5:,.0f} OMR (flat) / "
+        f"{int(annual_rev_hi * ((1.08**5 - 1) / 0.08)):,.0f} OMR (8% CAGR)<br>"
+        f"<b>ARPU Assumption:</b> {ARPU_MONTHLY_OMR} OMR/month | "
+        f"<b>Uptake Rate:</b> {FTTH_UPTAKE_RATE*100:.0f}%",
+        accent="#28a745")
+
+    _report_card("7. Recommended Rollout",
+        f"<b>Phase 1 (Q1 2026) — High Priority:</b> "
+        f"{', '.join(s['zone_name'] for s in high[:3]) or 'N/A'} — "
+        f"Investment: {total_inv:,.0f} OMR<br>"
+        f"<b>Phase 2 (Q2–Q3 2026) — Medium Priority:</b> "
+        f"{len(med)} zones, planned after Phase 1 ROI confirmation<br>"
+        f"<b>Phase 3 (Q4 2026+) — Low Priority:</b> "
+        f"{len(low)} zones, dependent on market conditions")
+
+    _report_card("8. Risk Assessment",
+        "<b>Risk 1 — Competitive Response:</b> Omantel/Awasr may accelerate rollout in targeted zones. "
+        "<i>Mitigation: Move quickly in High Priority zones; lock in multi-year customer contracts.</i><br>"
+        "<b>Risk 2 — Capital Constraints:</b> High upfront CAPEX. "
+        "<i>Mitigation: Phased rollout aligned with ROI validation; consider developer partnerships for MDUs.</i><br>"
+        "<b>Risk 3 — Adoption Rate:</b> FTTH uptake may lag projections. "
+        "<i>Mitigation: Bundle promotions with Ooredoo mobile; price-match Awasr starter packages.</i>",
+        accent="#dc3545")
+
+    _report_card("9. Final Decision Score",
+        f"Based on AI scoring across {n_zones} zones, Ooredoo Falcon recommends "
+        f"<b>immediate action</b> in {len(high)} High Priority zones. "
+        f"Combined opportunity: <b>{total_inv:,.0f} OMR investment</b> generating "
+        f"<b>{annual_rev_hi:,.0f} OMR/year</b> with average payback of <b>{roi_avg:.1f} years</b>. "
+        "Overall expansion confidence: <b>HIGH</b>.")
+
+    st.markdown("---")
+    st.markdown("#### Download Reports")
+    dl_c1, dl_c2, dl_c3 = st.columns(3)
+
+    with dl_c1:
+        pptx_script = Path(__file__).parent.parent / "scripts" / "generate_pptx.py"
+        if pptx_script.exists():
+            if st.button("📥 Download PowerPoint", use_container_width=True, key="exec_pptx"):
+                import subprocess
+                r = subprocess.run([sys.executable, str(pptx_script)],
+                                   capture_output=True, text=True, timeout=90)
+                if r.returncode == 0:
+                    pptx_path = (Path(__file__).parent.parent / "outputs"
+                                 / "ooredoo_falcon_presentation.pptx")
+                    if pptx_path.exists():
+                        st.download_button(
+                            "⬇ Save PPTX",
+                            data=pptx_path.read_bytes(),
+                            file_name="ooredoo_falcon_presentation.pptx",
+                            mime="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                        )
+                    else:
+                        st.success("Presentation generated in outputs/ folder.")
+                else:
+                    st.error(f"Error: {r.stderr[:200]}")
+
+    with dl_c2:
+        csv_data = export_csv(results["scored_zones"], zones_data)
+        st.download_button(
+            "📥 Download CSV Report",
+            data=csv_data,
+            file_name="ooredoo_falcon_muscat_analysis.csv",
+            mime="text/csv",
+            use_container_width=True,
+        )
+
+    with dl_c3:
+        summary = generate_executive_summary(results["scored_zones"], zones_data)
+        st.download_button(
+            "📥 Executive Summary (.txt)",
+            data=summary,
+            file_name="ooredoo_falcon_executive_summary.txt",
+            mime="text/plain",
+            use_container_width=True,
+        )
 
 
 # ── Main ─────────────────────────────────────────────────────────────────────────
@@ -2113,13 +2565,16 @@ def main():
 
         network_data = _load_network_data()
 
-        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
             "🗺️  Coverage Map",
             "📊  Market Intelligence",
             "🔬  Computer Vision",
             "💼  Business Case",
             "⚔️  Competitive Intel",
-            "🤖  AI Insights",
+            "📈  Forecasting",
+            "🤖  AI Intelligence",
+            "📣  Marketing Strategy",
+            "📋  Executive Report",
         ])
 
         with tab1:
@@ -2134,6 +2589,12 @@ def main():
             render_competitive_tab(network_data, zones_data)
         with tab6:
             render_ai_insights_tab(results, zones_data)
+        with tab7:
+            render_ai_intelligence_tab(results, zones_data)
+        with tab8:
+            render_marketing_strategy_tab(results, zones_data)
+        with tab9:
+            render_executive_report_tab(results, zones_data)
 
     else:
         # Not authenticated or unknown page — redirect to login
