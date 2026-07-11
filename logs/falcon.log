@@ -39,3 +39,13 @@
 2026-07-11 17:31:31 [INFO    ] app.detector                   Aerial detection: 615 raw → 346 after NMS (scale=4x, tiles=84)
 2026-07-11 17:31:32 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 570972 mobile subs | 32956 FTTH subs
 2026-07-11 17:31:32 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-07-11 22:04:54 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 569260 mobile subs | 32104 FTTH subs
+2026-07-11 22:04:57 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-07-11 22:05:38 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 575860 mobile subs | 30963 FTTH subs
+2026-07-11 22:05:39 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-07-11 22:16:09 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 574508 mobile subs | 31702 FTTH subs
+2026-07-11 22:16:11 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-07-11 22:17:10 [INFO    ] app.detector                   Custom FTTH model loaded from C:\Abdelouaheb\perso\Data_science_2024_projects\2026\yolo-ftth-density-estimator\models\best.pt
+2026-07-11 22:17:28 [INFO    ] app.detector                   Aerial detection: 156 raw → 105 after NMS (scale=4x, tiles=84)
+2026-07-11 22:18:04 [INFO    ] app.detector                   Aerial detection: 867 raw → 449 after NMS (scale=4x, tiles=84)
+2026-07-11 22:19:25 [INFO    ] app.detector                   Aerial detection: 867 raw → 449 after NMS (scale=4x, tiles=84)

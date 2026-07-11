@@ -34,6 +34,9 @@ from app.config import (APP_ICON, APP_SUBTITLE, APP_TITLE, TIER_COLORS,
 from app.data_loader import load_network_data, load_or_generate_results, load_zones
 from app.map_builder import build_map
 from app.report_exporter import export_csv, generate_executive_summary
+from app.zone_intelligence import (ZoneIntelligence, latest_zone_intelligence,
+                                    save_zone_intelligence)
+from app.marketing_intelligence import load_marketing_intelligence, save_marketing_intelligence
 
 # ── Page config (must be first Streamlit call) ─────────────────────────────────
 st.set_page_config(
@@ -456,26 +459,6 @@ def _load_clusters(scored_tuple, zones_json_str: str, n_clusters: int):
     scored = [dict(s) if not isinstance(s, dict) else s for s in scored_tuple]
     zones_data = json.loads(zones_json_str)
     return cluster_zones(scored, zones_data, n_clusters=n_clusters)
-
-
-@st.cache_data(show_spinner=False)
-def _build_df(scored_zones_tuple):
-    rows = []
-    for s_raw in scored_zones_tuple:
-        s = dict(s_raw) if isinstance(s_raw, tuple) else s_raw
-        rows.append({
-            "Zone": s["zone_name"],
-            "Score": s["priority_score"],
-            "Tier": s["tier"],
-            "Vehicles": s["vehicle_count"],
-            "Density": s["density_per_km2"],
-            "FTTH %": s["ftth_coverage_pct"],
-            "Gap %": s["coverage_gap_pct"],
-            "Population": s["population"],
-            "Investment (OMR)": s["recommended_investment_omr"],
-            "ROI (yrs)": s["roi_years"],
-        })
-    return pd.DataFrame(rows)
 
 
 # ── Helper: hide sidebar via CSS ────────────────────────────────────────────────
@@ -913,7 +896,7 @@ def render_sidebar(results: dict, zones_data: dict):
         "Market Intelligence · Muscat, Oman · 2026")
 
 
-# ── Tab 1 — Coverage Map ────────────────────────────────────────────────────────
+# ── Coverage Map (workflow stage 1) ─────────────────────────────────────────────
 
 def render_map_tab(zones_data: dict, results: dict):
     st.markdown('<div class="oo-section-title">🗺️ Coverage Map — Muscat City</div>',
@@ -964,138 +947,7 @@ def render_map_tab(zones_data: dict, results: dict):
         st.dataframe(pd.DataFrame(rows), use_container_width=True, height=300)
 
 
-# ── Tab 2 — Market Intelligence (was Rankings) ──────────────────────────────────
-
-def render_rankings_tab(results: dict, zones_data: dict):
-    st.markdown('<div class="oo-section-title">📊 Market Intelligence — Zone Rankings</div>',
-                unsafe_allow_html=True)
-
-    scored   = results["scored_zones"]
-    filtered = st.session_state.get("filtered_zones", scored)
-
-    high_n = sum(1 for s in filtered if s["tier"] == "High Priority")
-    med_n  = sum(1 for s in filtered if s["tier"] == "Medium Priority")
-    low_n  = sum(1 for s in filtered if s["tier"] == "Low Priority")
-
-    # KPI row using oo-kpi cards
-    kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-    kpi1.markdown(f"""
-    <div class="oo-kpi">
-      <div class="oo-kpi-value">{len(filtered)}</div>
-      <div class="oo-kpi-label">Total Zones</div>
-      <div class="oo-kpi-sub">In current filter</div>
-    </div>
-    """, unsafe_allow_html=True)
-    kpi2.markdown(f"""
-    <div class="oo-kpi" style="border-top-color:#dc3545;">
-      <div class="oo-kpi-value" style="color:#dc3545;">{high_n}</div>
-      <div class="oo-kpi-label">High Priority</div>
-      <div class="oo-kpi-sub">Immediate deployment</div>
-    </div>
-    """, unsafe_allow_html=True)
-    kpi3.markdown(f"""
-    <div class="oo-kpi" style="border-top-color:#fd7e14;">
-      <div class="oo-kpi-value" style="color:#fd7e14;">{med_n}</div>
-      <div class="oo-kpi-label">Medium Priority</div>
-      <div class="oo-kpi-sub">Plan within 6 months</div>
-    </div>
-    """, unsafe_allow_html=True)
-    kpi4.markdown(f"""
-    <div class="oo-kpi" style="border-top-color:#28a745;">
-      <div class="oo-kpi-value" style="color:#28a745;">{low_n}</div>
-      <div class="oo-kpi-label">Low Priority</div>
-      <div class="oo-kpi-sub">Phase 2 expansion</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Top-3 hero cards
-    top3  = sorted(scored, key=lambda x: x["priority_score"], reverse=True)[:3]
-    medal = ["🥇", "🥈", "🥉"]
-    cols  = st.columns(3)
-    for col, m, z in zip(cols, medal, top3):
-        tc = TIER_COLORS.get(z["tier"], "#555")
-        col.markdown(f"""
-        <div style="background:white;border-radius:12px;padding:18px 20px;
-                    border-left:5px solid {tc};box-shadow:0 4px 16px rgba(0,0,0,0.08);">
-          <div style="font-size:1.7rem;">{m}</div>
-          <div style="font-weight:700;font-size:1.05rem;margin-top:6px;color:#1A1A2E;">
-            {z['zone_name']}</div>
-          <div style="font-size:2rem;font-weight:800;color:{tc};margin:4px 0;">
-            {z['priority_score']:.1f}</div>
-          <div style="font-size:0.78rem;color:#888;">/ 100 priority score</div>
-          <div style="margin-top:8px;font-size:0.82rem;color:#555;">
-            🚗 {z['vehicle_count']} vehicles &nbsp;|&nbsp;
-            📡 {z['coverage_gap_pct']:.0f}% gap
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    col_left, col_right = st.columns([3, 2])
-
-    with col_left:
-        st.subheader("Zone Priority Rankings")
-        df = _build_df(tuple(tuple(s.items()) for s in filtered))
-        df.insert(0, "Rank", range(1, len(df) + 1))
-        st.dataframe(
-            df[["Rank", "Zone", "Score", "Tier", "Vehicles",
-                "FTTH %", "Gap %", "Population", "Investment (OMR)"]],
-            use_container_width=True,
-            height=420,
-            hide_index=True,
-        )
-
-    with col_right:
-        st.subheader("Score Distribution")
-        pie_df = pd.DataFrame({
-            "Tier": ["High Priority", "Medium Priority", "Low Priority"],
-            "Count": [
-                sum(1 for s in filtered if s["tier"] == "High Priority"),
-                sum(1 for s in filtered if s["tier"] == "Medium Priority"),
-                sum(1 for s in filtered if s["tier"] == "Low Priority"),
-            ]
-        })
-        fig_pie = px.pie(
-            pie_df, values="Count", names="Tier",
-            color="Tier",
-            color_discrete_map={
-                "High Priority":   "#dc3545",
-                "Medium Priority": "#fd7e14",
-                "Low Priority":    "#28a745",
-            },
-            hole=0.45,
-        )
-        fig_pie.update_layout(margin=dict(t=10, b=10), height=280, showlegend=True)
-        st.plotly_chart(fig_pie, use_container_width=True)
-
-    st.markdown("---")
-    st.subheader("Priority Scores — All Zones")
-    bar_df = pd.DataFrame([
-        {"Zone": s["zone_name"], "Score": s["priority_score"], "Tier": s["tier"]}
-        for s in sorted(filtered, key=lambda x: x["priority_score"], reverse=True)
-    ])
-    fig_bar = px.bar(
-        bar_df, x="Zone", y="Score", color="Tier",
-        color_discrete_map={
-            "High Priority":   "#dc3545",
-            "Medium Priority": "#fd7e14",
-            "Low Priority":    "#28a745",
-        },
-        text="Score",
-    )
-    fig_bar.update_traces(texttemplate="%{text:.1f}", textposition="outside")
-    fig_bar.update_layout(
-        xaxis_tickangle=-35, yaxis_range=[0, 105],
-        margin=dict(t=20, b=80), height=380,
-        legend=dict(orientation="h", yanchor="bottom", y=1.02),
-    )
-    st.plotly_chart(fig_bar, use_container_width=True)
-
-
-# ── Tab 3 — Computer Vision (was FTTH Site Analysis) ───────────────────────────
+# ── Computer Vision Engine (workflow stage 2) ───────────────────────────────────
 
 # Midan Residence, Ghubrah — anchor coordinates for fiber simulation
 _MIDAN_LAT = 23.6074
@@ -1171,8 +1023,14 @@ def _ftth_priority(building_count: int) -> tuple[str, str, str]:
             "Include in Phase 2 expansion plan.")
 
 
-def render_detection_tab(results: dict, zones_data: dict):
-    st.markdown('<div class="oo-section-title">🔬 Computer Vision — FTTH Site Analysis</div>',
+def render_cv_engine_tab(results: dict, zones_data: dict):
+    """Computer Vision Engine — position 2 in the FALCON workflow.
+
+    Analyzes aerial imagery for buildings/cars and extracts Zone Intelligence
+    (market potential, FTTH opportunity, coverage signal) that is persisted
+    for the Marketing Intelligence Engine and Executive Report stages.
+    """
+    st.markdown('<div class="oo-section-title">🔬 Computer Vision Engine — FTTH Site Analysis</div>',
                 unsafe_allow_html=True)
     st.caption(
         "Upload an aerial screenshot of any Ghubrah location. "
@@ -1504,6 +1362,26 @@ def render_detection_tab(results: dict, zones_data: dict):
     </div>
     """, unsafe_allow_html=True)
 
+    # ── Persist Zone Intelligence for downstream stages ────────────────────────
+    zone_intel = ZoneIntelligence(
+        source=getattr(uploaded, "name", "uploaded_image"),
+        zone_id=None,
+        zone_name="Midan Residence, Ghubrah",
+        buildings_detected=n_buildings,
+        cars_detected=n_cars,
+        total_objects=res.count,
+        market_potential_households=total_market_potential,
+        population_density_per_km2=None,
+        ftth_opportunity=priority_label,
+        coverage_gap_pct=None,
+        detection_mode=mode_label,
+    ).to_dict()
+    save_zone_intelligence(zone_intel)
+    st.session_state["zone_intelligence"] = zone_intel
+    st.success(
+        "✅ Zone Intelligence saved — this output now feeds the "
+        "Marketing Intelligence Engine and Executive Report stages.")
+
     # ── Row 8: top detections table ────────────────────────────────────────────
     st.markdown("---")
     if res.boxes:
@@ -1522,348 +1400,20 @@ def render_detection_tab(results: dict, zones_data: dict):
                          height=300, hide_index=True)
 
 
-# ── Tab 4 — Business Case ───────────────────────────────────────────────────────
+# ── Forecasting (workflow stage 5 — final) ──────────────────────────────────────
 
-def render_business_case_tab(results: dict, zones_data: dict):
-    st.markdown('<div class="oo-section-title">💼 Business Case — Investment Analysis</div>',
-                unsafe_allow_html=True)
-
-    scored     = results["scored_zones"]
-    filtered   = st.session_state.get("filtered_zones", scored)
-    zones_meta = {z["id"]: z for z in zones_data["zones"]}
-
-    high           = [s for s in scored if s["tier"] == "High Priority"]
-    total_inv      = sum(s["recommended_investment_omr"] for s in filtered)
-    total_inv_high = sum(s["recommended_investment_omr"] for s in high)
-    avg_roi        = sum(s["roi_years"] for s in high) / max(len(high), 1)
-
-    k1, k2, k3, k4 = st.columns(4)
-    k1.metric("Total Est. Investment",    f"{total_inv:,.0f} OMR",
-              delta=f"{len(filtered)} zones", delta_color="off")
-    k2.metric("High-Priority Investment", f"{total_inv_high:,.0f} OMR",
-              delta=f"{len(high)} zones", delta_color="off")
-    k3.metric("Avg. ROI Payback",         f"{avg_roi:.1f} yrs",
-              delta="High-priority zones", delta_color="off")
-    pop_unserved = sum(
-        int(s["population"] * s["coverage_gap_pct"] / 100) for s in filtered)
-    k4.metric("Unserved Population", f"{pop_unserved:,}",
-              delta="Potential new subscribers", delta_color="off")
-
-    st.markdown("---")
-
-    left, right = st.columns(2)
-
-    with left:
-        st.subheader("Priority Score vs FTTH Coverage Gap")
-        df_scatter = pd.DataFrame([
-            {
-                "Zone": s["zone_name"],
-                "Priority Score": s["priority_score"],
-                "Coverage Gap (%)": s["coverage_gap_pct"],
-                "Population": s["population"],
-                "Tier": s["tier"],
-            }
-            for s in filtered
-        ])
-        fig_scatter = px.scatter(
-            df_scatter,
-            x="Coverage Gap (%)", y="Priority Score",
-            size="Population", color="Tier",
-            hover_name="Zone",
-            color_discrete_map={
-                "High Priority":   "#dc3545",
-                "Medium Priority": "#fd7e14",
-                "Low Priority":    "#28a745",
-            },
-            size_max=35,
-        )
-        fig_scatter.update_layout(height=350, margin=dict(t=20))
-        st.plotly_chart(fig_scatter, use_container_width=True)
-
-    with right:
-        st.subheader("Estimated Investment by Zone")
-        inv_df = pd.DataFrame([
-            {
-                "Zone": s["zone_name"],
-                "Investment (OMR)": s["recommended_investment_omr"],
-                "Tier": s["tier"],
-            }
-            for s in sorted(filtered,
-                             key=lambda x: x["recommended_investment_omr"],
-                             reverse=True)
-        ])
-        fig_inv = px.bar(
-            inv_df, x="Investment (OMR)", y="Zone",
-            color="Tier", orientation="h",
-            color_discrete_map={
-                "High Priority":   "#dc3545",
-                "Medium Priority": "#fd7e14",
-                "Low Priority":    "#28a745",
-            },
-        )
-        fig_inv.update_layout(height=350, margin=dict(t=20, l=10),
-                               yaxis=dict(autorange="reversed"))
-        st.plotly_chart(fig_inv, use_container_width=True)
-
-    st.markdown("---")
-    st.subheader("5-Year Projected Revenue — High Priority Zones")
-
-    if high:
-        years = list(range(1, 6))
-        fig_roi = go.Figure()
-        for z in high:
-            annual_rev = (z["population"] / HOUSEHOLD_SIZE) * FTTH_UPTAKE_RATE * ARPU_MONTHLY_OMR * 12
-            cum_rev    = [annual_rev * y for y in years]
-            fig_roi.add_trace(go.Scatter(
-                x=years, y=cum_rev, mode="lines+markers",
-                name=z["zone_name"], line=dict(width=2)))
-        fig_roi.update_layout(
-            xaxis_title="Year", yaxis_title="Cumulative Revenue (OMR)",
-            height=340, margin=dict(t=20),
-            legend=dict(orientation="h", yanchor="bottom", y=1.01),
-        )
-        st.plotly_chart(fig_roi, use_container_width=True)
-    else:
-        st.info("No high-priority zones in current filter selection.")
-
-    st.markdown("---")
-    st.subheader("Full Business Case Table")
-
-    bc_rows = []
-    for s in sorted(filtered, key=lambda x: x["priority_score"], reverse=True):
-        annual_rev = (s["population"] / HOUSEHOLD_SIZE) * FTTH_UPTAKE_RATE * ARPU_MONTHLY_OMR * 12
-        bc_rows.append({
-            "Zone":                 s["zone_name"],
-            "Tier":                 s["tier"],
-            "Score":                s["priority_score"],
-            "Investment (OMR)":     f"{s['recommended_investment_omr']:,}",
-            "Annual Revenue (OMR)": f"{annual_rev:,.0f}",
-            "5yr Revenue (OMR)":    f"{annual_rev * 5:,.0f}",
-            "ROI Payback (yrs)":    s["roi_years"],
-            "Coverage Gap":         f"{s['coverage_gap_pct']:.0f}%",
-        })
-    st.dataframe(pd.DataFrame(bc_rows), use_container_width=True,
-                 height=380, hide_index=True)
-
-
-# ── Tab 5 — Competitive Intel ────────────────────────────────────────────────────
-
-def _zone_shares(zname: str, intensity: str) -> dict:
-    import random as _r
-    rng = _r.Random(abs(hash(zname)) % 99991)
-    if intensity == "high":
-        rami  = rng.uniform(28, 44)
-        don   = rng.uniform(16, 28)
-        waheb = rng.uniform(5, 12)
-    elif intensity == "medium":
-        rami  = rng.uniform(18, 33)
-        don   = rng.uniform(10, 22)
-        waheb = rng.uniform(6, 14)
-    else:
-        rami  = rng.uniform(8, 20)
-        don   = rng.uniform(6, 16)
-        waheb = rng.uniform(4, 10)
-    total = rami + don + waheb
-    if total > 72:
-        f = 72 / total
-        rami, don, waheb = rami * f, don * f, waheb * f
-    unserved = 100 - rami - don - waheb
-    return {"Awasr": round(waheb, 1), "Omantel": round(rami, 1),
-            "Ooredoo": round(don, 1), "Others": round(max(0, unserved), 1)}
-
-
-def render_competitive_tab(network_data: dict | None, zones_data: dict):
-    st.markdown('<div class="oo-section-title">⚔️ Competitive Intelligence — Market Analysis</div>',
-                unsafe_allow_html=True)
-
-    COMPETITIVE_INTENSITY_FALLBACK = {
-        "Ruwi CBD": "high", "Mutrah Port": "high",
-        "Qurum Heights": "high", "Al Khuwair": "high",
-        "Shatti Al Qurum": "medium", "Al Azaiba": "medium",
-        "Madinat Sultan Qaboos": "medium", "Al Wuttayyah": "medium",
-        "Al Seeb City": "medium", "Ghubra": "low", "Bausher": "low",
-        "Wadi Kabir": "low", "Sidab": "low",
-        "Al Amerat": "low", "Bowsher Hills": "low",
-    }
-
-    if network_data is None:
-        st.info(
-            "No competitive data found. "
-            "Run `python scripts/build_demo.py` to generate network data.")
-        return
-
-    ms            = network_data.get("market_summary", {})
-    intensity_map = ms.get("competitive_intensity", COMPETITIVE_INTENSITY_FALLBACK)
-    cab_counts    = ms.get("cabinet_counts", {})
-    opp_details   = {o["zone"]: o for o in ms.get("opportunity_zone_details", [])}
-    zones         = zones_data["zones"]
-
-    # ── Row 1: KPI cards ──────────────────────────────────────────────────────
-    k1, k2, k3, k4 = st.columns(4)
-    unserved_homes = int(TOTAL_MUSCAT_HOMES * UNSERVED_MARKET_SHARE / 100)
-
-    def _kpi(col, label, value_str, subtitle, color):
-        col.markdown(f"""
-        <div style="background:white;border-radius:10px;padding:16px;
-                    border-left:5px solid {color};text-align:center;
-                    box-shadow:0 4px 16px rgba(0,0,0,0.07);">
-          <div style="font-size:2rem;font-weight:800;color:{color};">
-            {value_str}</div>
-          <div style="font-weight:600;font-size:0.9rem;margin-top:2px;color:#1A1A2E;">
-            {label}</div>
-          <div style="font-size:0.75rem;color:#888;margin-top:4px;">{subtitle}</div>
-        </div>""", unsafe_allow_html=True)
-
-    _kpi(k1, "Awasr Market Share",
-         f"{WAHEB_MARKET_SHARE:.0f}%", "Target: 35% by 2026", WAHEB_COLOR)
-    _kpi(k2, "Omantel Market Share",
-         f"{RAMI_MARKET_SHARE:.0f}%", "Dominant competitor", RAMI_COLOR)
-    _kpi(k3, "Ooredoo Market Share",
-         f"{DON_MARKET_SHARE:.0f}%", "Growing in Seeb/Azaiba", DON_COLOR)
-    _kpi(k4, "Unserved Market",
-         f"{UNSERVED_MARKET_SHARE:.0f}%",
-         f"~{unserved_homes:,} homes available", "#FFA500")
-
-    st.markdown("---")
-
-    # ── Row 2: charts ─────────────────────────────────────────────────────────
-    left, right = st.columns(2)
-
-    top10 = sorted(zones, key=lambda z: z["population"], reverse=True)[:10]
-    bar_rows = []
-    for z in top10:
-        zn = z["name"]
-        sh = _zone_shares(zn, intensity_map.get(zn, "medium"))
-        for company, share in sh.items():
-            bar_rows.append({"Zone": zn, "Company": company, "Share (%)": share})
-    bar_df = pd.DataFrame(bar_rows)
-
-    with left:
-        st.subheader("Market Share by Zone (Top 10)")
-        fig_bar = px.bar(
-            bar_df, x="Zone", y="Share (%)", color="Company",
-            color_discrete_map={
-                "Awasr":   WAHEB_COLOR, "Omantel": RAMI_COLOR,
-                "Ooredoo": DON_COLOR,   "Others":  "#cccccc"},
-            barmode="stack",
-        )
-        fig_bar.update_layout(
-            height=340, margin=dict(t=10, b=80),
-            xaxis_tickangle=-30,
-            legend=dict(orientation="h", yanchor="bottom", y=1.01))
-        st.plotly_chart(fig_bar, use_container_width=True)
-
-    opp_rows = []
-    for z in zones:
-        zn = z["name"]
-        wc = cab_counts.get("Waheb", {}).get(zn, 0)
-        rc = cab_counts.get("RAMI",  {}).get(zn, 0)
-        dc = cab_counts.get("Don",   {}).get(zn, 0)
-        opp_score = max(0, 12 - rc - dc - wc)
-        opp_rows.append({"Zone": zn, "Opportunity Score": opp_score,
-                          "Awasr": wc, "Omantel": rc, "Ooredoo": dc})
-    opp_df = pd.DataFrame(opp_rows).sort_values(
-        "Opportunity Score", ascending=True).tail(10)
-
-    with right:
-        st.subheader("Awasr Opportunity Score by Zone")
-        fig_opp = px.bar(
-            opp_df, x="Opportunity Score", y="Zone",
-            orientation="h",
-            color="Opportunity Score",
-            color_continuous_scale=[[0, "#d4f5e9"], [1, WAHEB_COLOR]],
-            hover_data=["Awasr", "Omantel", "Ooredoo"],
-        )
-        fig_opp.update_layout(height=340, margin=dict(t=10, l=10),
-                               coloraxis_showscale=False)
-        st.plotly_chart(fig_opp, use_container_width=True)
-
-    st.markdown("---")
-
-    # ── Row 3: Competitive gap table ──────────────────────────────────────────
-    st.subheader("Competitive Gap Analysis")
-
-    def _action(wc):
-        if wc == 0:
-            return "URGENT — No Awasr presence"
-        if wc < 3:
-            return "EXPAND — Low coverage"
-        return "DEFEND — Hold position"
-
-    def _action_color(action):
-        if "URGENT" in action:
-            return "#dc3545"
-        if "EXPAND" in action:
-            return "#fd7e14"
-        return "#28a745"
-
-    gap_rows = []
-    for z in zones:
-        zn = z["name"]
-        wc = cab_counts.get("Waheb", {}).get(zn, 0)
-        rc = cab_counts.get("RAMI",  {}).get(zn, 0)
-        dc = cab_counts.get("Don",   {}).get(zn, 0)
-        sh     = _zone_shares(zn, intensity_map.get(zn, "medium"))
-        action = _action(wc)
-        gap_rows.append({
-            "Zone":           zn,
-            "Awasr Cab.":     wc,
-            "Omantel Cab.":   rc,
-            "Ooredoo Cab.":   dc,
-            "Awasr Share %":  sh["Awasr"],
-            "Gap to Leader":  f"{max(rc,dc) - wc:+d}",
-            "Action":         action,
-        })
-
-    order = {"URGENT — No Awasr presence": 0,
-             "EXPAND — Low coverage": 1,
-             "DEFEND — Hold position": 2}
-    gap_rows.sort(key=lambda r: order.get(r["Action"], 9))
-    gap_df = pd.DataFrame(gap_rows)
-    st.dataframe(gap_df, use_container_width=True, height=380, hide_index=True)
-
-    st.markdown("---")
-
-    # ── Row 4: Revenue opportunity calculator ─────────────────────────────────
-    st.subheader("Revenue Opportunity Calculator")
-    target_share = st.slider(
-        "Target Market Share (%)", min_value=10, max_value=40,
-        value=20, step=1, key="target_share_slider")
-
-    additional_share_pct = target_share - WAHEB_MARKET_SHARE
-    additional_homes     = int(TOTAL_MUSCAT_HOMES * additional_share_pct / 100)
-    new_cabinets         = max(0, int(additional_homes / HOMES_PER_CABINET))
-    investment_omr       = new_cabinets * COST_PER_CABINET_OMR
-    new_subs             = additional_homes * FTTH_UPTAKE_RATE
-    annual_revenue_omr   = int(new_subs * ARPU_MONTHLY_OMR * 12)
-    payback_months       = (int(investment_omr / max(annual_revenue_omr / 12, 1))
-                            if investment_omr > 0 else 0)
-
-    ca, cb, cc, cd, ce = st.columns(5)
-    ca.metric("Additional Homes",     f"{additional_homes:,}")
-    cb.metric("New Cabinets Needed",  f"{new_cabinets:,}")
-    cc.metric("Investment (OMR)",     f"{investment_omr:,}")
-    cd.metric("Annual Revenue (OMR)", f"{annual_revenue_omr:,}")
-    ce.metric("Payback (months)",     f"{payback_months}")
-
-    if additional_share_pct > 0:
-        st.info(
-            f"Growing from **{WAHEB_MARKET_SHARE:.0f}%** to **{target_share}%** "
-            f"requires connecting **{additional_homes:,}** new homes "
-            f"({new_cabinets} cabinets, {investment_omr:,} OMR investment) "
-            f"generating **{annual_revenue_omr:,} OMR/year** — "
-            f"payback in **{payback_months} months**.")
-    else:
-        st.success("You are at or above the target share. Defend current Awasr position.")
-
-
-# ── Tab 6 — AI Insights ─────────────────────────────────────────────────────────
-
-def render_ai_insights_tab(results: dict, zones_data: dict):
+def render_forecasting_tab(results: dict, zones_data: dict):
     """
-    Tab 6: ML-powered insights.
+    Forecasting — position 5 (final stage) in the FALCON workflow.
+
+    Uses historical telecom/traffic trends together with the Marketing
+    Intelligence Engine's output (falling back to raw zone scoring if the
+    Marketing Intelligence Engine hasn't run yet) to predict future market
+    potential, customer growth, FTTH adoption opportunities, and expansion
+    priorities. Kept separate from the Executive Report.
+
     Sections:
-      1. Telecom market simulation (5G / FTTH / mobile KPIs)
+      1. Telecom market simulation (5G / FTTH / mobile KPIs) — historical baseline
       2. Zone clustering
       3. Demand prediction scores vs YOLO scores
       4. Revenue forecast comparison
@@ -1873,15 +1423,18 @@ def render_ai_insights_tab(results: dict, zones_data: dict):
     from app.forecaster import (forecast_revenue, market_share_projection,
                                  predict_demand_score, traffic_trend)
 
-    st.markdown('<div class="oo-section-title">🤖 AI Insights — ML Market Intelligence</div>',
+    st.markdown('<div class="oo-section-title">📈 Forecasting — Market & Growth Projections</div>',
                 unsafe_allow_html=True)
 
-    scored         = results["scored_zones"]
+    mi_snapshot    = st.session_state.get("marketing_intelligence") or \
+                      (load_marketing_intelligence() or {}).get("zones")
+    scored         = mi_snapshot if mi_snapshot else results["scored_zones"]
     zones_json_str = json.dumps(zones_data)
 
     st.caption(
-        "Combines ML clustering, demand prediction, revenue forecasting, "
-        "and telecom simulation. All data is simulated.")
+        "Combines historical telecom/traffic trends with Marketing "
+        "Intelligence Engine outputs to project future market potential, "
+        "customer growth, and FTTH expansion priorities. All data is simulated.")
 
     # ── Section 1 — Telecom simulation KPIs ──────────────────────────────────
     st.markdown("#### Telecom Market Simulation")
@@ -2113,266 +1666,239 @@ def render_ai_insights_tab(results: dict, zones_data: dict):
         st.plotly_chart(fig_traf, use_container_width=True)
 
 
-# ── Tab 7 — AI Intelligence ─────────────────────────────────────────────────────
+# ── Marketing Intelligence Engine (workflow stage 4) ────────────────────────────
 
-def render_ai_intelligence_tab(results: dict, zones_data: dict):
-    """Tab 7: AI Business Intelligence — templated executive analysis per zone."""
+def render_marketing_intelligence_tab(results: dict, zones_data: dict):
+    """Marketing Intelligence Engine — position 4 in the FALCON workflow.
+
+    Consumes Zone Intelligence (Computer Vision Engine output, when available)
+    plus zone scoring to produce market potential assessment, customer
+    opportunity identification, competitive positioning analysis, FTTH
+    expansion recommendations, and target-area prioritization. Results are
+    persisted for the Executive Report and Forecasting stages.
+    """
     st.markdown(
-        '<div class="oo-section-title">🤖 AI Business Intelligence — Executive Analysis</div>',
+        '<div class="oo-section-title">📊 Marketing Intelligence Engine</div>',
         unsafe_allow_html=True)
 
-    zones        = zones_data["zones"]
-    zone_names   = [z["zone_name"] for z in zones] if "zone_name" in (zones[0] if zones else {}) \
-                   else [z.get("name", z.get("zone_name", f"Zone {i}")) for i, z in enumerate(zones)]
-    scored_map   = {s["zone_id"]: s for s in results["scored_zones"]}
-    zone_id_map  = {z.get("name", z.get("zone_name", "")): z for z in zones}
+    scored     = results["scored_zones"]
+    zone_intel = st.session_state.get("zone_intelligence") or latest_zone_intelligence()
 
-    selected_name = st.selectbox("Select Zone for AI Analysis", zone_names, key="ai_intel_zone")
-    zone_meta     = zone_id_map.get(selected_name, {})
-    zone_id       = zone_meta.get("id", "")
-    scored        = scored_map.get(zone_id, {})
-
-    if st.button("Generate AI Analysis", key="ai_intel_btn"):
-        with st.spinner("Generating AI business analysis..."):
-            import time; time.sleep(0.6)   # simulate processing
-
-        priority_score = scored.get("priority_score", 72.0)
-        coverage_gap   = scored.get("coverage_gap_pct", 45.0)
-        population     = zone_meta.get("population", scored.get("population", 18000))
-        tier           = scored.get("tier", "Medium Priority")
-        investment_omr = scored.get("recommended_investment_omr", 750000)
-        roi_years      = scored.get("roi_years", 3.2)
-
-        households       = int(population / 3.5)
-        ooredoo_target   = int(households * DON_MARKET_SHARE / 100)
-        ftth_subs        = int(ooredoo_target * FTTH_UPTAKE_RATE)
-        annual_rev       = ftth_subs * ARPU_MONTHLY_OMR * 12
-        rev_yr3          = int(annual_rev * ((1 + 0.08) ** 3))
-
-        tier_color = {"High Priority": "#dc3545", "Medium Priority": "#fd7e14",
-                      "Low Priority": "#28a745"}.get(tier, "#fd7e14")
-
-        def _ai_card(title: str, body: str, accent: str = "#1A1A2E"):
-            st.markdown(f"""
-            <div style="background:white;border-radius:12px;padding:0;
-                        box-shadow:0 4px 16px rgba(0,0,0,0.08);margin-bottom:16px;overflow:hidden;">
-              <div style="background:{accent};padding:12px 20px;">
-                <span style="color:white;font-weight:700;font-size:1.0rem;">{title}</span>
-              </div>
-              <div style="padding:16px 20px;font-size:0.88rem;color:#333;line-height:1.65;">
-                {body}
-              </div>
-            </div>""", unsafe_allow_html=True)
-
-        _ai_card("📍 Area Overview",
-            f"<b>Zone:</b> {selected_name}, Muscat, Oman<br>"
-            f"<b>Population:</b> {population:,} residents<br>"
-            f"<b>Priority Score:</b> {priority_score:.1f} / 100<br>"
-            f"<b>Tier:</b> <span style='color:{tier_color};font-weight:700;'>{tier}</span><br>"
-            f"<b>Coverage Gap:</b> {coverage_gap:.0f}% of zone currently unserved by FTTH<br>"
-            f"<b>Characteristics:</b> Mixed residential and commercial density with established road network.")
-
-        _ai_card("👥 Customer Opportunity",
-            f"<b>Total Estimated Households:</b> {households:,} (population ÷ 3.5)<br>"
-            f"<b>Ooredoo Target Customers ({DON_MARKET_SHARE:.0f}% share):</b> {ooredoo_target:,}<br>"
-            f"<b>Estimated FTTH Subscribers ({FTTH_UPTAKE_RATE*100:.0f}% uptake):</b> {ftth_subs:,}<br>"
-            f"<b>Estimated Annual Revenue:</b> {annual_rev:,.0f} OMR/year "
-            f"(at {ARPU_MONTHLY_OMR} OMR ARPU/month)")
-
-        _ai_card("⚔️ Competitive Landscape",
-            f"<b>Market Structure — Muscat FTTH:</b><br>"
-            f"&bull; Omantel leads at <b>{RAMI_MARKET_SHARE:.0f}%</b> — dominant incumbent<br>"
-            f"&bull; Awasr holds <b>{WAHEB_MARKET_SHARE:.0f}%</b> — aggressive growth posture<br>"
-            f"&bull; Ooredoo at <b>{DON_MARKET_SHARE:.0f}%</b> — strong brand with expansion headroom<br>"
-            f"&bull; Others / Unserved: <b>{UNSERVED_MARKET_SHARE:.0f}%</b> — addressable greenfield<br>"
-            f"<b>Coverage Gap:</b> {coverage_gap:.0f}% of {selected_name} remains a competitive opportunity.")
-
-        strengths_body = ""
-        if priority_score > 70:
-            strengths_body += "&bull; <b>High building density</b> — favorable FTTH deployment economics<br>"
-        if coverage_gap > 40:
-            strengths_body += f"&bull; <b>Large coverage gap ({coverage_gap:.0f}%)</b> — first-mover advantage available<br>"
-        strengths_body += (
-            "&bull; <b>Ooredoo brand recognition</b> in Muscat market<br>"
-            "&bull; <b>Proven FTTH technology stack</b> already deployed in adjacent zones<br>"
-            "&bull; <b>Government broadband targets</b> align with residential expansion")
-        _ai_card("💪 Key Strengths", strengths_body)
-
-        inv_label = "Immediate deployment recommended" if tier == "High Priority" else \
-                    "Plan deployment within 6 months" if tier == "Medium Priority" else \
-                    "Include in Phase 2 expansion plan"
-        _ai_card("📋 Investment Recommendation",
-            f"<b>Recommendation:</b> {inv_label}<br>"
-            f"<b>Estimated Investment:</b> {investment_omr:,} OMR<br>"
-            f"<b>Expected ROI Payback:</b> {roi_years:.1f} years<br>"
-            f"<b>Rationale:</b> The combination of a {coverage_gap:.0f}% coverage gap, "
-            f"{population:,} residents, and a priority score of {priority_score:.1f}/100 "
-            f"places {selected_name} in the <b>{tier}</b> deployment tier.",
-            accent="#1A1A2E")
-
-        _ai_card("💰 Revenue Forecast (3-Year at 8% CAGR)",
-            f"<b>Year 1 Revenue:</b> {annual_rev:,.0f} OMR<br>"
-            f"<b>Year 2 Revenue:</b> {int(annual_rev * 1.08):,.0f} OMR<br>"
-            f"<b>Year 3 Revenue:</b> {rev_yr3:,.0f} OMR<br>"
-            f"<b>3-Year Cumulative:</b> {int(annual_rev + annual_rev*1.08 + rev_yr3):,.0f} OMR",
-            accent="#065A82")
-
-        _ai_card("📣 Marketing Opportunities",
-            f"&bull; <b>Door-to-door campaigns</b> in high-density residential blocks<br>"
-            f"&bull; <b>Digital targeting</b> using geo-fenced ads within {selected_name}<br>"
-            f"&bull; <b>SME outreach</b> for business FTTH packages (premium ARPU)<br>"
-            f"&bull; <b>Bundle promotions</b> combining FTTH + mobile for household conversion<br>"
-            f"&bull; <b>Referral incentives</b> from existing Ooredoo mobile subscribers",
-            accent="#28a745")
-
+    if zone_intel:
+        st.caption(
+            f"🔬 Refined with Zone Intelligence from the Computer Vision Engine — "
+            f"**{zone_intel.get('buildings_detected', 0)} buildings** detected → "
+            f"**{zone_intel.get('market_potential_households', 0):,}** household potential.")
     else:
-        st.info("Select a zone above and click **Generate AI Analysis** to produce an executive briefing.")
+        st.caption(
+            "No Computer Vision Engine output yet — estimates below use zone "
+            "population data. Upload an aerial image in the Computer Vision "
+            "Engine tab to refine them with detected buildings.")
 
-    st.info(
-        "Connect a real LLM (OpenAI/Claude) by setting OPENAI_API_KEY or "
-        "ANTHROPIC_API_KEY environment variable for AI-generated analysis.")
+    cv_households = zone_intel["market_potential_households"] if zone_intel else 0
+
+    # ── Build the Marketing Intelligence record for every zone ──────────────────
+    mi_zones = []
+    for s in scored:
+        households = int(s["population"] / HOUSEHOLD_SIZE)
+        if cv_households and s["tier"] == "High Priority":
+            households = max(households, cv_households)
+        target_customers = int(households * DON_MARKET_SHARE / 100)
+        ftth_subs         = int(target_customers * FTTH_UPTAKE_RATE)
+        annual_revenue    = ftth_subs * ARPU_MONTHLY_OMR * 12
+        mi_zones.append({
+            **s,
+            "market_potential_households": households,
+            "target_customers": target_customers,
+            "ftth_subscribers": ftth_subs,
+            "annual_revenue_omr": annual_revenue,
+            "expansion_recommendation": (
+                "Immediate deployment" if s["tier"] == "High Priority" else
+                "Plan within 6 months"  if s["tier"] == "Medium Priority" else
+                "Phase 2 expansion"),
+            "competitive_notes": (
+                f"{s['coverage_gap_pct']:.0f}% coverage gap vs. "
+                f"{RAMI_MARKET_SHARE:.0f}% {RAMI_BRAND_NAME} / "
+                f"{WAHEB_MARKET_SHARE:.0f}% {WAHEB_BRAND_NAME} share"),
+        })
+    mi_zones.sort(key=lambda z: z["priority_score"], reverse=True)
+    for rank, z in enumerate(mi_zones, 1):
+        z["target_priority_rank"] = rank
+
+    save_marketing_intelligence(mi_zones)
+    st.session_state["marketing_intelligence"] = mi_zones
+
+    total_hh   = sum(z["market_potential_households"] for z in mi_zones)
+    total_tc   = sum(z["target_customers"] for z in mi_zones)
+    total_subs = sum(z["ftth_subscribers"] for z in mi_zones)
+    total_rev  = sum(z["annual_revenue_omr"] for z in mi_zones)
+
+    # ── 1. Market Potential Assessment ───────────────────────────────────────────
+    st.markdown("#### 1. Market Potential Assessment")
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric("Addressable Households",    f"{total_hh:,}")
+    k2.metric("Ooredoo Target Customers",   f"{total_tc:,}")
+    k3.metric("Est. FTTH Subscribers",      f"{total_subs:,}")
+    k4.metric("Est. Annual Revenue",        f"{total_rev:,.0f} OMR")
+
+    st.markdown("---")
+
+    # ── 2. Customer Opportunity Identification ───────────────────────────────────
+    st.markdown("#### 2. Customer Opportunity Identification")
+    opp_df = pd.DataFrame([{
+        "Zone": z["zone_name"], "Tier": z["tier"],
+        "Households": z["market_potential_households"],
+        "Target Customers": z["target_customers"],
+        "FTTH Subscribers": z["ftth_subscribers"],
+        "Annual Revenue (OMR)": f"{z['annual_revenue_omr']:,.0f}",
+    } for z in mi_zones[:10]])
+    st.dataframe(opp_df, use_container_width=True, hide_index=True, height=280)
+
+    st.markdown("---")
+
+    # ── 3. Competitive Positioning Analysis ──────────────────────────────────────
+    st.markdown("#### 3. Competitive Positioning Analysis")
+    comp_left, comp_right = st.columns([1, 1])
+    with comp_left:
+        share_df = pd.DataFrame({
+            "Operator": [DON_BRAND_NAME, RAMI_BRAND_NAME, WAHEB_BRAND_NAME, OTHERS_BRAND_NAME],
+            "Share (%)": [DON_MARKET_SHARE, RAMI_MARKET_SHARE,
+                          WAHEB_MARKET_SHARE, UNSERVED_MARKET_SHARE],
+        })
+        fig_comp = px.pie(
+            share_df, values="Share (%)", names="Operator", color="Operator",
+            color_discrete_map={DON_BRAND_NAME: DON_COLOR, RAMI_BRAND_NAME: RAMI_COLOR,
+                                 WAHEB_BRAND_NAME: WAHEB_COLOR, OTHERS_BRAND_NAME: "#aaaaaa"},
+            hole=0.42,
+        )
+        fig_comp.update_layout(height=260, margin=dict(t=10))
+        st.plotly_chart(fig_comp, use_container_width=True)
+    with comp_right:
+        st.markdown("**Zone-level competitive notes**")
+        for z in mi_zones[:5]:
+            st.markdown(f"- **{z['zone_name']}** ({z['tier']}): {z['competitive_notes']}")
+
+    st.markdown("---")
+
+    # ── 4. FTTH Expansion Recommendations ────────────────────────────────────────
+    st.markdown("#### 4. FTTH Expansion Recommendations")
+    high = [z for z in mi_zones if z["tier"] == "High Priority"]
+    med  = [z for z in mi_zones if z["tier"] == "Medium Priority"]
+    low  = [z for z in mi_zones if z["tier"] == "Low Priority"]
+    st.markdown(f"""
+    <div style="background:white;border-radius:10px;padding:16px 20px;
+                box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+      <b>Phase 1 — Immediate ({len(high)} zones):</b>
+        {', '.join(z['zone_name'] for z in high[:5]) or 'None'}<br>
+      <b>Phase 2 — 6-Month Plan ({len(med)} zones):</b>
+        {', '.join(z['zone_name'] for z in med[:5]) or 'None'}<br>
+      <b>Phase 3 — Long-Term ({len(low)} zones):</b>
+        {', '.join(z['zone_name'] for z in low[:5]) or 'None'}
+    </div>""", unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    # ── 5. Target Area Prioritization ────────────────────────────────────────────
+    st.markdown("#### 5. Target Area Prioritization")
+    rank_df = pd.DataFrame([{
+        "Rank": z["target_priority_rank"], "Zone": z["zone_name"],
+        "Tier": z["tier"], "Priority Score": z["priority_score"],
+        "Recommendation": z["expansion_recommendation"],
+    } for z in mi_zones])
+    st.dataframe(rank_df, use_container_width=True, hide_index=True, height=320)
+
+    st.success(
+        "✅ Marketing Intelligence saved — feeds the Executive Report and "
+        "Forecasting stages.")
+
+    # ── Zone deep-dive — AI narrative + go-to-market plan ────────────────────────
+    st.markdown("---")
+    with st.expander("🔎 Zone Deep-Dive — AI Narrative & Go-to-Market Plan"):
+        zone_names    = [z["zone_name"] for z in mi_zones]
+        selected_name = st.selectbox("Select Zone", zone_names, key="mi_deep_dive_zone")
+        selected      = next(z for z in mi_zones if z["zone_name"] == selected_name)
+
+        if st.button("Generate Deep-Dive", key="mi_deep_dive_btn"):
+            tier_color = TIER_COLORS.get(selected["tier"], "#fd7e14")
+
+            def _mi_card(title: str, body: str, accent: str = "#1A1A2E"):
+                st.markdown(f"""
+                <div style="background:white;border-radius:12px;padding:0;
+                            box-shadow:0 4px 16px rgba(0,0,0,0.08);margin-bottom:16px;overflow:hidden;">
+                  <div style="background:{accent};padding:12px 20px;">
+                    <span style="color:white;font-weight:700;font-size:1.0rem;">{title}</span>
+                  </div>
+                  <div style="padding:16px 20px;font-size:0.88rem;color:#333;line-height:1.65;">
+                    {body}
+                  </div>
+                </div>""", unsafe_allow_html=True)
+
+            _mi_card("📍 Area Overview",
+                f"<b>Zone:</b> {selected['zone_name']}, Muscat, Oman<br>"
+                f"<b>Population:</b> {selected['population']:,} residents<br>"
+                f"<b>Priority Score:</b> {selected['priority_score']:.1f} / 100<br>"
+                f"<b>Tier:</b> <span style='color:{tier_color};font-weight:700;'>"
+                f"{selected['tier']}</span><br>"
+                f"<b>Coverage Gap:</b> {selected['coverage_gap_pct']:.0f}% of zone "
+                f"currently unserved by FTTH")
+
+            _mi_card("👥 Customer Opportunity",
+                f"<b>Market Potential:</b> {selected['market_potential_households']:,} households<br>"
+                f"<b>Target Customers:</b> {selected['target_customers']:,}<br>"
+                f"<b>Est. FTTH Subscribers:</b> {selected['ftth_subscribers']:,}<br>"
+                f"<b>Est. Annual Revenue:</b> {selected['annual_revenue_omr']:,.0f} OMR/year")
+
+            _mi_card("⚔️ Competitive Positioning",
+                f"{selected['competitive_notes']}<br>"
+                f"{RAMI_BRAND_NAME} {RAMI_MARKET_SHARE:.0f}% | "
+                f"{WAHEB_BRAND_NAME} {WAHEB_MARKET_SHARE:.0f}% | "
+                f"{DON_BRAND_NAME} {DON_MARKET_SHARE:.0f}% | "
+                f"Unserved {UNSERVED_MARKET_SHARE:.0f}%")
+
+            _mi_card("📋 FTTH Expansion Recommendation",
+                f"<b>{selected['expansion_recommendation']}</b><br>"
+                f"Estimated Investment: {selected['recommended_investment_omr']:,} OMR<br>"
+                f"Expected ROI Payback: {selected['roi_years']:.1f} years",
+                accent="#065A82")
+
+            hh            = selected["market_potential_households"]
+            sales_team_sz = max(3, int(hh / 500))
+            budget_omr    = int(hh * 8)
+            _mi_card("🎯 Go-To-Market Plan",
+                "<b>Target Segments:</b><br>"
+                f"&bull; Families: ~{int(hh*0.45):,} households<br>"
+                f"&bull; High-income HH: ~{int(hh*0.20):,} households<br>"
+                f"&bull; SMEs: ~{int(hh*0.10):,} businesses<br>"
+                f"&bull; New Developments: ~{int(hh*0.15):,} units<br><br>"
+                f"<b>Sales Team Size:</b> {sales_team_sz} agents<br>"
+                f"<b>Campaign Budget:</b> ~{budget_omr:,} OMR<br>"
+                "<b>Channels:</b> SMS, digital, door-to-door, retail, social media",
+                accent="#28a745")
 
 
-# ── Tab 8 — Marketing Strategy ───────────────────────────────────────────────────
 
-def render_marketing_strategy_tab(results: dict, zones_data: dict):
-    """Tab 8: AI Go-to-Market Strategy Generator."""
-    st.markdown(
-        '<div class="oo-section-title">📣 Marketing Strategy — AI Go-to-Market Generator</div>',
-        unsafe_allow_html=True)
-
-    zones       = zones_data["zones"]
-    zone_names  = [z.get("name", z.get("zone_name", f"Zone {i}")) for i, z in enumerate(zones)]
-    scored_map  = {s["zone_id"]: s for s in results["scored_zones"]}
-    zone_id_map = {z.get("name", z.get("zone_name", "")): z for z in zones}
-
-    selected_name = st.selectbox("Select Zone for Strategy", zone_names, key="mkt_strat_zone")
-    zone_meta     = zone_id_map.get(selected_name, {})
-    zone_id       = zone_meta.get("id", "")
-    scored        = scored_map.get(zone_id, {})
-
-    if st.button("Generate Strategy", key="mkt_strat_btn"):
-        with st.spinner("Building marketing strategy..."):
-            import time; time.sleep(0.5)
-
-        priority_score = scored.get("priority_score", 65.0)
-        tier           = scored.get("tier", "Medium Priority")
-        population     = zone_meta.get("population", scored.get("population", 18000))
-        households     = int(population / 3.5)
-        sales_team_sz  = max(3, int(households / 500))
-        budget_omr     = int(households * 8)
-        conv_rate      = "12-15%" if priority_score > 70 else "8-12%"
-
-        st.markdown("#### Target Customer Segments")
-        seg_cols = st.columns(4)
-        segments = [
-            ("👨‍👩‍👧‍👦", "Families", f"~{int(households*0.45):,} households — primary FTTH adopters, high data consumption"),
-            ("🏡", "High-income HH", f"~{int(households*0.20):,} households — premium packages, villas & large apartments"),
-            ("🏢", "SMEs", f"~{int(households*0.10):,} businesses — business FTTH, SLAs, premium ARPU"),
-            ("🏗️", "New Developments", f"~{int(households*0.15):,} units — developer partnerships, MDU bundles"),
-        ]
-        for col, (icon, title, desc) in zip(seg_cols, segments):
-            col.markdown(f"""
-            <div style="background:white;border-radius:10px;padding:16px;text-align:center;
-                        border-top:4px solid #E10A0A;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
-              <div style="font-size:2rem;">{icon}</div>
-              <div style="font-weight:700;color:#1A1A2E;margin:8px 0 6px;">{title}</div>
-              <div style="font-size:0.78rem;color:#666;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
-
-        st.markdown("---")
-        st.markdown("#### Marketing Channels")
-        chan_cols = st.columns(3)
-        channels = [
-            ("📱", "SMS Campaigns",    "Targeted bulk SMS to existing Ooredoo mobile subscribers in zone"),
-            ("💻", "Digital Marketing","Geo-fenced Google/Meta ads, SEO for Muscat FTTH queries"),
-            ("🤝", "Sales Teams",      f"{sales_team_sz} agents assigned to {selected_name} for direct outreach"),
-            ("🚪", "Door-to-Door",     "Residential canvassing in high-density blocks, villa compounds"),
-            ("🏪", "Retail Stores",    "Ooredoo stores in zone with dedicated FTTH promotion stands"),
-            ("📲", "Social Media",     "Instagram/X campaigns targeting Muscat residents, awareness content"),
-        ]
-        for i, (icon, title, desc) in enumerate(channels):
-            chan_cols[i % 3].markdown(f"""
-            <div style="background:#f8f9fa;border-radius:8px;padding:14px;margin-bottom:10px;
-                        border-left:3px solid #E10A0A;">
-              <div style="font-size:1.4rem;">{icon}</div>
-              <div style="font-weight:600;font-size:0.9rem;color:#1A1A2E;margin:4px 0 2px;">{title}</div>
-              <div style="font-size:0.78rem;color:#666;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
-
-        st.markdown("---")
-        st.markdown("#### Campaign Message")
-        if priority_score > 70:
-            msg = (f"**Speed, reliability, and unbeatable value** — Ooredoo FTTH is now available in "
-                   f"{selected_name}. Enjoy fiber-optic internet with speeds up to 1 Gbps. "
-                   f"Limited-time offer: 3 months free for early adopters!")
-        else:
-            msg = (f"**Connect smarter in {selected_name}** — Ooredoo FTTH brings ultra-fast fiber "
-                   f"internet to your home. Flexible packages starting from 7 OMR/month. "
-                   f"Sign up today and get installation at no charge!")
-        st.markdown(f"""
-        <div style="background:#fff0f0;border-radius:10px;padding:16px 20px;
-                    border-left:5px solid #E10A0A;font-size:0.9rem;">
-          {msg}
-        </div>""", unsafe_allow_html=True)
-
-        st.markdown("---")
-        st.markdown("#### Recommended FTTH Packages")
-        pkg_cols = st.columns(3)
-        packages = [
-            ("Starter",    "10 Mbps",  "7 OMR",  "#28a745", "Basic browsing & streaming for 1-2 users"),
-            ("Home Plus",  "50 Mbps",  "12 OMR", "#065A82", "Family plan — 4K streaming, gaming, WFH"),
-            ("Premium",    "100 Mbps", "18 OMR", "#E10A0A", "Ultra-fast for large families & power users"),
-        ]
-        for col, (name, speed, price, color, desc) in zip(pkg_cols, packages):
-            col.markdown(f"""
-            <div style="background:white;border-radius:10px;padding:20px;text-align:center;
-                        border-top:4px solid {color};box-shadow:0 4px 12px rgba(0,0,0,0.08);">
-              <div style="font-size:1.1rem;font-weight:700;color:{color};">{name}</div>
-              <div style="font-size:2.2rem;font-weight:800;color:#1A1A2E;margin:8px 0;">{speed}</div>
-              <div style="font-size:1.4rem;font-weight:700;color:{color};margin-bottom:8px;">{price}/mo</div>
-              <div style="font-size:0.78rem;color:#666;">{desc}</div>
-            </div>""", unsafe_allow_html=True)
-
-        st.markdown("---")
-        st.markdown("#### Operational Plan")
-        op_cols = st.columns(2)
-        with op_cols[0]:
-            st.markdown(f"""
-            <div style="background:white;border-radius:10px;padding:16px 20px;
-                        box-shadow:0 4px 12px rgba(0,0,0,0.08);">
-              <div style="font-weight:700;color:#1A1A2E;margin-bottom:10px;">Rollout Timeline</div>
-              <div style="font-size:0.85rem;color:#333;line-height:1.7;">
-                <b>Phase 1 (Month 1-2):</b> Infrastructure & team setup<br>
-                <b>Phase 2 (Month 2-4):</b> Active sales campaigns begin<br>
-                <b>Phase 3 (Month 4-6):</b> Scale & optimize based on results
-              </div>
-            </div>""", unsafe_allow_html=True)
-        with op_cols[1]:
-            st.markdown(f"""
-            <div style="background:white;border-radius:10px;padding:16px 20px;
-                        box-shadow:0 4px 12px rgba(0,0,0,0.08);">
-              <div style="font-weight:700;color:#1A1A2E;margin-bottom:10px;">Key Metrics</div>
-              <div style="font-size:0.85rem;color:#333;line-height:1.7;">
-                <b>Sales Team Size:</b> {sales_team_sz} agents<br>
-                <b>Campaign Budget:</b> ~{budget_omr:,} OMR<br>
-                <b>Expected Conversion:</b> {conv_rate}<br>
-                <b>Target Subscribers:</b> {int(households * 0.12):,} in 6 months
-              </div>
-            </div>""", unsafe_allow_html=True)
-    else:
-        st.info("Select a zone above and click **Generate Strategy** to produce a marketing plan.")
-
-
-# ── Tab 9 — Executive Report ─────────────────────────────────────────────────────
+# ── Executive Report (workflow stage 3) ─────────────────────────────────────────
 
 def render_executive_report_tab(results: dict, zones_data: dict):
-    """Tab 9: Executive Report — Ooredoo FTTH Expansion."""
+    """Executive Report — position 3 in the FALCON workflow.
+
+    Synthesizes only Marketing Intelligence Engine outputs into a
+    business-facing report (market potential, competition, financial
+    opportunity, rollout, risk). No raw Computer Vision detections or
+    technical model details are included.
+    """
     st.markdown(
         '<div class="oo-section-title">📋 Executive Report — Ooredoo FTTH Expansion</div>',
         unsafe_allow_html=True)
 
-    scored   = results["scored_zones"]
+    mi_data = st.session_state.get("marketing_intelligence") or \
+              (load_marketing_intelligence() or {}).get("zones")
+    scored  = mi_data if mi_data else results["scored_zones"]
+    if not mi_data:
+        st.info(
+            "Showing zone-scoring estimates. Visit the Marketing Intelligence "
+            "Engine tab to generate refined figures for this report.")
+
     zones    = zones_data["zones"]
     n_zones  = len(scored)
     high     = [s for s in scored if s["tier"] == "High Priority"]
@@ -2413,7 +1939,8 @@ def render_executive_report_tab(results: dict, zones_data: dict):
 
     _report_card("1. Executive Summary",
         f"Ooredoo Falcon analyzed <b>{n_zones} zones</b> across Muscat, Oman using "
-        f"AI-powered scoring combining vehicle density, FTTH coverage gaps, and population data. "
+        f"Marketing Intelligence scoring combining market potential, FTTH coverage gaps, "
+        f"and population data. "
         f"<b>{len(high)} High Priority</b> zones identified for immediate fiber deployment, "
         f"<b>{len(med)} Medium Priority</b> for 6-month planning, and "
         f"<b>{len(low)} Low Priority</b> for Phase 2. "
@@ -2429,28 +1956,21 @@ def render_executive_report_tab(results: dict, zones_data: dict):
         f"<b>Average Coverage Gap:</b> {avg_gap:.1f}% across all zones<br>"
         f"<b>Total Population Served:</b> {total_pop:,} residents")
 
-    _report_card("3. Computer Vision Findings",
-        "YOLOv8 satellite image analysis detected buildings, vehicles, and infrastructure "
-        "across all zones. Building density scores were used to weight FTTH deployment priority. "
-        "High-density residential clusters identified in top-tier zones. "
-        "Splitter placement recommendations generated for all High Priority zones.",
-        accent="#065A82")
-
-    _report_card("4. Market Potential",
+    _report_card("3. Market Potential",
         f"<b>Total Addressable Households:</b> {total_hh:,}<br>"
         f"<b>Ooredoo Target ({DON_MARKET_SHARE:.0f}%):</b> {ooredoo_hh:,} households<br>"
         f"<b>Omantel ({RAMI_MARKET_SHARE:.0f}%):</b> {omantel_hh:,} households<br>"
         f"<b>Awasr ({WAHEB_MARKET_SHARE:.0f}%):</b> {awasr_hh:,} households<br>"
         f"<b>Others ({UNSERVED_MARKET_SHARE:.0f}%):</b> {others_hh:,} households")
 
-    _report_card("5. Competition Analysis",
+    _report_card("4. Competition Analysis",
         f"<b>Omantel:</b> {RAMI_MARKET_SHARE:.0f}% — dominant incumbent with legacy DSL converting to fiber<br>"
         f"<b>Awasr:</b> {WAHEB_MARKET_SHARE:.0f}% — aggressive pricing, growing residential footprint<br>"
         f"<b>Ooredoo:</b> {DON_MARKET_SHARE:.0f}% — strong brand, mobile bundle advantage, expansion headroom<br>"
         f"<b>Others / Unserved:</b> {UNSERVED_MARKET_SHARE:.0f}% — addressable greenfield opportunity<br>"
         "Strategic recommendation: Prioritize zones with <40% Omantel presence for first-mover advantage.")
 
-    _report_card("6. Financial Opportunity",
+    _report_card("5. Financial Opportunity",
         f"<b>High Priority Zone Investment:</b> {total_inv:,.0f} OMR<br>"
         f"<b>Expected Annual Revenue (High Priority):</b> {annual_rev_hi:,.0f} OMR/year<br>"
         f"<b>Average ROI Payback:</b> {roi_avg:.1f} years<br>"
@@ -2460,7 +1980,7 @@ def render_executive_report_tab(results: dict, zones_data: dict):
         f"<b>Uptake Rate:</b> {FTTH_UPTAKE_RATE*100:.0f}%",
         accent="#28a745")
 
-    _report_card("7. Recommended Rollout",
+    _report_card("6. Recommended Rollout",
         f"<b>Phase 1 (Q1 2026) — High Priority:</b> "
         f"{', '.join(s['zone_name'] for s in high[:3]) or 'N/A'} — "
         f"Investment: {total_inv:,.0f} OMR<br>"
@@ -2469,7 +1989,7 @@ def render_executive_report_tab(results: dict, zones_data: dict):
         f"<b>Phase 3 (Q4 2026+) — Low Priority:</b> "
         f"{len(low)} zones, dependent on market conditions")
 
-    _report_card("8. Risk Assessment",
+    _report_card("7. Risk Assessment",
         "<b>Risk 1 — Competitive Response:</b> Omantel/Awasr may accelerate rollout in targeted zones. "
         "<i>Mitigation: Move quickly in High Priority zones; lock in multi-year customer contracts.</i><br>"
         "<b>Risk 2 — Capital Constraints:</b> High upfront CAPEX. "
@@ -2478,7 +1998,7 @@ def render_executive_report_tab(results: dict, zones_data: dict):
         "<i>Mitigation: Bundle promotions with Ooredoo mobile; price-match Awasr starter packages.</i>",
         accent="#dc3545")
 
-    _report_card("9. Final Decision Score",
+    _report_card("8. Final Decision Score",
         f"Based on AI scoring across {n_zones} zones, Ooredoo Falcon recommends "
         f"<b>immediate action</b> in {len(high)} High Priority zones. "
         f"Combined opportunity: <b>{total_inv:,.0f} OMR investment</b> generating "
@@ -2512,7 +2032,7 @@ def render_executive_report_tab(results: dict, zones_data: dict):
                     st.error(f"Error: {r.stderr[:200]}")
 
     with dl_c2:
-        csv_data = export_csv(results["scored_zones"], zones_data)
+        csv_data = export_csv(scored, zones_data)
         st.download_button(
             "📥 Download CSV Report",
             data=csv_data,
@@ -2522,7 +2042,7 @@ def render_executive_report_tab(results: dict, zones_data: dict):
         )
 
     with dl_c3:
-        summary = generate_executive_summary(results["scored_zones"], zones_data)
+        summary = generate_executive_summary(scored, zones_data)
         st.download_button(
             "📥 Executive Summary (.txt)",
             data=summary,
@@ -2563,38 +2083,24 @@ def main():
 
         render_app_header()
 
-        network_data = _load_network_data()
-
-        tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
+        tab1, tab2, tab3, tab4, tab5 = st.tabs([
             "🗺️  Coverage Map",
-            "📊  Market Intelligence",
-            "🔬  Computer Vision",
-            "💼  Business Case",
-            "⚔️  Competitive Intel",
-            "📈  Forecasting",
-            "🤖  AI Intelligence",
-            "📣  Marketing Strategy",
+            "🔬  Computer Vision Engine",
             "📋  Executive Report",
+            "📊  Marketing Intelligence Engine",
+            "📈  Forecasting",
         ])
 
         with tab1:
             render_map_tab(zones_data, results)
         with tab2:
-            render_rankings_tab(results, zones_data)
+            render_cv_engine_tab(results, zones_data)
         with tab3:
-            render_detection_tab(results, zones_data)
-        with tab4:
-            render_business_case_tab(results, zones_data)
-        with tab5:
-            render_competitive_tab(network_data, zones_data)
-        with tab6:
-            render_ai_insights_tab(results, zones_data)
-        with tab7:
-            render_ai_intelligence_tab(results, zones_data)
-        with tab8:
-            render_marketing_strategy_tab(results, zones_data)
-        with tab9:
             render_executive_report_tab(results, zones_data)
+        with tab4:
+            render_marketing_intelligence_tab(results, zones_data)
+        with tab5:
+            render_forecasting_tab(results, zones_data)
 
     else:
         # Not authenticated or unknown page — redirect to login

@@ -92,16 +92,17 @@ to `.env` and adjust:
 
 ---
 
-## Dashboard Tabs
+## Dashboard Workflow
 
-| Tab | Content |
-|---|---|
-| 🗺️ Map | Waheb/RAMI/Don network layers, opportunity zones, priority markers |
-| 📊 Rankings | Priority table, pie/bar charts sorted by AI score |
-| 🔍 Detection | Synthetic aerial images with YOLO bounding boxes; upload-your-own |
-| 💼 Business Case | ROI curves, investment table, coverage gap scatter |
-| ⚔️ Competitive Intel | Market share KPIs, zone-by-zone stacked chart, gap table, revenue slider |
-| 🤖 AI Insights | Telecom simulation, K-Means clustering, demand prediction, forecasting, traffic trends |
+The dashboard follows a 5-stage pipeline, each stage feeding the next:
+
+| # | Tab | Content |
+|---|---|---|
+| 1 | 🗺️ Coverage Map | Waheb/RAMI/Don network layers, opportunity zones, priority markers |
+| 2 | 🔬 Computer Vision Engine | Aerial image upload, YOLO building/car detection; extracts and persists **Zone Intelligence** (market potential, FTTH opportunity) for downstream stages |
+| 3 | 📋 Executive Report | Business-facing report built from Marketing Intelligence outputs only — no raw detections or model details |
+| 4 | 📊 Marketing Intelligence Engine | Market potential, customer opportunity, competitive positioning, FTTH expansion recommendations, target-area prioritization — persisted for the Executive Report and Forecasting stages |
+| 5 | 📈 Forecasting | Telecom simulation, K-Means clustering, demand prediction, revenue/traffic forecasting — built on historical trends + Marketing Intelligence outputs |
 
 ---
 
@@ -166,7 +167,9 @@ yolo-ftth-density-estimator/
 │   ├── data_loader.py          Zone loading, result caching
 │   ├── map_builder.py          Folium 6-layer competitive map
 │   ├── report_exporter.py      CSV + executive summary export
-│   └── dashboard.py            Streamlit 6-tab dashboard
+│   ├── zone_intelligence.py    Computer Vision Engine output (persisted)
+│   ├── marketing_intelligence.py  Marketing Intelligence Engine output (persisted)
+│   └── dashboard.py            Streamlit 5-stage workflow dashboard
 ├── api/
 │   ├── __init__.py
 │   └── main.py                 FastAPI backend (12 endpoints)
