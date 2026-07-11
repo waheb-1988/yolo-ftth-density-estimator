@@ -26,3 +26,16 @@
 2026-07-10 19:03:22 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
 2026-07-10 19:26:51 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 561832 mobile subs | 31511 FTTH subs
 2026-07-10 19:26:51 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-07-11 15:51:42 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 576503 mobile subs | 31155 FTTH subs
+2026-07-11 15:51:50 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-07-11 16:10:05 [INFO    ] app.detector                   Custom FTTH model loaded from C:\Abdelouaheb\perso\Data_science_2024_projects\2026\yolo-ftth-density-estimator\models\best.pt
+2026-07-11 16:10:21 [INFO    ] app.detector                   Aerial detection: 615 raw → 346 after NMS (scale=4x, tiles=84)
+2026-07-11 16:10:21 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 576503 mobile subs | 31155 FTTH subs
+2026-07-11 16:10:22 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-07-11 17:15:34 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 570972 mobile subs | 32956 FTTH subs
+2026-07-11 17:15:38 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
+2026-07-11 17:19:35 [INFO    ] app.detector                   Custom FTTH model loaded from C:\Abdelouaheb\perso\Data_science_2024_projects\2026\yolo-ftth-density-estimator\models\best.pt
+2026-07-11 17:19:57 [INFO    ] app.detector                   Aerial detection: 615 raw → 346 after NMS (scale=4x, tiles=84)
+2026-07-11 17:31:31 [INFO    ] app.detector                   Aerial detection: 615 raw → 346 after NMS (scale=4x, tiles=84)
+2026-07-11 17:31:32 [INFO    ] app.telecom_simulator          Simulation complete — 15 zones | 570972 mobile subs | 32956 FTTH subs
+2026-07-11 17:31:32 [INFO    ] app.forecaster                 Zone clustering: 15 zones → 3 clusters
