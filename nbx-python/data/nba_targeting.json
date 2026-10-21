@@ -1,0 +1,502 @@
+[
+  {
+    "msisdn": 1,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_High_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.269414
+  },
+  {
+    "msisdn": 2,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_RGS_Fragile",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.275967
+  },
+  {
+    "msisdn": 3,
+    "nationality_group": "India",
+    "nba_segment": "Retention_RGS_At_Risk",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.510649
+  },
+  {
+    "msisdn": 4,
+    "nationality_group": "Oman",
+    "nba_segment": "RGS_Not_At_Risk_Data_Only_Voice_Appetency",
+    "excluded": false,
+    "action": "UPSELL VOICE",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.031647
+  },
+  {
+    "msisdn": 5,
+    "nationality_group": "Oman",
+    "nba_segment": "RGS_Not_At_Risk_Data_Only_Voice_Appetency",
+    "excluded": false,
+    "action": "UPSELL VOICE",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.040944
+  },
+  {
+    "msisdn": 6,
+    "nationality_group": "Pakistan",
+    "nba_segment": "Onboarding_Early_Churn_Not_At_Risk",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.276479
+  },
+  {
+    "msisdn": 7,
+    "nationality_group": "Oman",
+    "nba_segment": "RGS_Not_At_Risk_Data_Only_No_Voice_Appetency",
+    "excluded": false,
+    "action": "CROSS SELL VOICE",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.056157
+  },
+  {
+    "msisdn": 8,
+    "nationality_group": "Oman",
+    "nba_segment": "RGS_Not_At_Risk_Voice_Only_No_Data_Appetency",
+    "excluded": false,
+    "action": "CROSS SELL DATA",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.022719
+  },
+  {
+    "msisdn": 9,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_High_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.279987
+  },
+  {
+    "msisdn": 10,
+    "nationality_group": "Oman",
+    "nba_segment": "RGS_Not_At_Risk_Voice_Only_No_Data_Appetency",
+    "excluded": false,
+    "action": "CROSS SELL DATA",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.009807
+  },
+  {
+    "msisdn": 11,
+    "nationality_group": "Pakistan",
+    "nba_segment": "Retention_RGS_At_Risk",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.508897
+  },
+  {
+    "msisdn": 12,
+    "nationality_group": "Oman",
+    "nba_segment": "RGS_Not_At_Risk_Voice_Only_No_Data_Appetency",
+    "excluded": false,
+    "action": "CROSS SELL DATA",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.016553
+  },
+  {
+    "msisdn": 13,
+    "nationality_group": "Pakistan",
+    "nba_segment": "Retention_RGS_Fragile",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.279373
+  },
+  {
+    "msisdn": 14,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_Low_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.524145
+  },
+  {
+    "msisdn": 15,
+    "nationality_group": "India",
+    "nba_segment": "Retention_RGS_At_Risk",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.527391
+  },
+  {
+    "msisdn": 16,
+    "nationality_group": "others",
+    "nba_segment": "Retention_RGS_At_Risk",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.510142
+  },
+  {
+    "msisdn": 17,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_Low_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.525533
+  },
+  {
+    "msisdn": 18,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_RGS_Fragile",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.280452
+  },
+  {
+    "msisdn": 19,
+    "nationality_group": "India",
+    "nba_segment": "Retention_RGS_Fragile",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.264463
+  },
+  {
+    "msisdn": 20,
+    "nationality_group": "Pakistan",
+    "nba_segment": "RGS_Not_At_Risk_DualPlay_Upgrade",
+    "excluded": false,
+    "action": "MAINTAIN",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.105746
+  },
+  {
+    "msisdn": 21,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_RGS_Fragile",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.27622
+  },
+  {
+    "msisdn": 22,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_High_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.269927
+  },
+  {
+    "msisdn": 23,
+    "nationality_group": "India",
+    "nba_segment": "RGS_Not_At_Risk_Data_Only_Voice_Appetency",
+    "excluded": false,
+    "action": "UPSELL VOICE",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.037423
+  },
+  {
+    "msisdn": 24,
+    "nationality_group": "India",
+    "nba_segment": "RGS_Not_At_Risk_Data_Only_No_Voice_Appetency",
+    "excluded": false,
+    "action": "CROSS SELL VOICE",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.064206
+  },
+  {
+    "msisdn": 25,
+    "nationality_group": "Oman",
+    "nba_segment": "RGS_Not_At_Risk_DualPlay_Upgrade",
+    "excluded": false,
+    "action": "MAINTAIN",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.109189
+  },
+  {
+    "msisdn": 26,
+    "nationality_group": "others",
+    "nba_segment": "Retention_RGS_At_Risk",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.519603
+  },
+  {
+    "msisdn": 27,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_RGS_Fragile",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.265426
+  },
+  {
+    "msisdn": 28,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_High_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.279456
+  },
+  {
+    "msisdn": 29,
+    "nationality_group": "Bangladesh",
+    "nba_segment": "Retention_RGS_Fragile",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.269209
+  },
+  {
+    "msisdn": 30,
+    "nationality_group": "India",
+    "nba_segment": "Retention_High_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.27069
+  },
+  {
+    "msisdn": 31,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_Low_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.510797
+  },
+  {
+    "msisdn": 32,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_High_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.267915
+  },
+  {
+    "msisdn": 33,
+    "nationality_group": "India",
+    "nba_segment": "Retention_High_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.272897
+  },
+  {
+    "msisdn": 34,
+    "nationality_group": "Pakistan",
+    "nba_segment": "Retention_High_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.279845
+  },
+  {
+    "msisdn": 35,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_RGS_At_Risk",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.510021
+  },
+  {
+    "msisdn": 36,
+    "nationality_group": "Bangladesh",
+    "nba_segment": "Retention_RGS_At_Risk",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.527622
+  },
+  {
+    "msisdn": 37,
+    "nationality_group": "others",
+    "nba_segment": "Retention_High_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.277562
+  },
+  {
+    "msisdn": 38,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_High_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.280514
+  },
+  {
+    "msisdn": 39,
+    "nationality_group": "Bangladesh",
+    "nba_segment": "Retention_High_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.267366
+  },
+  {
+    "msisdn": 40,
+    "nationality_group": "India",
+    "nba_segment": "Retention_RGS_At_Risk",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.515974
+  },
+  {
+    "msisdn": 41,
+    "nationality_group": "India",
+    "nba_segment": "RGS_Not_At_Risk_Data_Only_No_Voice_Appetency",
+    "excluded": false,
+    "action": "CROSS SELL VOICE",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.069411
+  },
+  {
+    "msisdn": 42,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_Low_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.509107
+  },
+  {
+    "msisdn": 43,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_Low_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.512705
+  },
+  {
+    "msisdn": 44,
+    "nationality_group": "Oman",
+    "nba_segment": "RGS_Not_At_Risk_Voice_Only_No_Data_Appetency",
+    "excluded": false,
+    "action": "CROSS SELL DATA",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.013978
+  },
+  {
+    "msisdn": 45,
+    "nationality_group": "Oman",
+    "nba_segment": "RGS_Not_At_Risk_Voice_Only_No_Data_Appetency",
+    "excluded": false,
+    "action": "CROSS SELL DATA",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.012602
+  },
+  {
+    "msisdn": 46,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_High_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.267076
+  },
+  {
+    "msisdn": 47,
+    "nationality_group": "Oman",
+    "nba_segment": "Retention_Low_Probability_To_Reconnect",
+    "excluded": false,
+    "action": "RETAIN",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.522542
+  },
+  {
+    "msisdn": 48,
+    "nationality_group": "Oman",
+    "nba_segment": "RGS_Not_At_Risk_Data_Only_Voice_Appetency",
+    "excluded": false,
+    "action": "UPSELL VOICE",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.033966
+  },
+  {
+    "msisdn": 49,
+    "nationality_group": "Oman",
+    "nba_segment": "RGS_Not_At_Risk_DualPlay_Upgrade",
+    "excluded": false,
+    "action": "MAINTAIN",
+    "reward": 0,
+    "cost": 0,
+    "propensity": 0.115483
+  },
+  {
+    "msisdn": 50,
+    "nationality_group": "Bangladesh",
+    "nba_segment": "Retention_RGS_Fragile",
+    "excluded": false,
+    "action": "UPSELL",
+    "reward": 1,
+    "cost": -1,
+    "propensity": 0.276854
+  }
+]

@@ -1,0 +1,252 @@
+[
+  {
+    "msisdn": 1,
+    "proba_react_30": 0.5959,
+    "proba_react_15": 0.6959
+  },
+  {
+    "msisdn": 2,
+    "proba_react_30": 0.1489,
+    "proba_react_15": 0.104
+  },
+  {
+    "msisdn": 3,
+    "proba_react_30": 0.1243,
+    "proba_react_15": 0.0405
+  },
+  {
+    "msisdn": 4,
+    "proba_react_30": 0.102,
+    "proba_react_15": 0.0011
+  },
+  {
+    "msisdn": 5,
+    "proba_react_30": 0.021,
+    "proba_react_15": 0.0332
+  },
+  {
+    "msisdn": 6,
+    "proba_react_30": 0.0393,
+    "proba_react_15": 0.0048
+  },
+  {
+    "msisdn": 7,
+    "proba_react_30": 0.0179,
+    "proba_react_15": 0.0849
+  },
+  {
+    "msisdn": 8,
+    "proba_react_30": 0.1397,
+    "proba_react_15": 0.1029
+  },
+  {
+    "msisdn": 9,
+    "proba_react_30": 0.7552,
+    "proba_react_15": 0.6042
+  },
+  {
+    "msisdn": 10,
+    "proba_react_30": 0.0355,
+    "proba_react_15": 0.0313
+  },
+  {
+    "msisdn": 11,
+    "proba_react_30": 0.0047,
+    "proba_react_15": 0.0485
+  },
+  {
+    "msisdn": 12,
+    "proba_react_30": 0.0322,
+    "proba_react_15": 0.0225
+  },
+  {
+    "msisdn": 13,
+    "proba_react_30": 0.015,
+    "proba_react_15": 0.0788
+  },
+  {
+    "msisdn": 14,
+    "proba_react_30": 0.4087,
+    "proba_react_15": 0.5868
+  },
+  {
+    "msisdn": 15,
+    "proba_react_30": 0.1491,
+    "proba_react_15": 0.1158
+  },
+  {
+    "msisdn": 16,
+    "proba_react_30": 0.0976,
+    "proba_react_15": 0.0825
+  },
+  {
+    "msisdn": 17,
+    "proba_react_30": 0.4825,
+    "proba_react_15": 0.5648
+  },
+  {
+    "msisdn": 18,
+    "proba_react_30": 0.13,
+    "proba_react_15": 0.057
+  },
+  {
+    "msisdn": 19,
+    "proba_react_30": 0.0629,
+    "proba_react_15": 0.0497
+  },
+  {
+    "msisdn": 20,
+    "proba_react_30": 0.0202,
+    "proba_react_15": 0.1169
+  },
+  {
+    "msisdn": 21,
+    "proba_react_30": 0.0891,
+    "proba_react_15": 0.0213
+  },
+  {
+    "msisdn": 22,
+    "proba_react_30": 0.56,
+    "proba_react_15": 0.5709
+  },
+  {
+    "msisdn": 23,
+    "proba_react_30": 0.1062,
+    "proba_react_15": 0.0686
+  },
+  {
+    "msisdn": 24,
+    "proba_react_30": 0.1301,
+    "proba_react_15": 0.0458
+  },
+  {
+    "msisdn": 25,
+    "proba_react_30": 0.125,
+    "proba_react_15": 0.0229
+  },
+  {
+    "msisdn": 26,
+    "proba_react_30": 0.0073,
+    "proba_react_15": 0.1194
+  },
+  {
+    "msisdn": 27,
+    "proba_react_30": 0.0312,
+    "proba_react_15": 0.112
+  },
+  {
+    "msisdn": 28,
+    "proba_react_30": 0.7453,
+    "proba_react_15": 0.3372
+  },
+  {
+    "msisdn": 29,
+    "proba_react_30": 0.0471,
+    "proba_react_15": 0.0845
+  },
+  {
+    "msisdn": 30,
+    "proba_react_30": 0.7106,
+    "proba_react_15": 0.4792
+  },
+  {
+    "msisdn": 31,
+    "proba_react_30": 0.4814,
+    "proba_react_15": 0.5088
+  },
+  {
+    "msisdn": 32,
+    "proba_react_30": 0.5243,
+    "proba_react_15": 0.5402
+  },
+  {
+    "msisdn": 33,
+    "proba_react_30": 0.6068,
+    "proba_react_15": 0.5669
+  },
+  {
+    "msisdn": 34,
+    "proba_react_30": 0.7805,
+    "proba_react_15": 0.6903
+  },
+  {
+    "msisdn": 35,
+    "proba_react_30": 0.0993,
+    "proba_react_15": 0.0589
+  },
+  {
+    "msisdn": 36,
+    "proba_react_30": 0.1233,
+    "proba_react_15": 0.045
+  },
+  {
+    "msisdn": 37,
+    "proba_react_30": 0.5246,
+    "proba_react_15": 0.5521
+  },
+  {
+    "msisdn": 38,
+    "proba_react_30": 0.5998,
+    "proba_react_15": 0.3493
+  },
+  {
+    "msisdn": 39,
+    "proba_react_30": 0.6274,
+    "proba_react_15": 0.4223
+  },
+  {
+    "msisdn": 40,
+    "proba_react_30": 0.0608,
+    "proba_react_15": 0.0708
+  },
+  {
+    "msisdn": 41,
+    "proba_react_30": 0.0542,
+    "proba_react_15": 0.0564
+  },
+  {
+    "msisdn": 42,
+    "proba_react_30": 0.4537,
+    "proba_react_15": 0.6245
+  },
+  {
+    "msisdn": 43,
+    "proba_react_30": 0.469,
+    "proba_react_15": 0.5897
+  },
+  {
+    "msisdn": 44,
+    "proba_react_30": 0.1112,
+    "proba_react_15": 0.0914
+  },
+  {
+    "msisdn": 45,
+    "proba_react_30": 0.1058,
+    "proba_react_15": 0.0883
+  },
+  {
+    "msisdn": 46,
+    "proba_react_30": 0.5475,
+    "proba_react_15": 0.3807
+  },
+  {
+    "msisdn": 47,
+    "proba_react_30": 0.3826,
+    "proba_react_15": 0.4177
+  },
+  {
+    "msisdn": 48,
+    "proba_react_30": 0.1397,
+    "proba_react_15": 0.0572
+  },
+  {
+    "msisdn": 49,
+    "proba_react_30": 0.1199,
+    "proba_react_15": 0.0574
+  },
+  {
+    "msisdn": 50,
+    "proba_react_30": 0.1439,
+    "proba_react_15": 0.0179
+  }
+]

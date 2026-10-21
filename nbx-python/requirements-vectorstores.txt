@@ -1,0 +1,13 @@
+# Optional: the three extra embedded vector stores. The app runs without them;
+# a store that isn't installed is reported "unavailable" and skipped.
+#
+#   pip install -r requirements-vectorstores.txt
+
+qdrant-client>=1.11
+lancedb>=0.13
+pymilvus>=2.4.5
+# Milvus Lite: 2.4.x has no Windows build, and the Windows 3.x build has an
+# upstream proto bug with pymilvus ("nullable" AttributeError). It works on
+# Linux/macOS; on Windows expect "milvus: unavailable".
+milvus-lite==2.4.9; sys_platform != "win32"
+milvus-lite>=3.0; sys_platform == "win32"

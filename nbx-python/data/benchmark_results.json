@@ -1,0 +1,71 @@
+{
+  "vectorstore": "chroma",
+  "cases": [
+    {
+      "msisdn": 1,
+      "expected_need": "REACTIVATION",
+      "expected_category": null
+    },
+    {
+      "msisdn": 15,
+      "expected_need": "INTERNATIONAL",
+      "expected_category": "International"
+    },
+    {
+      "msisdn": 25,
+      "expected_need": "RENEWAL",
+      "expected_category": null
+    }
+  ],
+  "results": [
+    {
+      "model": "llama3.1:8b",
+      "msisdn": 1,
+      "expected_need": "REACTIVATION",
+      "detected_need": "REACTIVATION",
+      "need_correct": true,
+      "valid_json": true,
+      "category_hit": true,
+      "avg_final_score": 0.5891,
+      "pipeline_time_ms": 99377,
+      "error": null
+    },
+    {
+      "model": "llama3.1:8b",
+      "msisdn": 15,
+      "expected_need": "INTERNATIONAL",
+      "detected_need": "INTERNATIONAL",
+      "need_correct": true,
+      "valid_json": true,
+      "category_hit": true,
+      "avg_final_score": 0.668,
+      "pipeline_time_ms": 79521,
+      "error": null
+    },
+    {
+      "model": "llama3.1:8b",
+      "msisdn": 25,
+      "expected_need": "RENEWAL",
+      "detected_need": "RENEWAL",
+      "need_correct": true,
+      "valid_json": true,
+      "category_hit": true,
+      "avg_final_score": 0.5957,
+      "pipeline_time_ms": 101270,
+      "error": null
+    }
+  ],
+  "per_model": {
+    "llama3.1:8b": {
+      "need_accuracy": 1.0,
+      "valid_json_rate": 1.0,
+      "category_hit_rate": 1.0,
+      "avg_final_score": 0.6176,
+      "avg_pipeline_time_ms": 93389.3
+    }
+  },
+  "ranking": [
+    "llama3.1:8b"
+  ],
+  "winner": "llama3.1:8b"
+}

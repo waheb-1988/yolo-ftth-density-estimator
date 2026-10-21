@@ -1,0 +1,252 @@
+[
+  {
+    "msisdn": 1,
+    "proba_churn": 0.7235,
+    "proba_churn_1d": 0.4254
+  },
+  {
+    "msisdn": 2,
+    "proba_churn": 0.2297,
+    "proba_churn_1d": 0.025
+  },
+  {
+    "msisdn": 3,
+    "proba_churn": 0.5208,
+    "proba_churn_1d": 0.3456
+  },
+  {
+    "msisdn": 4,
+    "proba_churn": 0.0565,
+    "proba_churn_1d": 0.0988
+  },
+  {
+    "msisdn": 5,
+    "proba_churn": 0.0786,
+    "proba_churn_1d": 0.06
+  },
+  {
+    "msisdn": 6,
+    "proba_churn": 0.4304,
+    "proba_churn_1d": 0.352
+  },
+  {
+    "msisdn": 7,
+    "proba_churn": 0.1852,
+    "proba_churn_1d": 0.0953
+  },
+  {
+    "msisdn": 8,
+    "proba_churn": 0.0375,
+    "proba_churn_1d": 0.0741
+  },
+  {
+    "msisdn": 9,
+    "proba_churn": 0.4879,
+    "proba_churn_1d": 0.041
+  },
+  {
+    "msisdn": 10,
+    "proba_churn": 0.2411,
+    "proba_churn_1d": 0.0701
+  },
+  {
+    "msisdn": 11,
+    "proba_churn": 0.8458,
+    "proba_churn_1d": 0.275
+  },
+  {
+    "msisdn": 12,
+    "proba_churn": 0.4778,
+    "proba_churn_1d": 0.2104
+  },
+  {
+    "msisdn": 13,
+    "proba_churn": 0.2435,
+    "proba_churn_1d": 0.0917
+  },
+  {
+    "msisdn": 14,
+    "proba_churn": 0.4907,
+    "proba_churn_1d": 0.0324
+  },
+  {
+    "msisdn": 15,
+    "proba_churn": 0.5762,
+    "proba_churn_1d": 0.4763
+  },
+  {
+    "msisdn": 16,
+    "proba_churn": 0.7888,
+    "proba_churn_1d": 0.4537
+  },
+  {
+    "msisdn": 17,
+    "proba_churn": 0.5924,
+    "proba_churn_1d": 0.0026
+  },
+  {
+    "msisdn": 18,
+    "proba_churn": 0.1339,
+    "proba_churn_1d": 0.0079
+  },
+  {
+    "msisdn": 19,
+    "proba_churn": 0.1306,
+    "proba_churn_1d": 0.0758
+  },
+  {
+    "msisdn": 20,
+    "proba_churn": 0.2172,
+    "proba_churn_1d": 0.0269
+  },
+  {
+    "msisdn": 21,
+    "proba_churn": 0.0931,
+    "proba_churn_1d": 0.035
+  },
+  {
+    "msisdn": 22,
+    "proba_churn": 0.5134,
+    "proba_churn_1d": 0.2307
+  },
+  {
+    "msisdn": 23,
+    "proba_churn": 0.0088,
+    "proba_churn_1d": 0.0222
+  },
+  {
+    "msisdn": 24,
+    "proba_churn": 0.1251,
+    "proba_churn_1d": 0.0854
+  },
+  {
+    "msisdn": 25,
+    "proba_churn": 0.0806,
+    "proba_churn_1d": 0.0249
+  },
+  {
+    "msisdn": 26,
+    "proba_churn": 0.6406,
+    "proba_churn_1d": 0.2059
+  },
+  {
+    "msisdn": 27,
+    "proba_churn": 0.1241,
+    "proba_churn_1d": 0.0672
+  },
+  {
+    "msisdn": 28,
+    "proba_churn": 0.6798,
+    "proba_churn_1d": 0.3202
+  },
+  {
+    "msisdn": 29,
+    "proba_churn": 0.0654,
+    "proba_churn_1d": 0.0577
+  },
+  {
+    "msisdn": 30,
+    "proba_churn": 0.6066,
+    "proba_churn_1d": 0.2356
+  },
+  {
+    "msisdn": 31,
+    "proba_churn": 0.834,
+    "proba_churn_1d": 0.0164
+  },
+  {
+    "msisdn": 32,
+    "proba_churn": 0.4578,
+    "proba_churn_1d": 0.0385
+  },
+  {
+    "msisdn": 33,
+    "proba_churn": 0.6162,
+    "proba_churn_1d": 0.0841
+  },
+  {
+    "msisdn": 34,
+    "proba_churn": 0.5744,
+    "proba_churn_1d": 0.0013
+  },
+  {
+    "msisdn": 35,
+    "proba_churn": 0.677,
+    "proba_churn_1d": 0.4352
+  },
+  {
+    "msisdn": 36,
+    "proba_churn": 0.8101,
+    "proba_churn_1d": 0.2132
+  },
+  {
+    "msisdn": 37,
+    "proba_churn": 0.5164,
+    "proba_churn_1d": 0.402
+  },
+  {
+    "msisdn": 38,
+    "proba_churn": 0.6491,
+    "proba_churn_1d": 0.0537
+  },
+  {
+    "msisdn": 39,
+    "proba_churn": 0.6028,
+    "proba_churn_1d": 0.0364
+  },
+  {
+    "msisdn": 40,
+    "proba_churn": 0.6619,
+    "proba_churn_1d": 0.363
+  },
+  {
+    "msisdn": 41,
+    "proba_churn": 0.2269,
+    "proba_churn_1d": 0.0981
+  },
+  {
+    "msisdn": 42,
+    "proba_churn": 0.4532,
+    "proba_churn_1d": 0.0479
+  },
+  {
+    "msisdn": 43,
+    "proba_churn": 0.6968,
+    "proba_churn_1d": 0.3772
+  },
+  {
+    "msisdn": 44,
+    "proba_churn": 0.1473,
+    "proba_churn_1d": 0.0134
+  },
+  {
+    "msisdn": 45,
+    "proba_churn": 0.0861,
+    "proba_churn_1d": 0.0748
+  },
+  {
+    "msisdn": 46,
+    "proba_churn": 0.6881,
+    "proba_churn_1d": 0.0286
+  },
+  {
+    "msisdn": 47,
+    "proba_churn": 0.4479,
+    "proba_churn_1d": 0.0957
+  },
+  {
+    "msisdn": 48,
+    "proba_churn": 0.019,
+    "proba_churn_1d": 0.0269
+  },
+  {
+    "msisdn": 49,
+    "proba_churn": 0.0135,
+    "proba_churn_1d": 0.0394
+  },
+  {
+    "msisdn": 50,
+    "proba_churn": 0.4656,
+    "proba_churn_1d": 0.3499
+  }
+]

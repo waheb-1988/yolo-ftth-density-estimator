@@ -1,0 +1,252 @@
+[
+  {
+    "msisdn": 1,
+    "proba_frag_data": 0.7497,
+    "proba_frag_voice": 0.1349
+  },
+  {
+    "msisdn": 2,
+    "proba_frag_data": 0.6814,
+    "proba_frag_voice": 0.2284
+  },
+  {
+    "msisdn": 3,
+    "proba_frag_data": 0.623,
+    "proba_frag_voice": 0.3694
+  },
+  {
+    "msisdn": 4,
+    "proba_frag_data": 0.0397,
+    "proba_frag_voice": 0.0212
+  },
+  {
+    "msisdn": 5,
+    "proba_frag_data": 0.2337,
+    "proba_frag_voice": 0.2071
+  },
+  {
+    "msisdn": 6,
+    "proba_frag_data": 0.1503,
+    "proba_frag_voice": 0.1246
+  },
+  {
+    "msisdn": 7,
+    "proba_frag_data": 0.2349,
+    "proba_frag_voice": 0.2162
+  },
+  {
+    "msisdn": 8,
+    "proba_frag_data": 0.0965,
+    "proba_frag_voice": 0.1249
+  },
+  {
+    "msisdn": 9,
+    "proba_frag_data": 0.4886,
+    "proba_frag_voice": 0.2519
+  },
+  {
+    "msisdn": 10,
+    "proba_frag_data": 0.4772,
+    "proba_frag_voice": 0.0816
+  },
+  {
+    "msisdn": 11,
+    "proba_frag_data": 0.6716,
+    "proba_frag_voice": 0.4059
+  },
+  {
+    "msisdn": 12,
+    "proba_frag_data": 0.0737,
+    "proba_frag_voice": 0.468
+  },
+  {
+    "msisdn": 13,
+    "proba_frag_data": 0.7486,
+    "proba_frag_voice": 0.0658
+  },
+  {
+    "msisdn": 14,
+    "proba_frag_data": 0.176,
+    "proba_frag_voice": 0.2752
+  },
+  {
+    "msisdn": 15,
+    "proba_frag_data": 0.0663,
+    "proba_frag_voice": 0.5762
+  },
+  {
+    "msisdn": 16,
+    "proba_frag_data": 0.4775,
+    "proba_frag_voice": 0.7307
+  },
+  {
+    "msisdn": 17,
+    "proba_frag_data": 0.0875,
+    "proba_frag_voice": 0.0246
+  },
+  {
+    "msisdn": 18,
+    "proba_frag_data": 0.6357,
+    "proba_frag_voice": 0.1506
+  },
+  {
+    "msisdn": 19,
+    "proba_frag_data": 0.72,
+    "proba_frag_voice": 0.1688
+  },
+  {
+    "msisdn": 20,
+    "proba_frag_data": 0.1937,
+    "proba_frag_voice": 0.0564
+  },
+  {
+    "msisdn": 21,
+    "proba_frag_data": 0.7078,
+    "proba_frag_voice": 0.2247
+  },
+  {
+    "msisdn": 22,
+    "proba_frag_data": 0.6149,
+    "proba_frag_voice": 0.253
+  },
+  {
+    "msisdn": 23,
+    "proba_frag_data": 0.2355,
+    "proba_frag_voice": 0.272
+  },
+  {
+    "msisdn": 24,
+    "proba_frag_data": 0.0601,
+    "proba_frag_voice": 0.1228
+  },
+  {
+    "msisdn": 25,
+    "proba_frag_data": 0.1033,
+    "proba_frag_voice": 0.0387
+  },
+  {
+    "msisdn": 26,
+    "proba_frag_data": 0.125,
+    "proba_frag_voice": 0.5021
+  },
+  {
+    "msisdn": 27,
+    "proba_frag_data": 0.6841,
+    "proba_frag_voice": 0.2007
+  },
+  {
+    "msisdn": 28,
+    "proba_frag_data": 0.4587,
+    "proba_frag_voice": 0.5043
+  },
+  {
+    "msisdn": 29,
+    "proba_frag_data": 0.7412,
+    "proba_frag_voice": 0.201
+  },
+  {
+    "msisdn": 30,
+    "proba_frag_data": 0.196,
+    "proba_frag_voice": 0.0308
+  },
+  {
+    "msisdn": 31,
+    "proba_frag_data": 0.6367,
+    "proba_frag_voice": 0.2165
+  },
+  {
+    "msisdn": 32,
+    "proba_frag_data": 0.2748,
+    "proba_frag_voice": 0.2287
+  },
+  {
+    "msisdn": 33,
+    "proba_frag_data": 0.2542,
+    "proba_frag_voice": 0.2425
+  },
+  {
+    "msisdn": 34,
+    "proba_frag_data": 0.1862,
+    "proba_frag_voice": 0.2343
+  },
+  {
+    "msisdn": 35,
+    "proba_frag_data": 0.438,
+    "proba_frag_voice": 0.0552
+  },
+  {
+    "msisdn": 36,
+    "proba_frag_data": 0.427,
+    "proba_frag_voice": 0.1542
+  },
+  {
+    "msisdn": 37,
+    "proba_frag_data": 0.6066,
+    "proba_frag_voice": 0.5973
+  },
+  {
+    "msisdn": 38,
+    "proba_frag_data": 0.0914,
+    "proba_frag_voice": 0.2245
+  },
+  {
+    "msisdn": 39,
+    "proba_frag_data": 0.1285,
+    "proba_frag_voice": 0.0014
+  },
+  {
+    "msisdn": 40,
+    "proba_frag_data": 0.5388,
+    "proba_frag_voice": 0.2326
+  },
+  {
+    "msisdn": 41,
+    "proba_frag_data": 0.2111,
+    "proba_frag_voice": 0.1564
+  },
+  {
+    "msisdn": 42,
+    "proba_frag_data": 0.4145,
+    "proba_frag_voice": 0.25
+  },
+  {
+    "msisdn": 43,
+    "proba_frag_data": 0.5042,
+    "proba_frag_voice": 0.3934
+  },
+  {
+    "msisdn": 44,
+    "proba_frag_data": 0.443,
+    "proba_frag_voice": 0.2577
+  },
+  {
+    "msisdn": 45,
+    "proba_frag_data": 0.2098,
+    "proba_frag_voice": 0.0485
+  },
+  {
+    "msisdn": 46,
+    "proba_frag_data": 0.5898,
+    "proba_frag_voice": 0.1547
+  },
+  {
+    "msisdn": 47,
+    "proba_frag_data": 0.2439,
+    "proba_frag_voice": 0.1725
+  },
+  {
+    "msisdn": 48,
+    "proba_frag_data": 0.2049,
+    "proba_frag_voice": 0.273
+  },
+  {
+    "msisdn": 49,
+    "proba_frag_data": 0.0524,
+    "proba_frag_voice": 0.293
+  },
+  {
+    "msisdn": 50,
+    "proba_frag_data": 0.6898,
+    "proba_frag_voice": 0.1551
+  }
+]

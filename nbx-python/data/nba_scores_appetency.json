@@ -1,0 +1,252 @@
+[
+  {
+    "msisdn": 1,
+    "proba_app_data": 0.4512,
+    "proba_app_voice": 0.249
+  },
+  {
+    "msisdn": 2,
+    "proba_app_data": 0.4634,
+    "proba_app_voice": 0.833
+  },
+  {
+    "msisdn": 3,
+    "proba_app_data": 0.1734,
+    "proba_app_voice": 0.1698
+  },
+  {
+    "msisdn": 4,
+    "proba_app_data": 0.2087,
+    "proba_app_voice": 0.8086
+  },
+  {
+    "msisdn": 5,
+    "proba_app_data": 0.0253,
+    "proba_app_voice": 0.6767
+  },
+  {
+    "msisdn": 6,
+    "proba_app_data": 0.0181,
+    "proba_app_voice": 0.2368
+  },
+  {
+    "msisdn": 7,
+    "proba_app_data": 0.2104,
+    "proba_app_voice": 0.4819
+  },
+  {
+    "msisdn": 8,
+    "proba_app_data": 0.1659,
+    "proba_app_voice": 0.2742
+  },
+  {
+    "msisdn": 9,
+    "proba_app_data": 0.0735,
+    "proba_app_voice": 0.0019
+  },
+  {
+    "msisdn": 10,
+    "proba_app_data": 0.0945,
+    "proba_app_voice": 0.2402
+  },
+  {
+    "msisdn": 11,
+    "proba_app_data": 0.1357,
+    "proba_app_voice": 0.2244
+  },
+  {
+    "msisdn": 12,
+    "proba_app_data": 0.084,
+    "proba_app_voice": 0.265
+  },
+  {
+    "msisdn": 13,
+    "proba_app_data": 0.5333,
+    "proba_app_voice": 0.8081
+  },
+  {
+    "msisdn": 14,
+    "proba_app_data": 0.2756,
+    "proba_app_voice": 0.2533
+  },
+  {
+    "msisdn": 15,
+    "proba_app_data": 0.0097,
+    "proba_app_voice": 0.1807
+  },
+  {
+    "msisdn": 16,
+    "proba_app_data": 0.0488,
+    "proba_app_voice": 0.0221
+  },
+  {
+    "msisdn": 17,
+    "proba_app_data": 0.1801,
+    "proba_app_voice": 0.0599
+  },
+  {
+    "msisdn": 18,
+    "proba_app_data": 0.8408,
+    "proba_app_voice": 0.1429
+  },
+  {
+    "msisdn": 19,
+    "proba_app_data": 0.4741,
+    "proba_app_voice": 0.1764
+  },
+  {
+    "msisdn": 20,
+    "proba_app_data": 0.1329,
+    "proba_app_voice": 0.2477
+  },
+  {
+    "msisdn": 21,
+    "proba_app_data": 0.8352,
+    "proba_app_voice": 0.6934
+  },
+  {
+    "msisdn": 22,
+    "proba_app_data": 0.8122,
+    "proba_app_voice": 0.5986
+  },
+  {
+    "msisdn": 23,
+    "proba_app_data": 0.057,
+    "proba_app_voice": 0.7633
+  },
+  {
+    "msisdn": 24,
+    "proba_app_data": 0.0895,
+    "proba_app_voice": 0.427
+  },
+  {
+    "msisdn": 25,
+    "proba_app_data": 0.203,
+    "proba_app_voice": 0.188
+  },
+  {
+    "msisdn": 26,
+    "proba_app_data": 0.1986,
+    "proba_app_voice": 0.1961
+  },
+  {
+    "msisdn": 27,
+    "proba_app_data": 0.5653,
+    "proba_app_voice": 0.4014
+  },
+  {
+    "msisdn": 28,
+    "proba_app_data": 0.2445,
+    "proba_app_voice": 0.0549
+  },
+  {
+    "msisdn": 29,
+    "proba_app_data": 0.2034,
+    "proba_app_voice": 0.2303
+  },
+  {
+    "msisdn": 30,
+    "proba_app_data": 0.257,
+    "proba_app_voice": 0.6235
+  },
+  {
+    "msisdn": 31,
+    "proba_app_data": 0.751,
+    "proba_app_voice": 0.4229
+  },
+  {
+    "msisdn": 32,
+    "proba_app_data": 0.2648,
+    "proba_app_voice": 0.1512
+  },
+  {
+    "msisdn": 33,
+    "proba_app_data": 0.1252,
+    "proba_app_voice": 0.7739
+  },
+  {
+    "msisdn": 34,
+    "proba_app_data": 0.0938,
+    "proba_app_voice": 0.6761
+  },
+  {
+    "msisdn": 35,
+    "proba_app_data": 0.6863,
+    "proba_app_voice": 0.579
+  },
+  {
+    "msisdn": 36,
+    "proba_app_data": 0.8014,
+    "proba_app_voice": 0.6228
+  },
+  {
+    "msisdn": 37,
+    "proba_app_data": 0.1299,
+    "proba_app_voice": 0.0051
+  },
+  {
+    "msisdn": 38,
+    "proba_app_data": 0.0015,
+    "proba_app_voice": 0.179
+  },
+  {
+    "msisdn": 39,
+    "proba_app_data": 0.1753,
+    "proba_app_voice": 0.6828
+  },
+  {
+    "msisdn": 40,
+    "proba_app_data": 0.8532,
+    "proba_app_voice": 0.6758
+  },
+  {
+    "msisdn": 41,
+    "proba_app_data": 0.1364,
+    "proba_app_voice": 0.4232
+  },
+  {
+    "msisdn": 42,
+    "proba_app_data": 0.7601,
+    "proba_app_voice": 0.6408
+  },
+  {
+    "msisdn": 43,
+    "proba_app_data": 0.1028,
+    "proba_app_voice": 0.136
+  },
+  {
+    "msisdn": 44,
+    "proba_app_data": 0.209,
+    "proba_app_voice": 0.0293
+  },
+  {
+    "msisdn": 45,
+    "proba_app_data": 0.2565,
+    "proba_app_voice": 0.1978
+  },
+  {
+    "msisdn": 46,
+    "proba_app_data": 0.7284,
+    "proba_app_voice": 0.2412
+  },
+  {
+    "msisdn": 47,
+    "proba_app_data": 0.2841,
+    "proba_app_voice": 0.2409
+  },
+  {
+    "msisdn": 48,
+    "proba_app_data": 0.1061,
+    "proba_app_voice": 0.8472
+  },
+  {
+    "msisdn": 49,
+    "proba_app_data": 0.1622,
+    "proba_app_voice": 0.1507
+  },
+  {
+    "msisdn": 50,
+    "proba_app_data": 0.8028,
+    "proba_app_voice": 0.053
+  }
+]

@@ -1,0 +1,2602 @@
+[
+  {
+    "transaction_id": "TXN-10001",
+    "msisdn": 45,
+    "purchase_date": "2026-04-28T15:43:40",
+    "offer_name": "DT_15D_8R_10GB",
+    "program_rule": "DT_15D_8R_10GB",
+    "category": "Data",
+    "price_omr": 8.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10002",
+    "msisdn": 10,
+    "purchase_date": "2026-08-31T23:50:40",
+    "offer_name": "VC_30D_6R_1000MIN",
+    "program_rule": "VC_30D_6R_1000MIN",
+    "category": "Voice",
+    "price_omr": 6.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10003",
+    "msisdn": 27,
+    "purchase_date": "2026-09-17T17:06:40",
+    "offer_name": "DT_1D_1R_1GB",
+    "program_rule": "DT_1D_1R_1GB",
+    "category": "Data",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10004",
+    "msisdn": 14,
+    "purchase_date": "2026-08-11T11:46:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10005",
+    "msisdn": 24,
+    "purchase_date": "2026-08-12T14:04:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10006",
+    "msisdn": 18,
+    "purchase_date": "2026-07-30T12:47:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10007",
+    "msisdn": 14,
+    "purchase_date": "2026-09-24T13:39:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10008",
+    "msisdn": 22,
+    "purchase_date": "2026-07-16T09:25:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10009",
+    "msisdn": 49,
+    "purchase_date": "2026-08-28T04:40:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10010",
+    "msisdn": 10,
+    "purchase_date": "2026-09-26T06:35:40",
+    "offer_name": "VC_15D_5R_500MIN",
+    "program_rule": "VC_15D_5R_500MIN",
+    "category": "Voice",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10011",
+    "msisdn": 10,
+    "purchase_date": "2026-07-24T10:22:40",
+    "offer_name": "VC_30D_8R_UNLIMITED",
+    "program_rule": "VC_30D_8R_UNLIMITED",
+    "category": "Voice",
+    "price_omr": 8.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10012",
+    "msisdn": 43,
+    "purchase_date": "2026-09-23T03:39:40",
+    "offer_name": "PS_15D_10R_MIX_OT",
+    "program_rule": "PS_15D_10R_MIX_OT",
+    "category": "NBO",
+    "price_omr": 10.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10013",
+    "msisdn": 16,
+    "purchase_date": "2026-08-24T14:21:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10014",
+    "msisdn": 48,
+    "purchase_date": "2026-09-18T00:01:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10015",
+    "msisdn": 50,
+    "purchase_date": "2026-07-30T23:15:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10016",
+    "msisdn": 40,
+    "purchase_date": "2026-07-03T23:10:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10017",
+    "msisdn": 30,
+    "purchase_date": "2026-07-27T03:02:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10018",
+    "msisdn": 44,
+    "purchase_date": "2026-08-01T12:32:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10019",
+    "msisdn": 6,
+    "purchase_date": "2026-09-10T06:50:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10020",
+    "msisdn": 41,
+    "purchase_date": "2026-08-08T19:56:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10021",
+    "msisdn": 19,
+    "purchase_date": "2026-09-13T17:22:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10022",
+    "msisdn": 42,
+    "purchase_date": "2026-05-07T15:34:40",
+    "offer_name": "BN_15D_10R_MIX",
+    "program_rule": "BN_15D_10R_MIX",
+    "category": "Bundle",
+    "price_omr": 10.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10023",
+    "msisdn": 14,
+    "purchase_date": "2026-08-05T04:37:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10024",
+    "msisdn": 30,
+    "purchase_date": "2026-08-17T02:09:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10025",
+    "msisdn": 43,
+    "purchase_date": "2026-07-01T00:25:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10026",
+    "msisdn": 6,
+    "purchase_date": "2026-06-08T11:42:40",
+    "offer_name": "PS_DW_5R_UNLIMITED_OT",
+    "program_rule": "PS_DW_5R_UNLIMITED_OT",
+    "category": "NBO",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10027",
+    "msisdn": 48,
+    "purchase_date": "2026-09-18T20:54:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10028",
+    "msisdn": 36,
+    "purchase_date": "2026-08-11T17:41:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10029",
+    "msisdn": 28,
+    "purchase_date": "2026-09-13T05:51:40",
+    "offer_name": "BN_3D_3R_MIX",
+    "program_rule": "BN_3D_3R_MIX",
+    "category": "Bundle",
+    "price_omr": 3.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10030",
+    "msisdn": 20,
+    "purchase_date": "2026-08-30T10:47:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10031",
+    "msisdn": 31,
+    "purchase_date": "2026-07-17T04:22:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10032",
+    "msisdn": 49,
+    "purchase_date": "2026-08-02T21:40:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10033",
+    "msisdn": 40,
+    "purchase_date": "2026-09-22T19:30:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10034",
+    "msisdn": 43,
+    "purchase_date": "2026-09-19T10:12:40",
+    "offer_name": "DT_1D_1R_1GB",
+    "program_rule": "DT_1D_1R_1GB",
+    "category": "Data",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10035",
+    "msisdn": 45,
+    "purchase_date": "2026-07-02T04:29:40",
+    "offer_name": "RM_3D_9R_ROAM500MB",
+    "program_rule": "RM_3D_9R_ROAM500MB",
+    "category": "Roaming",
+    "price_omr": 9.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10036",
+    "msisdn": 12,
+    "purchase_date": "2026-04-11T03:25:40",
+    "offer_name": "VC_1D_1R_50MIN",
+    "program_rule": "VC_1D_1R_50MIN",
+    "category": "Voice",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10037",
+    "msisdn": 10,
+    "purchase_date": "2026-09-02T15:56:40",
+    "offer_name": "PS_8D_6R_UNLIMITED_OT",
+    "program_rule": "PS_8D_6R_UNLIMITED_OT",
+    "category": "NBO",
+    "price_omr": 6.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10038",
+    "msisdn": 14,
+    "purchase_date": "2026-09-06T04:10:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10039",
+    "msisdn": 47,
+    "purchase_date": "2026-07-12T12:33:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10040",
+    "msisdn": 4,
+    "purchase_date": "2026-09-19T18:24:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10041",
+    "msisdn": 18,
+    "purchase_date": "2026-07-11T01:03:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10042",
+    "msisdn": 18,
+    "purchase_date": "2026-08-13T02:22:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10043",
+    "msisdn": 19,
+    "purchase_date": "2026-05-24T22:47:40",
+    "offer_name": "VC_1D_1R_50MIN",
+    "program_rule": "VC_1D_1R_50MIN",
+    "category": "Voice",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10044",
+    "msisdn": 20,
+    "purchase_date": "2026-07-12T14:29:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10045",
+    "msisdn": 14,
+    "purchase_date": "2026-09-09T07:11:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10046",
+    "msisdn": 21,
+    "purchase_date": "2026-08-02T10:21:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10047",
+    "msisdn": 25,
+    "purchase_date": "2026-07-16T17:38:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10048",
+    "msisdn": 23,
+    "purchase_date": "2026-09-21T02:28:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10049",
+    "msisdn": 30,
+    "purchase_date": "2026-07-07T21:02:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10050",
+    "msisdn": 37,
+    "purchase_date": "2026-08-20T12:04:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10051",
+    "msisdn": 2,
+    "purchase_date": "2026-04-21T00:36:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10052",
+    "msisdn": 45,
+    "purchase_date": "2026-06-07T12:14:40",
+    "offer_name": "PS_DW_5R_UNLIMITED_OT",
+    "program_rule": "PS_DW_5R_UNLIMITED_OT",
+    "category": "NBO",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10053",
+    "msisdn": 28,
+    "purchase_date": "2026-08-07T05:42:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10054",
+    "msisdn": 22,
+    "purchase_date": "2026-09-16T22:49:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10055",
+    "msisdn": 8,
+    "purchase_date": "2026-08-13T03:43:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10056",
+    "msisdn": 42,
+    "purchase_date": "2026-08-31T11:13:40",
+    "offer_name": "PS_10D_8R_SMART_OT",
+    "program_rule": "PS_10D_8R_SMART_OT",
+    "category": "NBO",
+    "price_omr": 8.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10057",
+    "msisdn": 13,
+    "purchase_date": "2026-07-05T13:18:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10058",
+    "msisdn": 50,
+    "purchase_date": "2026-07-15T21:01:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10059",
+    "msisdn": 44,
+    "purchase_date": "2026-04-14T18:50:40",
+    "offer_name": "VC_1D_1R_50MIN",
+    "program_rule": "VC_1D_1R_50MIN",
+    "category": "Voice",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10060",
+    "msisdn": 21,
+    "purchase_date": "2026-07-08T11:01:40",
+    "offer_name": "VC_30D_6R_1000MIN",
+    "program_rule": "VC_30D_6R_1000MIN",
+    "category": "Voice",
+    "price_omr": 6.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10061",
+    "msisdn": 5,
+    "purchase_date": "2026-08-21T21:26:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10062",
+    "msisdn": 23,
+    "purchase_date": "2026-07-31T14:26:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10063",
+    "msisdn": 24,
+    "purchase_date": "2026-04-14T12:50:40",
+    "offer_name": "PS_DW_5R_UNLIMITED_OT",
+    "program_rule": "PS_DW_5R_UNLIMITED_OT",
+    "category": "NBO",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10064",
+    "msisdn": 39,
+    "purchase_date": "2026-07-17T15:32:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10065",
+    "msisdn": 3,
+    "purchase_date": "2026-07-05T09:09:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10066",
+    "msisdn": 39,
+    "purchase_date": "2026-09-19T01:23:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10067",
+    "msisdn": 22,
+    "purchase_date": "2026-05-19T19:18:40",
+    "offer_name": "PS_DW_5R_UNLIMITED_OT",
+    "program_rule": "PS_DW_5R_UNLIMITED_OT",
+    "category": "NBO",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10068",
+    "msisdn": 3,
+    "purchase_date": "2026-07-31T22:56:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10069",
+    "msisdn": 40,
+    "purchase_date": "2026-08-21T03:03:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10070",
+    "msisdn": 50,
+    "purchase_date": "2026-07-07T19:08:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10071",
+    "msisdn": 5,
+    "purchase_date": "2026-08-08T06:13:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10072",
+    "msisdn": 47,
+    "purchase_date": "2026-04-25T11:08:40",
+    "offer_name": "RM_3D_9R_ROAM500MB",
+    "program_rule": "RM_3D_9R_ROAM500MB",
+    "category": "Roaming",
+    "price_omr": 9.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10073",
+    "msisdn": 6,
+    "purchase_date": "2026-08-13T05:48:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10074",
+    "msisdn": 45,
+    "purchase_date": "2026-04-26T17:24:40",
+    "offer_name": "PS_15D_10R_MIX_OT",
+    "program_rule": "PS_15D_10R_MIX_OT",
+    "category": "NBO",
+    "price_omr": 10.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10075",
+    "msisdn": 20,
+    "purchase_date": "2026-08-15T10:47:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10076",
+    "msisdn": 45,
+    "purchase_date": "2026-04-03T23:24:40",
+    "offer_name": "BN_3D_3R_MIX",
+    "program_rule": "BN_3D_3R_MIX",
+    "category": "Bundle",
+    "price_omr": 3.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10077",
+    "msisdn": 42,
+    "purchase_date": "2026-06-26T15:06:40",
+    "offer_name": "VC_7D_3R_200MIN",
+    "program_rule": "VC_7D_3R_200MIN",
+    "category": "Voice",
+    "price_omr": 3.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10078",
+    "msisdn": 20,
+    "purchase_date": "2026-07-26T09:15:40",
+    "offer_name": "DT_30D_25R_40GB",
+    "program_rule": "DT_30D_25R_40GB",
+    "category": "Data",
+    "price_omr": 25.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10079",
+    "msisdn": 9,
+    "purchase_date": "2026-09-13T22:40:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10080",
+    "msisdn": 35,
+    "purchase_date": "2026-05-15T13:47:40",
+    "offer_name": "RM_7D_15R_ROAM2GB",
+    "program_rule": "RM_7D_15R_ROAM2GB",
+    "category": "Roaming",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10081",
+    "msisdn": 22,
+    "purchase_date": "2026-08-23T20:05:40",
+    "offer_name": "VC_15D_5R_500MIN",
+    "program_rule": "VC_15D_5R_500MIN",
+    "category": "Voice",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10082",
+    "msisdn": 10,
+    "purchase_date": "2026-07-09T09:43:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10083",
+    "msisdn": 29,
+    "purchase_date": "2026-08-27T00:50:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10084",
+    "msisdn": 19,
+    "purchase_date": "2026-06-04T07:55:40",
+    "offer_name": "BN_1D_1R_MIX",
+    "program_rule": "BN_1D_1R_MIX",
+    "category": "Bundle",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10085",
+    "msisdn": 16,
+    "purchase_date": "2026-07-28T09:06:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10086",
+    "msisdn": 44,
+    "purchase_date": "2026-05-31T05:40:40",
+    "offer_name": "DT_1D_05R_300MB",
+    "program_rule": "DT_1D_05R_300MB",
+    "category": "Data",
+    "price_omr": 0.5,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10087",
+    "msisdn": 25,
+    "purchase_date": "2026-09-06T08:38:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10088",
+    "msisdn": 39,
+    "purchase_date": "2026-07-05T23:34:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10089",
+    "msisdn": 24,
+    "purchase_date": "2026-07-22T12:11:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10090",
+    "msisdn": 6,
+    "purchase_date": "2026-06-02T23:20:40",
+    "offer_name": "DT_1D_1R_1GB",
+    "program_rule": "DT_1D_1R_1GB",
+    "category": "Data",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10091",
+    "msisdn": 28,
+    "purchase_date": "2026-07-31T03:30:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10092",
+    "msisdn": 2,
+    "purchase_date": "2026-08-10T08:05:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10093",
+    "msisdn": 6,
+    "purchase_date": "2026-09-13T16:48:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10094",
+    "msisdn": 22,
+    "purchase_date": "2026-09-17T05:31:40",
+    "offer_name": "PS_15D_10R_MIX_OT",
+    "program_rule": "PS_15D_10R_MIX_OT",
+    "category": "NBO",
+    "price_omr": 10.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10095",
+    "msisdn": 31,
+    "purchase_date": "2026-03-30T00:01:40",
+    "offer_name": "PS_15D_10R_MIX_OT",
+    "program_rule": "PS_15D_10R_MIX_OT",
+    "category": "NBO",
+    "price_omr": 10.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10096",
+    "msisdn": 40,
+    "purchase_date": "2026-08-25T08:36:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10097",
+    "msisdn": 10,
+    "purchase_date": "2026-07-21T02:22:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10098",
+    "msisdn": 50,
+    "purchase_date": "2026-09-20T08:03:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10099",
+    "msisdn": 41,
+    "purchase_date": "2026-09-10T11:36:40",
+    "offer_name": "DT_1D_05R_300MB",
+    "program_rule": "DT_1D_05R_300MB",
+    "category": "Data",
+    "price_omr": 0.5,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10100",
+    "msisdn": 32,
+    "purchase_date": "2026-07-22T21:14:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10101",
+    "msisdn": 46,
+    "purchase_date": "2026-07-10T04:14:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10102",
+    "msisdn": 37,
+    "purchase_date": "2026-09-15T23:06:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10103",
+    "msisdn": 5,
+    "purchase_date": "2026-05-19T22:54:40",
+    "offer_name": "VC_30D_8R_UNLIMITED",
+    "program_rule": "VC_30D_8R_UNLIMITED",
+    "category": "Voice",
+    "price_omr": 8.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10104",
+    "msisdn": 2,
+    "purchase_date": "2026-07-07T03:06:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10105",
+    "msisdn": 17,
+    "purchase_date": "2026-09-09T04:14:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10106",
+    "msisdn": 47,
+    "purchase_date": "2026-04-30T15:41:40",
+    "offer_name": "PS_3D_2R_DATA_OT",
+    "program_rule": "PS_3D_2R_DATA_OT",
+    "category": "NBO",
+    "price_omr": 2.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10107",
+    "msisdn": 22,
+    "purchase_date": "2026-08-13T19:18:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10108",
+    "msisdn": 50,
+    "purchase_date": "2026-07-26T19:18:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10109",
+    "msisdn": 9,
+    "purchase_date": "2026-07-30T14:11:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10110",
+    "msisdn": 13,
+    "purchase_date": "2026-09-21T04:30:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10111",
+    "msisdn": 20,
+    "purchase_date": "2026-07-19T00:13:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10112",
+    "msisdn": 3,
+    "purchase_date": "2026-07-15T03:34:40",
+    "offer_name": "PS_1D_1R_MICRO_OT",
+    "program_rule": "PS_1D_1R_MICRO_OT",
+    "category": "NBO",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10113",
+    "msisdn": 50,
+    "purchase_date": "2026-08-23T11:38:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10114",
+    "msisdn": 24,
+    "purchase_date": "2026-08-01T03:08:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10115",
+    "msisdn": 12,
+    "purchase_date": "2026-07-22T06:38:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10116",
+    "msisdn": 6,
+    "purchase_date": "2026-06-07T19:37:40",
+    "offer_name": "PS_DW_5R_UNLIMITED_OT",
+    "program_rule": "PS_DW_5R_UNLIMITED_OT",
+    "category": "NBO",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10117",
+    "msisdn": 12,
+    "purchase_date": "2026-09-16T04:47:40",
+    "offer_name": "DT_30D_25R_40GB",
+    "program_rule": "DT_30D_25R_40GB",
+    "category": "Data",
+    "price_omr": 25.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10118",
+    "msisdn": 19,
+    "purchase_date": "2026-08-03T09:45:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10119",
+    "msisdn": 29,
+    "purchase_date": "2026-08-11T20:02:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10120",
+    "msisdn": 18,
+    "purchase_date": "2026-09-19T12:47:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10121",
+    "msisdn": 41,
+    "purchase_date": "2026-07-02T10:28:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10122",
+    "msisdn": 10,
+    "purchase_date": "2026-06-06T14:21:40",
+    "offer_name": "BN_7D_7R_MIX",
+    "program_rule": "BN_7D_7R_MIX",
+    "category": "Bundle",
+    "price_omr": 7.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10123",
+    "msisdn": 5,
+    "purchase_date": "2026-08-11T02:53:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10124",
+    "msisdn": 3,
+    "purchase_date": "2026-08-10T04:01:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10125",
+    "msisdn": 49,
+    "purchase_date": "2026-08-11T03:09:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10126",
+    "msisdn": 42,
+    "purchase_date": "2026-09-22T16:18:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10127",
+    "msisdn": 32,
+    "purchase_date": "2026-09-11T06:40:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10128",
+    "msisdn": 17,
+    "purchase_date": "2026-04-23T05:45:40",
+    "offer_name": "PS_1D_1R_MICRO_OT",
+    "program_rule": "PS_1D_1R_MICRO_OT",
+    "category": "NBO",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10129",
+    "msisdn": 32,
+    "purchase_date": "2026-09-17T01:18:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10130",
+    "msisdn": 46,
+    "purchase_date": "2026-07-01T04:47:40",
+    "offer_name": "DT_30D_25R_40GB",
+    "program_rule": "DT_30D_25R_40GB",
+    "category": "Data",
+    "price_omr": 25.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10131",
+    "msisdn": 23,
+    "purchase_date": "2026-05-11T05:32:40",
+    "offer_name": "VC_30D_8R_UNLIMITED",
+    "program_rule": "VC_30D_8R_UNLIMITED",
+    "category": "Voice",
+    "price_omr": 8.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10132",
+    "msisdn": 20,
+    "purchase_date": "2026-06-28T19:18:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10133",
+    "msisdn": 24,
+    "purchase_date": "2026-09-01T11:14:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10134",
+    "msisdn": 32,
+    "purchase_date": "2026-08-10T00:38:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10135",
+    "msisdn": 36,
+    "purchase_date": "2026-09-18T06:04:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10136",
+    "msisdn": 46,
+    "purchase_date": "2026-06-13T01:37:40",
+    "offer_name": "VC_7D_3R_200MIN",
+    "program_rule": "VC_7D_3R_200MIN",
+    "category": "Voice",
+    "price_omr": 3.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10137",
+    "msisdn": 37,
+    "purchase_date": "2026-07-06T13:01:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10138",
+    "msisdn": 30,
+    "purchase_date": "2026-09-09T21:49:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10139",
+    "msisdn": 38,
+    "purchase_date": "2026-08-01T22:31:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10140",
+    "msisdn": 4,
+    "purchase_date": "2026-08-18T06:19:40",
+    "offer_name": "VC_7D_3R_200MIN",
+    "program_rule": "VC_7D_3R_200MIN",
+    "category": "Voice",
+    "price_omr": 3.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10141",
+    "msisdn": 11,
+    "purchase_date": "2026-08-12T22:32:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10142",
+    "msisdn": 19,
+    "purchase_date": "2026-08-06T18:54:40",
+    "offer_name": "DT_1D_1R_1GB",
+    "program_rule": "DT_1D_1R_1GB",
+    "category": "Data",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10143",
+    "msisdn": 18,
+    "purchase_date": "2026-07-20T12:57:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10144",
+    "msisdn": 42,
+    "purchase_date": "2026-09-07T09:47:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10145",
+    "msisdn": 40,
+    "purchase_date": "2026-07-01T21:27:40",
+    "offer_name": "VC_15D_5R_500MIN",
+    "program_rule": "VC_15D_5R_500MIN",
+    "category": "Voice",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10146",
+    "msisdn": 2,
+    "purchase_date": "2026-07-15T06:48:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10147",
+    "msisdn": 14,
+    "purchase_date": "2026-04-20T19:28:40",
+    "offer_name": "DT_15D_8R_10GB",
+    "program_rule": "DT_15D_8R_10GB",
+    "category": "Data",
+    "price_omr": 8.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10148",
+    "msisdn": 32,
+    "purchase_date": "2026-07-13T19:10:40",
+    "offer_name": "VC_30D_8R_UNLIMITED",
+    "program_rule": "VC_30D_8R_UNLIMITED",
+    "category": "Voice",
+    "price_omr": 8.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10149",
+    "msisdn": 31,
+    "purchase_date": "2026-08-06T06:00:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10150",
+    "msisdn": 5,
+    "purchase_date": "2026-08-01T01:59:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10151",
+    "msisdn": 30,
+    "purchase_date": "2026-08-16T17:09:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10152",
+    "msisdn": 47,
+    "purchase_date": "2026-06-16T10:41:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10153",
+    "msisdn": 24,
+    "purchase_date": "2026-08-27T01:22:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10154",
+    "msisdn": 18,
+    "purchase_date": "2026-09-20T06:05:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10155",
+    "msisdn": 40,
+    "purchase_date": "2026-09-06T04:30:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10156",
+    "msisdn": 37,
+    "purchase_date": "2026-08-16T23:57:40",
+    "offer_name": "PS_1D_1R_MICRO_OT",
+    "program_rule": "PS_1D_1R_MICRO_OT",
+    "category": "NBO",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10157",
+    "msisdn": 30,
+    "purchase_date": "2026-09-24T13:04:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10158",
+    "msisdn": 33,
+    "purchase_date": "2026-07-14T04:26:40",
+    "offer_name": "DT_30D_25R_40GB",
+    "program_rule": "DT_30D_25R_40GB",
+    "category": "Data",
+    "price_omr": 25.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10159",
+    "msisdn": 4,
+    "purchase_date": "2026-07-04T17:59:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10160",
+    "msisdn": 19,
+    "purchase_date": "2026-08-02T10:33:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10161",
+    "msisdn": 17,
+    "purchase_date": "2026-06-15T04:27:40",
+    "offer_name": "BN_15D_10R_MIX",
+    "program_rule": "BN_15D_10R_MIX",
+    "category": "Bundle",
+    "price_omr": 10.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10162",
+    "msisdn": 26,
+    "purchase_date": "2026-08-10T22:11:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10163",
+    "msisdn": 5,
+    "purchase_date": "2026-07-18T06:37:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10164",
+    "msisdn": 40,
+    "purchase_date": "2026-08-25T12:04:40",
+    "offer_name": "PS_3D_2R_DATA_OT",
+    "program_rule": "PS_3D_2R_DATA_OT",
+    "category": "NBO",
+    "price_omr": 2.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10165",
+    "msisdn": 24,
+    "purchase_date": "2026-07-17T03:41:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10166",
+    "msisdn": 10,
+    "purchase_date": "2026-07-24T14:27:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10167",
+    "msisdn": 3,
+    "purchase_date": "2026-07-27T23:00:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10168",
+    "msisdn": 10,
+    "purchase_date": "2026-08-15T20:09:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10169",
+    "msisdn": 11,
+    "purchase_date": "2026-08-18T21:08:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10170",
+    "msisdn": 33,
+    "purchase_date": "2026-05-23T16:53:40",
+    "offer_name": "VC_30D_8R_UNLIMITED",
+    "program_rule": "VC_30D_8R_UNLIMITED",
+    "category": "Voice",
+    "price_omr": 8.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10171",
+    "msisdn": 20,
+    "purchase_date": "2026-08-14T18:22:40",
+    "offer_name": "DT_30D_25R_40GB",
+    "program_rule": "DT_30D_25R_40GB",
+    "category": "Data",
+    "price_omr": 25.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10172",
+    "msisdn": 27,
+    "purchase_date": "2026-06-29T19:28:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10173",
+    "msisdn": 39,
+    "purchase_date": "2026-07-13T21:15:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10174",
+    "msisdn": 47,
+    "purchase_date": "2026-07-20T18:43:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10175",
+    "msisdn": 40,
+    "purchase_date": "2026-08-19T18:14:40",
+    "offer_name": "DT_3D_2R_2GB",
+    "program_rule": "DT_3D_2R_2GB",
+    "category": "Data",
+    "price_omr": 2.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10176",
+    "msisdn": 3,
+    "purchase_date": "2026-09-02T15:01:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10177",
+    "msisdn": 21,
+    "purchase_date": "2026-08-31T01:57:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10178",
+    "msisdn": 50,
+    "purchase_date": "2026-09-18T17:21:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10179",
+    "msisdn": 34,
+    "purchase_date": "2026-07-03T23:56:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10180",
+    "msisdn": 25,
+    "purchase_date": "2026-07-20T04:55:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10181",
+    "msisdn": 23,
+    "purchase_date": "2026-04-04T18:38:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10182",
+    "msisdn": 45,
+    "purchase_date": "2026-08-26T06:54:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10183",
+    "msisdn": 20,
+    "purchase_date": "2026-08-19T05:44:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10184",
+    "msisdn": 14,
+    "purchase_date": "2026-07-07T00:07:40",
+    "offer_name": "DT_30D_25R_40GB",
+    "program_rule": "DT_30D_25R_40GB",
+    "category": "Data",
+    "price_omr": 25.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10185",
+    "msisdn": 36,
+    "purchase_date": "2026-07-18T06:22:40",
+    "offer_name": "BN_1D_1R_MIX",
+    "program_rule": "BN_1D_1R_MIX",
+    "category": "Bundle",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10186",
+    "msisdn": 37,
+    "purchase_date": "2026-06-17T03:40:40",
+    "offer_name": "DT_3D_2R_2GB",
+    "program_rule": "DT_3D_2R_2GB",
+    "category": "Data",
+    "price_omr": 2.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10187",
+    "msisdn": 10,
+    "purchase_date": "2026-09-16T03:30:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10188",
+    "msisdn": 29,
+    "purchase_date": "2026-05-27T09:17:40",
+    "offer_name": "BN_3D_3R_MIX",
+    "program_rule": "BN_3D_3R_MIX",
+    "category": "Bundle",
+    "price_omr": 3.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10189",
+    "msisdn": 35,
+    "purchase_date": "2026-08-23T11:23:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10190",
+    "msisdn": 40,
+    "purchase_date": "2026-07-26T13:47:40",
+    "offer_name": "PS_10D_8R_SMART_OT",
+    "program_rule": "PS_10D_8R_SMART_OT",
+    "category": "NBO",
+    "price_omr": 8.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10191",
+    "msisdn": 34,
+    "purchase_date": "2026-09-14T02:08:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10192",
+    "msisdn": 46,
+    "purchase_date": "2026-09-09T14:54:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10193",
+    "msisdn": 11,
+    "purchase_date": "2026-07-27T23:48:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10194",
+    "msisdn": 13,
+    "purchase_date": "2026-07-06T05:48:40",
+    "offer_name": "DT_7D_4R_5GB",
+    "program_rule": "DT_7D_4R_5GB",
+    "category": "Data",
+    "price_omr": 4.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10195",
+    "msisdn": 4,
+    "purchase_date": "2026-04-12T21:15:40",
+    "offer_name": "PS_DW_5R_UNLIMITED_OT",
+    "program_rule": "PS_DW_5R_UNLIMITED_OT",
+    "category": "NBO",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10196",
+    "msisdn": 35,
+    "purchase_date": "2026-09-17T10:03:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10197",
+    "msisdn": 12,
+    "purchase_date": "2026-06-17T00:18:40",
+    "offer_name": "PS_7D_5R_UNLIMITED_OT",
+    "program_rule": "PS_7D_5R_UNLIMITED_OT",
+    "category": "NBO",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10198",
+    "msisdn": 48,
+    "purchase_date": "2026-07-14T14:29:40",
+    "offer_name": "RM_3D_9R_ROAM500MB",
+    "program_rule": "RM_3D_9R_ROAM500MB",
+    "category": "Roaming",
+    "price_omr": 9.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10199",
+    "msisdn": 20,
+    "purchase_date": "2026-08-15T06:00:40",
+    "offer_name": "DT_30D_25R_40GB",
+    "program_rule": "DT_30D_25R_40GB",
+    "category": "Data",
+    "price_omr": 25.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10200",
+    "msisdn": 42,
+    "purchase_date": "2026-09-08T23:00:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10201",
+    "msisdn": 18,
+    "purchase_date": "2026-09-05T16:00:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10202",
+    "msisdn": 42,
+    "purchase_date": "2026-08-14T05:53:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10203",
+    "msisdn": 44,
+    "purchase_date": "2026-04-22T18:32:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10204",
+    "msisdn": 26,
+    "purchase_date": "2026-07-05T13:04:40",
+    "offer_name": "VC_7D_3R_200MIN",
+    "program_rule": "VC_7D_3R_200MIN",
+    "category": "Voice",
+    "price_omr": 3.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10205",
+    "msisdn": 43,
+    "purchase_date": "2026-07-27T04:30:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10206",
+    "msisdn": 16,
+    "purchase_date": "2026-07-31T07:08:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10207",
+    "msisdn": 20,
+    "purchase_date": "2026-08-23T19:06:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10208",
+    "msisdn": 45,
+    "purchase_date": "2026-07-29T06:19:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10209",
+    "msisdn": 26,
+    "purchase_date": "2026-03-30T05:45:40",
+    "offer_name": "RM_3D_9R_ROAM500MB",
+    "program_rule": "RM_3D_9R_ROAM500MB",
+    "category": "Roaming",
+    "price_omr": 9.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10210",
+    "msisdn": 8,
+    "purchase_date": "2026-08-09T20:15:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10211",
+    "msisdn": 15,
+    "purchase_date": "2026-09-07T00:42:40",
+    "offer_name": "DT_30D_25R_40GB",
+    "program_rule": "DT_30D_25R_40GB",
+    "category": "Data",
+    "price_omr": 25.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10212",
+    "msisdn": 39,
+    "purchase_date": "2026-07-27T21:38:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10213",
+    "msisdn": 43,
+    "purchase_date": "2026-07-24T17:41:40",
+    "offer_name": "BN_15D_10R_MIX",
+    "program_rule": "BN_15D_10R_MIX",
+    "category": "Bundle",
+    "price_omr": 10.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10214",
+    "msisdn": 39,
+    "purchase_date": "2026-05-15T00:56:40",
+    "offer_name": "PS_DW_5R_UNLIMITED_OT",
+    "program_rule": "PS_DW_5R_UNLIMITED_OT",
+    "category": "NBO",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10215",
+    "msisdn": 46,
+    "purchase_date": "2026-09-12T13:36:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10216",
+    "msisdn": 36,
+    "purchase_date": "2026-05-02T22:20:40",
+    "offer_name": "PS_1D_1R_MICRO_OT",
+    "program_rule": "PS_1D_1R_MICRO_OT",
+    "category": "NBO",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10217",
+    "msisdn": 11,
+    "purchase_date": "2026-09-11T18:16:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10218",
+    "msisdn": 46,
+    "purchase_date": "2026-07-23T00:38:40",
+    "offer_name": "DT_30D_25R_40GB",
+    "program_rule": "DT_30D_25R_40GB",
+    "category": "Data",
+    "price_omr": 25.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10219",
+    "msisdn": 4,
+    "purchase_date": "2026-07-29T21:26:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10220",
+    "msisdn": 36,
+    "purchase_date": "2026-09-24T03:13:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10221",
+    "msisdn": 1,
+    "purchase_date": "2026-09-08T14:02:40",
+    "offer_name": "VC_1D_1R_50MIN",
+    "program_rule": "VC_1D_1R_50MIN",
+    "category": "Voice",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10222",
+    "msisdn": 23,
+    "purchase_date": "2026-09-11T12:30:40",
+    "offer_name": "VC_30D_8R_UNLIMITED",
+    "program_rule": "VC_30D_8R_UNLIMITED",
+    "category": "Voice",
+    "price_omr": 8.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10223",
+    "msisdn": 31,
+    "purchase_date": "2026-09-08T18:43:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10224",
+    "msisdn": 42,
+    "purchase_date": "2026-06-21T00:34:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10225",
+    "msisdn": 25,
+    "purchase_date": "2026-07-03T22:21:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10226",
+    "msisdn": 42,
+    "purchase_date": "2026-08-11T22:04:40",
+    "offer_name": "PS_3D_2R_DATA_OT",
+    "program_rule": "PS_3D_2R_DATA_OT",
+    "category": "NBO",
+    "price_omr": 2.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10227",
+    "msisdn": 34,
+    "purchase_date": "2026-09-26T15:10:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10228",
+    "msisdn": 30,
+    "purchase_date": "2026-06-09T22:05:40",
+    "offer_name": "VC_30D_8R_UNLIMITED",
+    "program_rule": "VC_30D_8R_UNLIMITED",
+    "category": "Voice",
+    "price_omr": 8.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10229",
+    "msisdn": 15,
+    "purchase_date": "2026-08-22T08:30:40",
+    "offer_name": "DT_30D_25R_40GB",
+    "program_rule": "DT_30D_25R_40GB",
+    "category": "Data",
+    "price_omr": 25.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10230",
+    "msisdn": 47,
+    "purchase_date": "2026-04-10T01:50:40",
+    "offer_name": "PS_7D_5R_UNLIMITED_OT",
+    "program_rule": "PS_7D_5R_UNLIMITED_OT",
+    "category": "NBO",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10231",
+    "msisdn": 50,
+    "purchase_date": "2026-09-22T08:16:40",
+    "offer_name": "RM_7D_15R_ROAM2GB",
+    "program_rule": "RM_7D_15R_ROAM2GB",
+    "category": "Roaming",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10232",
+    "msisdn": 5,
+    "purchase_date": "2026-07-11T17:44:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10233",
+    "msisdn": 4,
+    "purchase_date": "2026-08-01T07:55:40",
+    "offer_name": "DT_30D_25R_40GB",
+    "program_rule": "DT_30D_25R_40GB",
+    "category": "Data",
+    "price_omr": 25.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10234",
+    "msisdn": 14,
+    "purchase_date": "2026-09-12T10:57:40",
+    "offer_name": "BN_15D_10R_MIX",
+    "program_rule": "BN_15D_10R_MIX",
+    "category": "Bundle",
+    "price_omr": 10.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10235",
+    "msisdn": 19,
+    "purchase_date": "2026-07-15T04:53:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10236",
+    "msisdn": 39,
+    "purchase_date": "2026-07-06T08:10:40",
+    "offer_name": "IN_7D_10R_INTL300",
+    "program_rule": "IN_7D_10R_INTL300",
+    "category": "International",
+    "price_omr": 10.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10237",
+    "msisdn": 10,
+    "purchase_date": "2026-08-01T02:10:40",
+    "offer_name": "VC_7D_3R_200MIN",
+    "program_rule": "VC_7D_3R_200MIN",
+    "category": "Voice",
+    "price_omr": 3.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10238",
+    "msisdn": 18,
+    "purchase_date": "2026-09-03T18:46:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10239",
+    "msisdn": 28,
+    "purchase_date": "2026-08-12T18:47:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10240",
+    "msisdn": 25,
+    "purchase_date": "2026-04-01T02:03:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10241",
+    "msisdn": 10,
+    "purchase_date": "2026-07-20T00:14:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10242",
+    "msisdn": 15,
+    "purchase_date": "2026-07-29T13:54:40",
+    "offer_name": "IN_30D_20R_INTL_UNLIMITED",
+    "program_rule": "IN_30D_20R_INTL_UNLIMITED",
+    "category": "International",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10243",
+    "msisdn": 27,
+    "purchase_date": "2026-05-14T11:05:40",
+    "offer_name": "VC_30D_8R_UNLIMITED",
+    "program_rule": "VC_30D_8R_UNLIMITED",
+    "category": "Voice",
+    "price_omr": 8.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10244",
+    "msisdn": 16,
+    "purchase_date": "2026-09-16T00:35:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10245",
+    "msisdn": 24,
+    "purchase_date": "2026-09-02T14:12:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10246",
+    "msisdn": 25,
+    "purchase_date": "2026-09-16T13:17:40",
+    "offer_name": "VC_15D_5R_500MIN",
+    "program_rule": "VC_15D_5R_500MIN",
+    "category": "Voice",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10247",
+    "msisdn": 49,
+    "purchase_date": "2026-08-30T00:16:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10248",
+    "msisdn": 22,
+    "purchase_date": "2026-08-30T08:42:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10249",
+    "msisdn": 8,
+    "purchase_date": "2026-05-27T07:45:40",
+    "offer_name": "BN_15D_10R_MIX",
+    "program_rule": "BN_15D_10R_MIX",
+    "category": "Bundle",
+    "price_omr": 10.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10250",
+    "msisdn": 39,
+    "purchase_date": "2026-07-26T22:09:40",
+    "offer_name": "DT_3D_2R_2GB",
+    "program_rule": "DT_3D_2R_2GB",
+    "category": "Data",
+    "price_omr": 2.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10251",
+    "msisdn": 50,
+    "purchase_date": "2026-07-05T04:10:40",
+    "offer_name": "DT_30D_20R_UNLIMITED",
+    "program_rule": "DT_30D_20R_UNLIMITED",
+    "category": "Data",
+    "price_omr": 20.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10252",
+    "msisdn": 17,
+    "purchase_date": "2026-07-29T11:38:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10253",
+    "msisdn": 47,
+    "purchase_date": "2026-08-31T04:09:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10254",
+    "msisdn": 27,
+    "purchase_date": "2026-09-08T15:13:40",
+    "offer_name": "BN_30D_18R_MIX",
+    "program_rule": "BN_30D_18R_MIX",
+    "category": "Bundle",
+    "price_omr": 18.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10255",
+    "msisdn": 36,
+    "purchase_date": "2026-06-12T06:20:40",
+    "offer_name": "VC_1D_1R_50MIN",
+    "program_rule": "VC_1D_1R_50MIN",
+    "category": "Voice",
+    "price_omr": 1.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10256",
+    "msisdn": 13,
+    "purchase_date": "2026-08-25T23:54:40",
+    "offer_name": "PS_30D_15R_SAVER_OT",
+    "program_rule": "PS_30D_15R_SAVER_OT",
+    "category": "NBO",
+    "price_omr": 15.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10257",
+    "msisdn": 42,
+    "purchase_date": "2026-08-24T23:43:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10258",
+    "msisdn": 42,
+    "purchase_date": "2026-08-13T15:39:40",
+    "offer_name": "DT_1D_05R_300MB",
+    "program_rule": "DT_1D_05R_300MB",
+    "category": "Data",
+    "price_omr": 0.5,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10259",
+    "msisdn": 23,
+    "purchase_date": "2026-07-26T09:31:40",
+    "offer_name": "DT_30D_12R_20GB",
+    "program_rule": "DT_30D_12R_20GB",
+    "category": "Data",
+    "price_omr": 12.0,
+    "purchase_count": 1
+  },
+  {
+    "transaction_id": "TXN-10260",
+    "msisdn": 35,
+    "purchase_date": "2026-05-15T13:36:40",
+    "offer_name": "PS_7D_5R_UNLIMITED_OT",
+    "program_rule": "PS_7D_5R_UNLIMITED_OT",
+    "category": "NBO",
+    "price_omr": 5.0,
+    "purchase_count": 1
+  }
+]

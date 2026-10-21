@@ -1,0 +1,22 @@
+[
+  {
+    "segment": "new device old version",
+    "typical_behavior": "Customers with a new device but an older software version. Usually price-sensitive, moderate data usage, respond well to unlimited low-cost bundles and reactivation offers."
+  },
+  {
+    "segment": "old version 2nd hand",
+    "typical_behavior": "Second-hand device owners on older OS versions. Low ARPU, minimal data usage, high churn risk, best targeted with micro bundles and voice top-ups."
+  },
+  {
+    "segment": "high value smart",
+    "typical_behavior": "High-value smartphone customers with strong ARPU. Heavy data and international usage, respond well to premium bundles, international, and roaming offers."
+  },
+  {
+    "segment": "new smart",
+    "typical_behavior": "Recently acquired smartphone customers. Growing data usage, exploring app-based channels, good candidates for renewal and mid-tier combo bundles."
+  },
+  {
+    "segment": "basic feature",
+    "typical_behavior": "Feature phone customers with minimal data usage. Voice-dominant, price-sensitive, best targeted with voice bundles and micro top-ups."
+  }
+]
