@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/subs_amt_auto.json",
+  "title": "subs_amt_auto",
+  "description": "Subscription amounts, windows on T (BR 4.1).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "ACCESS_METHOD_VAL": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "ACCESS_METHOD_ID": {
+        "type": "integer",
+        "x-raw-type": "int"
+      },
+      "ACCOUNT_ID": {
+        "type": "number",
+        "x-raw-type": "double"
+      },
+      "Sub_Amt_w1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Sub_Amt_w2": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Sub_Amt_w3": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Sub_Amt_w4": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Sub_Amt_m1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Sub_Amt_m2": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Sub_Amt_m3": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      }
+    },
+    "required": [
+      "ACCESS_METHOD_VAL",
+      "ACCESS_METHOD_ID",
+      "ACCOUNT_ID",
+      "Sub_Amt_w1",
+      "Sub_Amt_w2",
+      "Sub_Amt_w3",
+      "Sub_Amt_w4",
+      "Sub_Amt_m1",
+      "Sub_Amt_m2",
+      "Sub_Amt_m3"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "usage",
+  "x-anchor": "T",
+  "x-primary-key": [
+    "ACCESS_METHOD_VAL",
+    "ACCESS_METHOD_ID",
+    "ACCOUNT_ID"
+  ],
+  "x-used-by-model": true
+}

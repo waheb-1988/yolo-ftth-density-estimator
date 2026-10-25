@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/location_auto.json",
+  "title": "location_auto",
+  "description": "Home location, previous calendar month of D-2 (BR-13/14). Not used by the model.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "Access_Method_id": {
+        "type": "integer",
+        "x-raw-type": "int"
+      },
+      "Calling_Month": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "Calling_Year": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "REGION": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "WILAYAT": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "AREA": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      }
+    },
+    "required": [
+      "Access_Method_id",
+      "Calling_Month",
+      "Calling_Year",
+      "REGION",
+      "WILAYAT",
+      "AREA"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "base",
+  "x-anchor": null,
+  "x-primary-key": [
+    "Access_Method_id",
+    "REGION",
+    "WILAYAT",
+    "AREA"
+  ],
+  "x-used-by-model": false
+}

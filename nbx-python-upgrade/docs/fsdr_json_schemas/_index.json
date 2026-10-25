@@ -1,0 +1,276 @@
+{
+  "schema_version": "1.0",
+  "generated": "2026-10-22",
+  "tables": {
+    "base_prepaid": {
+      "group": "base",
+      "anchor": null,
+      "fields": 7,
+      "used_by_model": true
+    },
+    "consumer_aact_account": {
+      "group": "base",
+      "anchor": null,
+      "fields": 2,
+      "used_by_model": true
+    },
+    "access_method_id_auto": {
+      "group": "base",
+      "anchor": null,
+      "fields": 3,
+      "used_by_model": true
+    },
+    "party_auto": {
+      "group": "base",
+      "anchor": null,
+      "fields": 5,
+      "used_by_model": true
+    },
+    "party_scoring": {
+      "group": "base",
+      "anchor": null,
+      "fields": 5,
+      "used_by_model": true
+    },
+    "location_auto": {
+      "group": "base",
+      "anchor": null,
+      "fields": 6,
+      "used_by_model": false
+    },
+    "btl_catalog": {
+      "group": "base",
+      "anchor": null,
+      "fields": 10,
+      "used_by_model": true
+    },
+    "BTL_script_english_arabic_ok": {
+      "group": "base",
+      "anchor": null,
+      "fields": 4,
+      "used_by_model": false
+    },
+    "conflicting_offers_h": {
+      "group": "base",
+      "anchor": null,
+      "fields": 18,
+      "used_by_model": true
+    },
+    "DEVICEBEHAVIORSEGMENTATION.dv_segment": {
+      "group": "base",
+      "anchor": null,
+      "fields": 2,
+      "used_by_model": false
+    },
+    "subs_amt_auto": {
+      "group": "usage",
+      "anchor": "T",
+      "fields": 10,
+      "used_by_model": true
+    },
+    "subs_amt_score": {
+      "group": "usage",
+      "anchor": "D",
+      "fields": 10,
+      "used_by_model": true
+    },
+    "activities_w1_auto": {
+      "group": "usage",
+      "anchor": "T",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_w2_auto": {
+      "group": "usage",
+      "anchor": "T",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_w3_auto": {
+      "group": "usage",
+      "anchor": "T",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_w4_auto": {
+      "group": "usage",
+      "anchor": "T",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_m1_auto": {
+      "group": "usage",
+      "anchor": "T",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_auto_m2": {
+      "group": "usage",
+      "anchor": "T",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_m3_auto": {
+      "group": "usage",
+      "anchor": "T",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_w1_score": {
+      "group": "usage",
+      "anchor": "D",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_w2_score": {
+      "group": "usage",
+      "anchor": "D",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_w3_score": {
+      "group": "usage",
+      "anchor": "D",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_w4_score": {
+      "group": "usage",
+      "anchor": "D",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_m1_score": {
+      "group": "usage",
+      "anchor": "D",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_m2_score": {
+      "group": "usage",
+      "anchor": "D",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "activities_m3_score": {
+      "group": "usage",
+      "anchor": "D",
+      "fields": 19,
+      "used_by_model": true
+    },
+    "paygo_activity_auto": {
+      "group": "usage",
+      "anchor": "T",
+      "fields": 10,
+      "used_by_model": false
+    },
+    "subscriptions_tg": {
+      "group": "pricing",
+      "anchor": "D",
+      "fields": 27,
+      "used_by_model": true
+    },
+    "usage_data_voice_payg_tg": {
+      "group": "pricing",
+      "anchor": "D",
+      "fields": 16,
+      "used_by_model": true
+    },
+    "targeting_dataiku_auto": {
+      "group": "campaign",
+      "anchor": "D",
+      "fields": 10,
+      "used_by_model": true
+    },
+    "targeting_auto": {
+      "group": "campaign",
+      "anchor": "D",
+      "fields": 41,
+      "used_by_model": false
+    },
+    "subs_btl_auto": {
+      "group": "campaign",
+      "anchor": "D",
+      "fields": 5,
+      "used_by_model": true
+    },
+    "sub_btl_3months": {
+      "group": "campaign",
+      "anchor": "D",
+      "fields": 4,
+      "used_by_model": true
+    },
+    "sample_cg_tg_new_7oct2026": {
+      "group": "sample",
+      "anchor": "D",
+      "fields": 23,
+      "used_by_model": true
+    },
+    "DAIM_CHURN_GLOBAL_SCORING_TD.prediction": {
+      "group": "model_scores",
+      "anchor": null,
+      "fields": 8,
+      "used_by_model": true
+    },
+    "DAIM_EARLY_CHURN_0_30_SCORING_TD.Early_Churn_0_30_Prediction": {
+      "group": "model_scores",
+      "anchor": null,
+      "fields": 8,
+      "used_by_model": true
+    },
+    "DAIM_EARLY_CHURN_30_60_SCORING_TD.scoring_data_scored": {
+      "group": "model_scores",
+      "anchor": null,
+      "fields": 8,
+      "used_by_model": true
+    },
+    "DAIM_PROPENSITY_REACTIVATION_30D_404_SCORING_TD.Scored": {
+      "group": "model_scores",
+      "anchor": null,
+      "fields": 8,
+      "used_by_model": true
+    },
+    "PROPENSITY_REACTIVATION_15D_401_SCORING.Scored": {
+      "group": "model_scores",
+      "anchor": null,
+      "fields": 8,
+      "used_by_model": true
+    },
+    "APPETENCY_DATA_204_SCORING_TD.prediction": {
+      "group": "model_scores",
+      "anchor": null,
+      "fields": 8,
+      "used_by_model": true
+    },
+    "APPETENCY_VOICE_204_SCORING_TD.Scored": {
+      "group": "model_scores",
+      "anchor": null,
+      "fields": 8,
+      "used_by_model": true
+    },
+    "CHURN_ONE_DAY_ACTIVE_107_SCORING.Churn_One_Day_Scoring": {
+      "group": "model_scores",
+      "anchor": null,
+      "fields": 8,
+      "used_by_model": true
+    },
+    "REV_DECREASE_204_SCORING_TD.predictions": {
+      "group": "model_scores",
+      "anchor": null,
+      "fields": 8,
+      "used_by_model": true
+    },
+    "DAIM_FRAGILITY_DATA_SCORING_TD.prediction": {
+      "group": "model_scores",
+      "anchor": null,
+      "fields": 8,
+      "used_by_model": true
+    },
+    "DAIM_FRAGILITY_VOICE_SCORING_TD.prediction": {
+      "group": "model_scores",
+      "anchor": null,
+      "fields": 8,
+      "used_by_model": true
+    }
+  }
+}

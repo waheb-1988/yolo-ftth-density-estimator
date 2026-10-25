@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
+# Local settings (may contain keys)
+.env
+
+# Generated search indexes -- rebuild with: python run.py setup
+data/chroma/
+data/faiss_index/
+data/qdrant_local/
+data/milvus_lite.db*
+data/lancedb/
+
+# Generated outputs
+data/batch_*.jsonl
+data/exports/
+*.log
+
+# FSDR run folders: generated dummy data AND real customer exports -- never commit
+data/fsdr/
+# the competitors' real page list (scraper input): local only, see data/competitors/sources.example.json
+data/competitors/sources.json
+
+# Raw production extracts (real line ids, internal schema names): kept locally, never pushed
+docs/fsdr_reference/fsdr_original_sql_and_schemas.txt
+docs/fsdr_reference/fsdr_original_python_codes.txt

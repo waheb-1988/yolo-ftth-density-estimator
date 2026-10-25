@@ -1,0 +1,349 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/targeting_auto.json",
+  "title": "targeting_auto",
+  "description": "Arbitration targeting, start_date in D-7..D (BR-22). Loaded but not used.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "DATE1": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "date",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      },
+      "START_DATE": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "date",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      },
+      "END_DATE": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "date",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      },
+      "MSISDN": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "CHANNEL_1": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "CHANNEL_2": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "CHANNEL_3": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "CHANNEL_4": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OPPORTUNITY_NAME_1": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OPPORTUNITY_NAME_2": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OPPORTUNITY_NAME_3": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OPPORTUNITY_NAME_4": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "DESTINATION_OFFER_NAME_1": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "DESTINATION_OFFER_NAME_2": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "DESTINATION_OFFER_NAME_3": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "DESTINATION_OFFER_NAME_4": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "FLAG_SPLIO": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OFFER_SCRIPT_EN_1": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OFFER_SCRIPT_EN_2": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OFFER_SCRIPT_EN_3": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OFFER_SCRIPT_EN_4": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OFFER_SCRIPT_AR_1": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OFFER_SCRIPT_AR_2": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OFFER_SCRIPT_AR_3": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OFFER_SCRIPT_AR_4": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "SEGMENT": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "FILENAME": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "ETL_CREATE_DT": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "date",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      },
+      "JOB_ID": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "CHANNEL_5": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OPPORTUNITY_NAME_5": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "DESTINATION_OFFER_NAME_5": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OFFER_SCRIPT_EN_5": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OFFER_SCRIPT_AR_5": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "CHANNEL_6": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OPPORTUNITY_NAME_6": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "DESTINATION_OFFER_NAME_6": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OFFER_SCRIPT_EN_6": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "OFFER_SCRIPT_AR_6": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "SEGMENT_BTL_TAKER": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "SEGMENT_BTL_TAKER_UPSELL": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      }
+    },
+    "required": [
+      "DATE1",
+      "START_DATE",
+      "END_DATE",
+      "MSISDN",
+      "CHANNEL_1",
+      "CHANNEL_2",
+      "CHANNEL_3",
+      "CHANNEL_4",
+      "OPPORTUNITY_NAME_1",
+      "OPPORTUNITY_NAME_2",
+      "OPPORTUNITY_NAME_3",
+      "OPPORTUNITY_NAME_4",
+      "DESTINATION_OFFER_NAME_1",
+      "DESTINATION_OFFER_NAME_2",
+      "DESTINATION_OFFER_NAME_3",
+      "DESTINATION_OFFER_NAME_4",
+      "FLAG_SPLIO",
+      "OFFER_SCRIPT_EN_1",
+      "OFFER_SCRIPT_EN_2",
+      "OFFER_SCRIPT_EN_3",
+      "OFFER_SCRIPT_EN_4",
+      "OFFER_SCRIPT_AR_1",
+      "OFFER_SCRIPT_AR_2",
+      "OFFER_SCRIPT_AR_3",
+      "OFFER_SCRIPT_AR_4",
+      "SEGMENT",
+      "FILENAME",
+      "ETL_CREATE_DT",
+      "JOB_ID",
+      "CHANNEL_5",
+      "OPPORTUNITY_NAME_5",
+      "DESTINATION_OFFER_NAME_5",
+      "OFFER_SCRIPT_EN_5",
+      "OFFER_SCRIPT_AR_5",
+      "CHANNEL_6",
+      "OPPORTUNITY_NAME_6",
+      "DESTINATION_OFFER_NAME_6",
+      "OFFER_SCRIPT_EN_6",
+      "OFFER_SCRIPT_AR_6",
+      "SEGMENT_BTL_TAKER",
+      "SEGMENT_BTL_TAKER_UPSELL"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "campaign",
+  "x-anchor": "D",
+  "x-primary-key": [],
+  "x-used-by-model": false
+}

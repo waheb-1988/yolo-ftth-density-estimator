@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/PROPENSITY_REACTIVATION_15D_401_SCORING.Scored.json",
+  "title": "PROPENSITY_REACTIVATION_15D_401_SCORING.Scored",
+  "description": "Model score (one shared structure; proba_1 is the NBA score).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "subscription_id": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "access_method_val": {
+        "type": "integer",
+        "x-raw-type": "bigint"
+      },
+      "access_method_id": {
+        "type": "integer",
+        "x-raw-type": "bigint"
+      },
+      "tenure": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "bigint"
+      },
+      "life_in_nw_range": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "proba_0": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "proba_1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "prediction": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      }
+    },
+    "required": [
+      "subscription_id",
+      "access_method_val",
+      "access_method_id",
+      "tenure",
+      "life_in_nw_range",
+      "proba_0",
+      "proba_1",
+      "prediction"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "model_scores",
+  "x-anchor": null,
+  "x-primary-key": [
+    "access_method_val",
+    "access_method_id"
+  ],
+  "x-used-by-model": true
+}

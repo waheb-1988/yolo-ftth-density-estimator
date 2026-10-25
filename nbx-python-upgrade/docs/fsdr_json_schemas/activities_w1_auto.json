@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/activities_w1_auto.json",
+  "title": "activities_w1_auto",
+  "description": "Usage activity W1, windows on T (BR 4.2).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "ACCESS_METHOD_VAL": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "ACCESS_METHOD_ID": {
+        "type": "integer",
+        "x-raw-type": "bigint"
+      },
+      "ACCOUNT_ID": {
+        "type": "integer",
+        "x-raw-type": "int"
+      },
+      "Call_Count_W1": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "Data_Session_Count_W1": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "Voice_Traffic_min_W1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Data_Volume_MB_W1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "PG_Total_Amount_W1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "PG_Voice_Amount_W1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "PG_Data_Amount_W1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Onnet_Call_Count_W1": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "Onnet_Voice_min_W1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Offnet_Call_Count_W1": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "Offnet_Voice_min_W1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Local_Call_Count_W1": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "Local_Voice_min_W1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Active_Days_Count_W1": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "Active_Days_Voice_Count_W1": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "Active_Days_Data_Count_W1": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      }
+    },
+    "required": [
+      "ACCESS_METHOD_VAL",
+      "ACCESS_METHOD_ID",
+      "ACCOUNT_ID",
+      "Call_Count_W1",
+      "Data_Session_Count_W1",
+      "Voice_Traffic_min_W1",
+      "Data_Volume_MB_W1",
+      "PG_Total_Amount_W1",
+      "PG_Voice_Amount_W1",
+      "PG_Data_Amount_W1",
+      "Onnet_Call_Count_W1",
+      "Onnet_Voice_min_W1",
+      "Offnet_Call_Count_W1",
+      "Offnet_Voice_min_W1",
+      "Local_Call_Count_W1",
+      "Local_Voice_min_W1",
+      "Active_Days_Count_W1",
+      "Active_Days_Voice_Count_W1",
+      "Active_Days_Data_Count_W1"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "usage",
+  "x-anchor": "T",
+  "x-primary-key": [
+    "ACCESS_METHOD_VAL",
+    "ACCESS_METHOD_ID",
+    "ACCOUNT_ID"
+  ],
+  "x-used-by-model": true
+}

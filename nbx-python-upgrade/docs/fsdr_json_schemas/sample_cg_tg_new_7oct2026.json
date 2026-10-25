@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/sample_cg_tg_new_7oct2026.json",
+  "title": "sample_cg_tg_new_7oct2026",
+  "description": "Campaign test sample: control cg + arms free / cstr / llm, stratified (BR-59..62). All strings.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "access_method_val": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "access_method_id": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "account_id": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "tenure": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "activation_date": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "plan_name": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "payg_revenue": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "subscription_revenue": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "total_revenue": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "total_revenue_3m": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "voice_traffic": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "data_volume": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "nationality": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "region": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "ARPU": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "ARPU_3m": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "voice_trf_group": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "data_trf_group": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Final": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "channel": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "group": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "strata": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "counts": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      }
+    },
+    "required": [
+      "access_method_val",
+      "access_method_id",
+      "account_id",
+      "tenure",
+      "activation_date",
+      "plan_name",
+      "payg_revenue",
+      "subscription_revenue",
+      "total_revenue",
+      "total_revenue_3m",
+      "voice_traffic",
+      "data_volume",
+      "nationality",
+      "region",
+      "ARPU",
+      "ARPU_3m",
+      "voice_trf_group",
+      "data_trf_group",
+      "Final",
+      "channel",
+      "group",
+      "strata",
+      "counts"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "sample",
+  "x-anchor": "D",
+  "x-primary-key": [
+    "access_method_val"
+  ],
+  "x-used-by-model": true
+}

@@ -1,0 +1,231 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/subscriptions_tg.json",
+  "title": "subscriptions_tg",
+  "description": "Offer-pricing subscriptions on D, 2-day lag (BR 4.3, BR-19 SUBSCRIPTION_AMT).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "ACCESS_METHOD_VAL": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "ACCESS_METHOD_ID": {
+        "type": "integer",
+        "x-raw-type": "int"
+      },
+      "ACCOUNT_ID": {
+        "type": "number",
+        "x-raw-type": "double"
+      },
+      "Total_Sub_Amt_w1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Data_Sub_Amt_w1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Voice_Sub_Amt_w1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Total_Sub_Amt_w2": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Data_Sub_Amt_w2": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Voice_Sub_Amt_w2": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Total_Sub_Amt_w3": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Data_Sub_Amt_w3": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Voice_Sub_Amt_w3": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Total_Sub_Amt_w4": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Data_Sub_Amt_w4": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Voice_Sub_Amt_w4": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Sub_Count_M1": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "Total_Sub_Amt_M1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Data_Sub_Amt_M1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Voice_Sub_Amt_M1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Sub_Count_M2": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "Total_Sub_Amt_M2": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Data_Sub_Amt_M2": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Voice_Sub_Amt_M2": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Sub_Count_M3": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "Total_Sub_Amt_M3": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Data_Sub_Amt_M3": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "Voice_Sub_Amt_M3": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      }
+    },
+    "required": [
+      "ACCESS_METHOD_VAL",
+      "ACCESS_METHOD_ID",
+      "ACCOUNT_ID",
+      "Total_Sub_Amt_w1",
+      "Data_Sub_Amt_w1",
+      "Voice_Sub_Amt_w1",
+      "Total_Sub_Amt_w2",
+      "Data_Sub_Amt_w2",
+      "Voice_Sub_Amt_w2",
+      "Total_Sub_Amt_w3",
+      "Data_Sub_Amt_w3",
+      "Voice_Sub_Amt_w3",
+      "Total_Sub_Amt_w4",
+      "Data_Sub_Amt_w4",
+      "Voice_Sub_Amt_w4",
+      "Sub_Count_M1",
+      "Total_Sub_Amt_M1",
+      "Data_Sub_Amt_M1",
+      "Voice_Sub_Amt_M1",
+      "Sub_Count_M2",
+      "Total_Sub_Amt_M2",
+      "Data_Sub_Amt_M2",
+      "Voice_Sub_Amt_M2",
+      "Sub_Count_M3",
+      "Total_Sub_Amt_M3",
+      "Data_Sub_Amt_M3",
+      "Voice_Sub_Amt_M3"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "pricing",
+  "x-anchor": "D",
+  "x-primary-key": [
+    "ACCESS_METHOD_VAL",
+    "ACCESS_METHOD_ID",
+    "ACCOUNT_ID"
+  ],
+  "x-used-by-model": true
+}

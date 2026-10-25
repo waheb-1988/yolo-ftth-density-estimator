@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/DEVICEBEHAVIORSEGMENTATION.dv_segment.json",
+  "title": "DEVICEBEHAVIORSEGMENTATION.dv_segment",
+  "description": "Device behaviour segment. Not used by the model.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "ACCESS_METHOD_ID": {
+        "type": "integer",
+        "x-raw-type": "int"
+      },
+      "DV_SEGMENT": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      }
+    },
+    "required": [
+      "ACCESS_METHOD_ID",
+      "DV_SEGMENT"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "base",
+  "x-anchor": null,
+  "x-primary-key": [
+    "ACCESS_METHOD_ID"
+  ],
+  "x-used-by-model": false
+}

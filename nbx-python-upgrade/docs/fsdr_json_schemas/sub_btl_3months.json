@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/sub_btl_3months.json",
+  "title": "sub_btl_3months",
+  "description": "Fulfilments D-270..D-1 despite the name (BR-24).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "access_method_val": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "PRODUCTNAME": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "sub_flag": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "tinyint"
+      },
+      "nb_sub": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      }
+    },
+    "required": [
+      "access_method_val",
+      "PRODUCTNAME",
+      "sub_flag",
+      "nb_sub"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "campaign",
+  "x-anchor": "D",
+  "x-primary-key": [
+    "access_method_val",
+    "PRODUCTNAME"
+  ],
+  "x-used-by-model": true
+}
