@@ -1,0 +1,42 @@
+# FSDR V1.0 CI (review #16): the locked environment, the full test suite on Linux and Windows, the Docker build.
+# If this folder lives inside a bigger repository, move the file to <repo>/.github/workflows/ and set APP_DIR
+# to the folder name (nbx-python-upgrade-V1.0).
+name: fsdr-ci
+
+on:
+  push:
+  pull_request:
+
+env:
+  APP_DIR: .
+  LLM_BACKEND: offline
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ${{ env.APP_DIR }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.5"
+      - name: Install the locked environment
+        run: uv sync --locked
+      - name: Check
+        run: uv run python run.py check
+      - name: Tests
+        run: uv run python run.py test -q
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t fsdr-recommender ${{ env.APP_DIR }}

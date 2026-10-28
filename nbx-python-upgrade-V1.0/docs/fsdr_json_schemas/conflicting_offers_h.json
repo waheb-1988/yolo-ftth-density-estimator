@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/conflicting_offers_h.json",
+  "title": "conflicting_offers_h",
+  "description": "Pairs of offers that must never be sent together.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "Offer_A": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "Gen_Level_A": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Price_A": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Data_A": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Min_A": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Validity_A": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Offer_Type_A": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Offer_B": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "Gen_Level_B": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Price_B": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Data_B": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Min_B": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Validity_B": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Offer_Type_B": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Price_Difference": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Data_Difference": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "SAME_VALIDITY": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "SAME_OFFER_TYPE": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      }
+    },
+    "required": [
+      "Offer_A",
+      "Gen_Level_A",
+      "Price_A",
+      "Data_A",
+      "Min_A",
+      "Validity_A",
+      "Offer_Type_A",
+      "Offer_B",
+      "Gen_Level_B",
+      "Price_B",
+      "Data_B",
+      "Min_B",
+      "Validity_B",
+      "Offer_Type_B",
+      "Price_Difference",
+      "Data_Difference",
+      "SAME_VALIDITY",
+      "SAME_OFFER_TYPE"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "base",
+  "x-anchor": null,
+  "x-primary-key": [
+    "Offer_A",
+    "Offer_B"
+  ],
+  "x-used-by-model": true
+}

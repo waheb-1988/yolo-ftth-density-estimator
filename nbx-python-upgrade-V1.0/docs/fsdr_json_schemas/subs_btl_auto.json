@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/subs_btl_auto.json",
+  "title": "subs_btl_auto",
+  "description": "Fulfilments D-7..D-1, MSISDN without prefix (BR-23/25).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "access_method_val": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "PRODUCTNAME": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "FULFILMENTSUCCESSDATE_TIME": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "timestamp",
+        "format": "date-time"
+      },
+      "sub_flag": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "tinyint"
+      },
+      "nb_sub": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      }
+    },
+    "required": [
+      "access_method_val",
+      "PRODUCTNAME",
+      "FULFILMENTSUCCESSDATE_TIME",
+      "sub_flag",
+      "nb_sub"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "campaign",
+  "x-anchor": "D",
+  "x-primary-key": [
+    "access_method_val",
+    "PRODUCTNAME",
+    "FULFILMENTSUCCESSDATE_TIME"
+  ],
+  "x-used-by-model": true
+}

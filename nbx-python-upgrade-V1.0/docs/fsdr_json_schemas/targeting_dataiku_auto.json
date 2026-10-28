@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/targeting_dataiku_auto.json",
+  "title": "targeting_dataiku_auto",
+  "description": "Last campaign targeting, date1 in D-8..D-2 (BR-21, BR-36..39).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "date1": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "access_method_id": {
+        "type": "integer",
+        "x-raw-type": "int"
+      },
+      "account_id": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "segment": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "destination_offer_name_1": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "destination_offer_name_2": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "destination_offer_name_3": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "destination_offer_name_4": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "destination_offer_name_5": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "destination_offer_name_6": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      }
+    },
+    "required": [
+      "date1",
+      "access_method_id",
+      "account_id",
+      "segment",
+      "destination_offer_name_1",
+      "destination_offer_name_2",
+      "destination_offer_name_3",
+      "destination_offer_name_4",
+      "destination_offer_name_5",
+      "destination_offer_name_6"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "campaign",
+  "x-anchor": "D",
+  "x-primary-key": [
+    "access_method_id",
+    "date1"
+  ],
+  "x-used-by-model": true
+}

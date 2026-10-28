@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/usage_data_voice_payg_tg.json",
+  "title": "usage_data_voice_payg_tg",
+  "description": "Offer-pricing usage + positive PAYG on D (BR 4.3, BR-33/34).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "ACCESS_METHOD_ID": {
+        "type": "integer",
+        "x-raw-type": "bigint"
+      },
+      "ACCOUNT_ID": {
+        "type": "integer",
+        "x-raw-type": "int"
+      },
+      "ACCESS_METHOD_VAL": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "local_Voice_min_p1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "local_Voice_min_p2": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "local_Voice_min_p3": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "data_volume_mb_p1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "data_volume_mb_p2": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "data_volume_mb_p3": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "PG_Total_Amount_m1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "PG_Total_Amount_m2": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "PG_Total_Amount_m3": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "PG_Total_Amount_w1": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "PG_Total_Amount_w2": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "PG_Total_Amount_w3": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      },
+      "PG_Total_Amount_w4": {
+        "type": [
+          "number",
+          "null"
+        ],
+        "x-raw-type": "double"
+      }
+    },
+    "required": [
+      "ACCESS_METHOD_ID",
+      "ACCOUNT_ID",
+      "ACCESS_METHOD_VAL",
+      "local_Voice_min_p1",
+      "local_Voice_min_p2",
+      "local_Voice_min_p3",
+      "data_volume_mb_p1",
+      "data_volume_mb_p2",
+      "data_volume_mb_p3",
+      "PG_Total_Amount_m1",
+      "PG_Total_Amount_m2",
+      "PG_Total_Amount_m3",
+      "PG_Total_Amount_w1",
+      "PG_Total_Amount_w2",
+      "PG_Total_Amount_w3",
+      "PG_Total_Amount_w4"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "pricing",
+  "x-anchor": "D",
+  "x-primary-key": [
+    "ACCESS_METHOD_VAL",
+    "ACCESS_METHOD_ID",
+    "ACCOUNT_ID"
+  ],
+  "x-used-by-model": true
+}

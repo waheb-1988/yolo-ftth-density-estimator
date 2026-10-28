@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/consumer_aact_account.json",
+  "title": "consumer_aact_account",
+  "description": "Active consumer account -> party (BR-11).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "ACCOUNT_ID": {
+        "type": "integer",
+        "x-raw-type": "bigint"
+      },
+      "PARTY_ID": {
+        "type": "integer",
+        "x-raw-type": "bigint"
+      }
+    },
+    "required": [
+      "ACCOUNT_ID",
+      "PARTY_ID"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "base",
+  "x-anchor": null,
+  "x-primary-key": [
+    "ACCOUNT_ID"
+  ],
+  "x-used-by-model": true
+}

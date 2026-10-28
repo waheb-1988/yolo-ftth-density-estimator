@@ -1,0 +1,53 @@
+[project]
+name = "fsdr-recommender"
+version = "1.0.0"
+description = "FSDR NBA / NBO recommender: contextual bandit (Vowpal Wabbit), business-rule offers, LLM agents and competitor intelligence."
+readme = "README.md"
+# vowpalwabbit and implicit ship Windows wheels up to CPython 3.12
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "fastapi>=0.115.6",
+    "uvicorn>=0.32",
+    "python-multipart>=0.0.20",
+    "gradio>=5.9.1,<6",
+    "httpx>=0.28.1",
+    "pydantic>=2.11",
+    "python-dotenv>=1.0",
+    "numpy>=2.0,<3",
+    "scipy>=1.13",
+    "pandas>=2.2",
+    "networkx>=3.3",
+    "implicit>=0.7.2",
+    "vowpalwabbit>=9.10,<10",
+    "beautifulsoup4>=4.12",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "jsonschema>=4.23",
+    "pyarrow>=17",
+]
+# LangSmith tracing of the agents and pipelines (nbx/core/tracing.py). Installed by default; nothing is sent unless
+# LANGSMITH_TRACING=true and LANGSMITH_API_KEY are set.
+tracing = [
+    "langsmith>=0.3",
+]
+
+[tool.uv]
+# An application, not a library: uv installs the dependencies only, run.py puts the repo on PYTHONPATH.
+package = false
+default-groups = ["dev", "tracing"]
+# Supply-chain hygiene: resolve only releases at least two weeks old when the lock was made (bump on each re-lock).
+exclude-newer = "2026-10-13T00:00:00Z"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-p no:cacheprovider"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]

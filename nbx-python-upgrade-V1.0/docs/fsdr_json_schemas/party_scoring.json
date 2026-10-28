@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/party_scoring.json",
+  "title": "party_scoring",
+  "description": "Customer demographics (BR-15).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "party_id": {
+        "type": "integer",
+        "x-raw-type": "int"
+      },
+      "AGE": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "GENDER": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "NATIONALITY": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "nationality_identifier": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      }
+    },
+    "required": [
+      "party_id",
+      "AGE",
+      "GENDER",
+      "NATIONALITY",
+      "nationality_identifier"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "base",
+  "x-anchor": null,
+  "x-primary-key": [
+    "party_id"
+  ],
+  "x-used-by-model": true
+}

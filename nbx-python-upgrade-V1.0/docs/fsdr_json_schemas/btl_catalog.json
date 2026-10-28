@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/btl_catalog.json",
+  "title": "btl_catalog",
+  "description": "BTL offer catalogue; every column is a string (BR-63..65).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "btl_name": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "type": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "generosity": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "gb": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "min": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "price": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Price data": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "Price voice": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "service": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "validity": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      }
+    },
+    "required": [
+      "btl_name",
+      "type",
+      "generosity",
+      "gb",
+      "min",
+      "price",
+      "Price data",
+      "Price voice",
+      "service",
+      "validity"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "base",
+  "x-anchor": null,
+  "x-primary-key": [
+    "btl_name"
+  ],
+  "x-used-by-model": true
+}

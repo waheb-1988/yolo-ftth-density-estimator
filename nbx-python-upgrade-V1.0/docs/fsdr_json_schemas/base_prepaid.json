@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/base_prepaid.json",
+  "title": "base_prepaid",
+  "description": "Active prepaid consumer lines, snapshot D-2 (BR-01..BR-10).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "UBSCRIPTION_ID": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "ACCESS_METHOD_VAL": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "ACCESS_METHOD_ID": {
+        "type": "integer",
+        "x-raw-type": "int"
+      },
+      "ACCOUNT_ID": {
+        "type": "integer",
+        "x-raw-type": "int"
+      },
+      "PARTY_ID": {
+        "type": "integer",
+        "x-raw-type": "int"
+      },
+      "access_method_subs_start_dt": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      },
+      "CURRENT_PLAN": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      }
+    },
+    "required": [
+      "UBSCRIPTION_ID",
+      "ACCESS_METHOD_VAL",
+      "ACCESS_METHOD_ID",
+      "ACCOUNT_ID",
+      "PARTY_ID",
+      "access_method_subs_start_dt",
+      "CURRENT_PLAN"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "base",
+  "x-anchor": null,
+  "x-primary-key": [
+    "ACCESS_METHOD_VAL"
+  ],
+  "x-used-by-model": true
+}

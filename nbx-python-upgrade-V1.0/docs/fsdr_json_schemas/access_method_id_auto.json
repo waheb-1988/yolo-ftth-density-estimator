@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/access_method_id_auto.json",
+  "title": "access_method_id_auto",
+  "description": "Line id -> MSISDN with 3-character country prefix (BR-12).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "ACCESS_METHOD_ID": {
+        "type": "integer",
+        "x-raw-type": "int"
+      },
+      "MSISDN": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "ACTIVATION_DATE": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "string"
+      }
+    },
+    "required": [
+      "ACCESS_METHOD_ID",
+      "MSISDN",
+      "ACTIVATION_DATE"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "1.0",
+  "x-group": "base",
+  "x-anchor": null,
+  "x-primary-key": [
+    "ACCESS_METHOD_ID",
+    "MSISDN"
+  ],
+  "x-used-by-model": true
+}
