@@ -1,0 +1,18 @@
+# T1F, agent 6A-F: production code 4 (reco_btl2), the LLM NBO score in place of the LightFM score
+version: production_free
+group: t1f
+rules:
+  - {id: FR-01, description: "270-day purchases, catalogue offers only", source: "code 4, interaction.btl_name.isin(items_feat.btl_name)", stage: P4, hard: true, check: offers.universe.purchases}
+  - {id: FR-02, description: "Generosity L2 only", source: "code 4, interaction.generosity == L2", stage: P4, hard: true, check: offers.universe.free_universe}
+  - {id: FR-03, description: "No VOICE offers", source: "code 4, not isin(service == VOICE)", stage: P4, hard: true, check: offers.universe.free_universe}
+  - {id: FR-04, description: "Per validity (30, 7)", source: "code 4, items_feat.validity == validity", stage: P4, hard: true, check: offers.universe.free_universe}
+  - {id: FR-05, description: "Recommendable = FR-01..FR-04 and bought by someone in the base in 270 days (B-20b)", source: "code 4, item_id list", stage: P4, hard: true, check: offers.universe.recommendable}
+  - {id: FR-06, description: "Action not used for the offers", source: "code 4, reco_btl2 has no action", stage: P4, hard: true, params: {nbo_sees_action: FSDR_T1F_NBO_SEES_ACTION}, check: offers.universe.free_candidates}
+  - {id: FR-07, description: "Anchor = mean + std (ddof 1); data = 0.9x", source: "code 4, calculate_rev", stage: P2, hard: true, check: offers.anchors.b26_anchors}
+  - {id: FR-08, description: "COMBO -> total anchor; DATA -> data anchor", source: "code 4, rev_global / rev_data", stage: P6, hard: true, check: offers.anchors.anchor_for}
+  - {id: FR-09, description: "Pass 1: anchor < price < anchor + 3; score desc, price desc", source: "code 4, ascending=[True,False,False]", stage: P6, hard: true, params: {k: FREE_PRICE_K}, check: offers.selection.select_code4}
+  - {id: FR-10, description: "Pass 2: missing type, price > anchor; score desc, price asc", source: "code 4, ascending=[True,False,True]", stage: P6, hard: true, check: offers.selection.select_code4}
+  - {id: FR-11, description: "Pass 3: no offer -> both types, price > anchor; score desc, price asc", source: "code 4, data_monthly_3 / hybrid_monthly_3", stage: P6, hard: true, check: offers.selection.select_code4}
+  - {id: FR-12, description: "1 offer per type per validity", source: "code 4, drop_duplicates(access_method_val)", stage: P6, hard: true, check: offers.selection.price_passes}
+  - {id: FR-13, description: "Outputs recos_monthly_tg_free / recos_weekly_tg_free, no action column", source: "code 4 outputs", stage: P6, hard: true, check: offers.recos.reco_table}
+  - {id: FR-14, description: "Code 2: tg_flag free -> TG_40k_free_scored_nba", source: "code 2", stage: P6, hard: true, check: offers.recos.results_scoring}

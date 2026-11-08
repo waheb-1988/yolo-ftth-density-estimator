@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/customer_profile.json",
+  "title": "customer_profile",
+  "description": "V2.0 age and tenure per line (days), provided weekly: age and tenure bands of the micro-segments. Overrides party_*.AGE and the activation-date tenure. Optional: without it AGE comes from party_scoring and tenure from access_method_subs_start_dt.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "msisdn": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "age": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      },
+      "tenure": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "int"
+      }
+    },
+    "required": [
+      "msisdn",
+      "age",
+      "tenure"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "2.0",
+  "x-group": "base",
+  "x-folder": "others",
+  "x-anchor": null,
+  "x-primary-key": [
+    "msisdn"
+  ],
+  "x-used-by-model": true
+}

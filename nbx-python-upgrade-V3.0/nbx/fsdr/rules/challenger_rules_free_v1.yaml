@@ -1,0 +1,12 @@
+# T2F, agent 6B-F: challenger CF-v1 on the code-4 universe. Approved by the business owner before the first push.
+version: CF-v1
+group: t2f
+approved: false          # open item 4
+approver: null
+rules:
+  - {id: CF-01, description: "Universe = the T1F universe (FR-01..FR-06)", stage: P4, hard: true, check: offers.universe.free_candidates}
+  - {id: CF-02, description: "Relative ARPU band as CC-02, anchor per type as code 4 (COMBO total, DATA data)", stage: P6, hard: true, params: {band: CHALLENGER_BAND}, check: offers.selection.challenger_band}
+  - {id: CF-03, description: "Data anchor share from the own spend of the customer (no history -> 0.9)", stage: P2, hard: true, check: offers.anchors.challenger_anchor}
+  - {id: CF-04, description: "Per validity, best offer per type (DATA, COMBO) by score x price; widened once; then the T1F passes as fallback", stage: P6, hard: true, check: offers.selection.select_challenger}
+  - {id: CF-05, description: "As CC-05", stage: P3, hard: false, check: offers.recos.build_group_recos}
+  - {id: CF-06, description: "NBO does not see the action (t2f_nbo_sees_action false); 10.1 loop not used", stage: P5, hard: true, params: {nbo_sees_action: FSDR_T2F_NBO_SEES_ACTION}, check: offers.recos.build_group_recos}

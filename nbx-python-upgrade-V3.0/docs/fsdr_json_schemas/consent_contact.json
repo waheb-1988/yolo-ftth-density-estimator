@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fsdr/consent_contact.json",
+  "title": "consent_contact",
+  "description": "V1.0 consent / do-not-contact per line (review #6): dnd = 1 or marketing_opt_in = 0 -> never contacted. Optional: without it no consent check runs (warning).",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "access_method_val": {
+        "type": "string",
+        "x-raw-type": "string"
+      },
+      "dnd": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "tinyint"
+      },
+      "marketing_opt_in": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "x-raw-type": "tinyint"
+      },
+      "updated_at": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "x-raw-type": "date",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      }
+    },
+    "required": [
+      "access_method_val",
+      "dnd",
+      "marketing_opt_in",
+      "updated_at"
+    ],
+    "additionalProperties": true
+  },
+  "x-schema-version": "2.0",
+  "x-group": "base",
+  "x-folder": "others",
+  "x-anchor": null,
+  "x-primary-key": [
+    "access_method_val"
+  ],
+  "x-used-by-model": false
+}

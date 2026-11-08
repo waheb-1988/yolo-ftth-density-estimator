@@ -1,0 +1,15 @@
+# T1C, agent 6A-C: production code 3 (reco_btl3), the LLM NBO score in place of the LightFM score
+version: production_constraint
+group: t1c
+rules:
+  - {id: B-20, description: "History = purchases D-270..D-1, catalogue offers only", source: "code 3, interaction filter", stage: P4, hard: true, check: offers.universe.purchases}
+  - {id: B-20b, description: "Recommendable = in btl_catalog AND bought by someone in the base in 270 days", source: "code 3, item_id list", stage: P4, hard: true, check: "audit_groups A-12b"}
+  - {id: B-21, description: "Families by action, generosity L2 for all (map_action_offers active version)", source: "code 3, map_action_offers", stage: P4, hard: true, check: offers.universe.constraint_universe}
+  - {id: B-22, description: "CROSS SELL VOICE has its own filter (the repeated CROSS SELL DATA branch is fixed)", source: "code 3, reco_btl3 elif", stage: P4, hard: true, check: offers.universe.constraint_universe}
+  - {id: B-26, description: "Anchor = mean + std (ddof 1) of Total_Sub_Amt + PG_Total_Amount; data 0.9x, voice 0.1x", source: "code 3, calculate_rev", stage: P2, hard: true, check: offers.anchors.b26_anchors}
+  - {id: B-27, description: "COMBO -> total, DATA -> data, VOICE -> voice anchor; weekly offers use the weekly anchors", source: "code 3, reco_btl3 calls", stage: P6, hard: true, check: offers.anchors.anchor_for}
+  - {id: B-28, description: "Pass 1: anchor < price < anchor + k (k 2 for MAINTAIN / RETAIN, else 3); score desc, price desc", source: "code 3, 1st selection", stage: P6, hard: true, params: {k: PRICE_BAND_K}, check: offers.selection.select_code3}
+  - {id: B-29, description: "Pass 2: the missing type, price > anchor, no cap; score desc, price asc", source: "code 3, 2nd selection", stage: P6, hard: true, check: offers.selection.select_code3}
+  - {id: B-30, description: "Pass 3: no offer -> both types, price > anchor, no cap; score desc, price asc", source: "code 3, customers with no offers", stage: P6, hard: true, check: offers.selection.select_code3}
+  - {id: B-31, description: "1 offer per type per validity (at most 4 recommended)", source: "code 3, drop_duplicates", stage: P6, hard: true, check: offers.selection.price_passes}
+  - {id: B-32, description: "Outputs recos_monthly_40k_constraint / recos_weekly_40k_constraint, with the action column", source: "code 3 outputs", stage: P6, hard: true, check: offers.recos.reco_table}

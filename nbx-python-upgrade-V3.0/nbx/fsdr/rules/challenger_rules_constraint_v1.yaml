@@ -1,0 +1,12 @@
+# T2C, agent 6B-C: challenger CC-v1 on the code-3 universe. Approved by the business owner before the first push.
+version: CC-v1
+group: t2c
+approved: false          # open item 4: set true, with the approver and the date, once the values are signed off
+approver: null
+rules:
+  - {id: CC-01, description: "Universe = the T1C universe (code-3 families and generosity by action, bug fixed)", stage: P4, hard: true, check: offers.universe.constraint_candidates}
+  - {id: CC-02, description: "Price between 1.0x and 1.5x the anchor of the offer type; +0.5 OMR minimum for the UPSELL actions", stage: P6, hard: true, params: {band: CHALLENGER_BAND, step: CHALLENGER_UPSELL_STEP}, check: offers.selection.challenger_band}
+  - {id: CC-03, description: "Data / voice anchor split from the own spend of the customer (no history -> 90 / 10)", stage: P2, hard: true, params: {default_share: DEFAULT_DATA_SHARE}, check: offers.anchors.challenger_anchor}
+  - {id: CC-04, description: "Per validity, best offer per type by score x price; widened once to 1.0-2.0x; then the T1C passes as fallback (logged)", stage: P6, hard: true, params: {widened: CHALLENGER_BAND_WIDENED}, check: offers.selection.select_challenger}
+  - {id: CC-05, description: "No contact after 3 ignored offers or a fatigue flag (logged as a no-contact decision)", stage: P3, hard: false, params: {ignored: DO_NOT_DISTURB_IGNORED}, check: offers.recos.build_group_recos}
+  - {id: CC-06, description: "NBO sees the action; 10.1 consistency loop used", stage: P5, hard: true, check: offers.recos.build_group_recos}

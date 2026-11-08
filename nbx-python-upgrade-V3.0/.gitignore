@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+
+# Local settings (may contain keys)
+.env
+
+# Generated outputs
+*.log
+
+# FSDR data: generated dummy data AND real customer exports -- never commit
+data/fsdr/
+data/fsdr_dummy/
+data/input/
+data/in/
+data/out/
+data/cache/
+data/runs/
+data/ledger/
+models/
+# the competitors' real page list (scraper input): local only, see data/competitors/sources.example.json
+data/competitors/sources.json
+
+# Raw reference extracts (original SQL, Python codes, code 5): local only, never commit
+docs/fsdr_reference/fsdr_original_*.txt

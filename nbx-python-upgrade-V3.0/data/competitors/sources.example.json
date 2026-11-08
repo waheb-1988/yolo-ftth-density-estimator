@@ -1,0 +1,19 @@
+{
+  "_comment": "Copy to data/competitors/sources.json (git-ignored) with the real public pages of the two competitors, then run: python -m nbx.scripts.scrape_competitors. Check each site's robots.txt first.",
+  "api": [
+    {"operator": "COMPETITOR_A", "url": "https://competitor-a.example/api/portal-plans/web-prepaid"},
+    {"operator": "COMPETITOR_A", "url": "https://competitor-a.example/api/portal-plans/web-postpaid"}
+  ],
+  "api_categories": {
+    "WEB_PREPAID_PLANS": ["Bundle", "prepaid", "mass"],
+    "WEB_PREPAID_DATA_ONLY": ["Data", "prepaid", "mass"],
+    "WEB_TOURIST_PACK": ["Bundle", "visitors", "visitors"],
+    "WEB_POSTPAID_12": ["Bundle", "postpaid", "mass"]
+  },
+  "pages": [
+    {"operator": "COMPETITOR_A", "page_type": "data", "url": "https://competitor-a.example/prepaid/add-on-mobile-internet", "parser": "addon_tables"},
+    {"operator": "COMPETITOR_A", "page_type": "voice", "url": "https://competitor-a.example/prepaid/add-on-national-calls", "parser": "addon_tables"},
+    {"operator": "COMPETITOR_B", "page_type": "prepaid", "url": "https://competitor-b.example/plans/prepaid", "parser": "plan_cards"},
+    {"operator": "COMPETITOR_B", "page_type": "visitors", "url": "https://competitor-b.example/plans/visitors", "parser": "plan_cards"}
+  ]
+}
