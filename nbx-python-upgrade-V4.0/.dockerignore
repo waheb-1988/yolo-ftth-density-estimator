@@ -1,0 +1,9 @@
+.venv
+.env
+.git
+**/__pycache__
+.pytest_cache
+data/fsdr
+docs/fsdr_reference
+tests
+vllm

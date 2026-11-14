@@ -1,0 +1,270 @@
+# FSDR NBX V4.0 - runtime (API, UI, pipelines, agents) + LangSmith tracing. Python 3.12.
+# Generated from uv.lock by: uv export --no-hashes --no-emit-project --no-default-groups --group tracing
+# Install: pip install -r requirements.txt
+aiofiles==24.1.0
+    # via gradio
+annotated-doc==0.0.5
+    # via
+    #   fastapi
+    #   typer
+annotated-types==0.8.0
+    # via pydantic
+anyio==4.15.1
+    # via
+    #   gradio
+    #   httpx
+    #   httpx2
+    #   langsmith
+    #   starlette
+brotli==1.2.0
+    # via gradio
+certifi==2026.7.22
+    # via
+    #   httpcore
+    #   httpx
+    #   requests
+charset-normalizer==3.5.2
+    # via requests
+click==8.5.0
+    # via
+    #   huggingface-hub
+    #   uvicorn
+colorama==0.4.6 ; sys_platform == 'win32'
+    # via
+    #   tqdm
+    #   typer
+distro==1.9.0
+    # via langsmith
+exceptiongroup==1.3.1 ; python_full_version < '3.11'
+    # via anyio
+fastapi==0.143.0
+    # via
+    #   fsdr-recommender
+    #   gradio
+ffmpy==1.0.0
+    # via gradio
+filelock==4.1.0
+    # via huggingface-hub
+fsspec==2026.9.0
+    # via
+    #   gradio-client
+    #   huggingface-hub
+gradio==5.50.0
+    # via fsdr-recommender
+gradio-client==1.14.0
+    # via gradio
+groovy==0.1.2
+    # via gradio
+h11==0.16.0
+    # via
+    #   httpcore
+    #   httpcore2
+    #   uvicorn
+hf-xet==1.7.0 ; platform_machine == 'AMD64' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'
+    # via huggingface-hub
+httpcore==1.0.9
+    # via httpx
+httpcore2==2.13.1 ; sys_platform != 'emscripten'
+    # via httpx2
+httpx==0.28.1
+    # via
+    #   fsdr-recommender
+    #   gradio
+    #   gradio-client
+    #   huggingface-hub
+    #   safehttpx
+httpx2==2.13.1
+    # via langsmith
+httpx2-jsfetch==1.0 ; python_full_version >= '3.12' and sys_platform == 'emscripten'
+    # via httpx2
+huggingface-hub==1.33.0
+    # via
+    #   gradio
+    #   gradio-client
+idna==3.20
+    # via
+    #   anyio
+    #   httpx
+    #   httpx2
+    #   requests
+implicit==0.7.3
+    # via fsdr-recommender
+jinja2==3.1.6
+    # via gradio
+langsmith==0.14.7
+markdown-it-py==4.2.0
+    # via rich
+markupsafe==3.0.4
+    # via
+    #   gradio
+    #   jinja2
+mdurl==0.1.2
+    # via markdown-it-py
+networkx==3.4.2 ; python_full_version < '3.11'
+    # via fsdr-recommender
+networkx==3.6.1 ; python_full_version == '3.11.*'
+    # via fsdr-recommender
+networkx==3.7 ; python_full_version >= '3.12'
+    # via fsdr-recommender
+numpy==2.2.6 ; python_full_version < '3.11'
+    # via
+    #   fsdr-recommender
+    #   gradio
+    #   implicit
+    #   pandas
+    #   scipy
+numpy==2.4.6 ; python_full_version == '3.11.*'
+    # via
+    #   fsdr-recommender
+    #   gradio
+    #   implicit
+    #   pandas
+    #   scipy
+numpy==2.5.4 ; python_full_version >= '3.12'
+    # via
+    #   fsdr-recommender
+    #   gradio
+    #   implicit
+    #   pandas
+    #   scipy
+opentelemetry-api==1.45.1
+    # via fastapi
+orjson==3.13.0
+    # via
+    #   gradio
+    #   langsmith
+packaging==26.3
+    # via
+    #   gradio
+    #   gradio-client
+    #   huggingface-hub
+    #   langsmith
+pandas==2.3.3
+    # via
+    #   fsdr-recommender
+    #   gradio
+pillow==11.3.0
+    # via gradio
+pyarrow==25.0.1 ; python_full_version < '3.11'
+    # via fsdr-recommender
+pyarrow==26.0.0 ; python_full_version >= '3.11'
+    # via fsdr-recommender
+pydantic==2.12.3
+    # via
+    #   fastapi
+    #   fsdr-recommender
+    #   gradio
+    #   langsmith
+pydantic-core==2.41.4
+    # via pydantic
+pydub==0.25.1
+    # via gradio
+pygments==2.21.0
+    # via rich
+python-dateutil==2.9.0.post0
+    # via pandas
+python-dotenv==1.2.4
+    # via fsdr-recommender
+python-multipart==0.0.32
+    # via
+    #   fsdr-recommender
+    #   gradio
+pytz==2026.5
+    # via pandas
+pyyaml==6.0.3
+    # via
+    #   fsdr-recommender
+    #   gradio
+    #   huggingface-hub
+requests==2.34.2
+    # via
+    #   langsmith
+    #   requests-toolbelt
+requests-toolbelt==1.0.0
+    # via langsmith
+rich==15.0.0
+    # via typer
+ruff==0.17.0
+    # via gradio
+safehttpx==0.1.7
+    # via gradio
+scipy==1.15.3 ; python_full_version < '3.11'
+    # via
+    #   fsdr-recommender
+    #   implicit
+scipy==1.17.1 ; python_full_version == '3.11.*'
+    # via
+    #   fsdr-recommender
+    #   implicit
+scipy==1.18.1 ; python_full_version >= '3.12'
+    # via
+    #   fsdr-recommender
+    #   implicit
+semantic-version==2.10.0
+    # via gradio
+shellingham==1.5.4
+    # via typer
+six==1.17.0
+    # via python-dateutil
+sniffio==1.3.1
+    # via langsmith
+starlette==0.52.1
+    # via
+    #   fastapi
+    #   gradio
+threadpoolctl==3.7.0
+    # via implicit
+tomli==2.5.0 ; python_full_version < '3.11'
+    # via huggingface-hub
+tomlkit==0.13.3
+    # via gradio
+tqdm==4.70.1
+    # via
+    #   huggingface-hub
+    #   implicit
+truststore==0.10.5 ; sys_platform != 'emscripten'
+    # via
+    #   httpcore2
+    #   httpx2
+typer==0.27.3
+    # via gradio
+typing-extensions==4.16.0
+    # via
+    #   anyio
+    #   exceptiongroup
+    #   fastapi
+    #   gradio
+    #   gradio-client
+    #   httpx2
+    #   huggingface-hub
+    #   langsmith
+    #   opentelemetry-api
+    #   pydantic
+    #   pydantic-core
+    #   starlette
+    #   typing-inspection
+    #   uvicorn
+typing-inspection==0.4.4
+    # via
+    #   fastapi
+    #   pydantic
+tzdata==2026.5
+    # via pandas
+urllib3==2.8.0
+    # via requests
+uuid-utils==0.17.1
+    # via langsmith
+uvicorn==0.54.0
+    # via
+    #   fsdr-recommender
+    #   gradio
+vowpalwabbit==9.11.9
+    # via fsdr-recommender
+websockets==15.0.1
+    # via
+    #   gradio-client
+    #   langsmith
+xxhash==4.0.1
+    # via langsmith
+zstandard==0.25.0
+    # via langsmith
