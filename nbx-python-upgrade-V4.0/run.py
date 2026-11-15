@@ -12,9 +12,9 @@ FSDR V4.0 (step by step: docs/SETUP_NEW_LAPTOP.md and notebooks/01_training_step
     fsdr-load --date 2026-10-22           step T0: validate both twins, completeness, Parquet cache (data/runs/<date>/train)
     fsdr-features --date 2026-10-22       steps T2 + T3: features, segments, the two actions (training)
     fsdr-targets --generate               dummy lists in data/scoring/<date>/target1|2/a_constraint|b_free/ + control/
-    fsdr-run-targets                      panel -> target 1 -> target 2 (scored separately) -> control -> push
+    fsdr-run-targets                      panel -> target 1 -> target 2 (scored separately) -> control -> final file
     fsdr-score-target --target target1    one target only -> data/output/<date>/target1/
-    fsdr-push                             data/output/<date>/push/input_flytxt.csv.gz (both targets PASS)
+    fsdr-final-file                             data/output/<date>/final/input_flytxt.csv.gz (both targets PASS)
     fsdr-validate --data-dir data/training/2026-10-22
     fsdr-schemas     export one JSON Schema per table to docs/fsdr_json_schemas/
     fsdr-train       [--data-dir DIR] train + register the bandit (latest run folder by default)
@@ -30,7 +30,7 @@ FSDR V4.0 (step by step: docs/SETUP_NEW_LAPTOP.md and notebooks/01_training_step
 
 Notebooks (see docs/SETUP_NEW_LAPTOP.md §8):
     notebook --name training [--lab]      notebooks/01_training_step_by_step.ipynb (every training step, explained)
-    notebook --name scoring  [--lab]      notebooks/02_scoring_step_by_step.ipynb  (target 1, target 2, push)
+    notebook --name scoring  [--lab]      notebooks/02_scoring_step_by_step.ipynb  (target 1, target 2, final file)
     notebook [--lab]                      notebooks/fsdr_results.ipynb (read-only view of a run)
     notebook-html [--date D]              run the notebook headless -> data/runs/<D>/fsdr_results_<D>.html
 
@@ -218,11 +218,11 @@ FSDR_COMMANDS = {
     "fsdr-panel": "step P1: panel of the 4 groups (T1C, T1F, T2C, T2F) + control",
     "fsdr-offers": "step P6: code-2 tables and the 8 reco tables of the 4 groups (.csv.gz)",
     "fsdr-targets": "target lists of data/scoring/<D>/target1|2/a_constraint|b_free/: check, or --generate",
-    "fsdr-final": "final step: input_flytxt to push + per-target files + details",
+    "fsdr-final": "V3.0 final step: input_flytxt of the four groups + per-target files + details",
     "fsdr-run-groups": "V3.0 flow: the 4 groups together -> data/runs/<D>/final/",
     "fsdr-score-target": "V4.0: one target (--target target1|target2) -> data/output/<D>/<target>/",
-    "fsdr-push": "V4.0: both targets merged -> data/output/<D>/push/input_flytxt.csv.gz",
-    "fsdr-run-targets": "V4.0: panel -> target 1 -> target 2 -> control -> push, in one go",
+    "fsdr-final-file": "V4.0: both targets merged -> data/output/<D>/final/input_flytxt.csv.gz",
+    "fsdr-run-targets": "V4.0: panel -> target 1 -> target 2 -> control -> final file, in one go",
     "fsdr-validate": "validate a run folder against the data contract",
     "fsdr-schemas": "export one JSON Schema per table",
     "fsdr-train": "train the NBA bandit on a run folder",

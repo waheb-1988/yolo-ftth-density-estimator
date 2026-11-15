@@ -273,7 +273,7 @@ def test_p6_writes_the_4_code2_tables_and_8_reco_tables(p6_run):
     res = csvstd.read_csv(d / f"results_scoring_nba{csvstd.SUFFIX}")
     panel_df = pd.read_parquet(p6_run["dir"] / "P1_panel" / "panel.parquet")
     assert not set(res["access_method_val"]) & set(panel_df.loc[panel_df["GROUP_KEY"] == "control", VAL])
-    assert p6_run["p6"]["audit_status"] in ("PASS", "WARN") and not p6_run["p6"]["push_blocked"]
+    assert p6_run["p6"]["audit_status"] in ("PASS", "WARN") and not p6_run["p6"]["blocked"]
     tr = pd.read_csv(d / "traces.csv")
     assert tr["customer_type"].nunique() == 1 and set(tr["group"]) == set(config.GROUPS)
 
@@ -308,14 +308,14 @@ def test_auditor_fails_and_blocks_the_push(bad):
     ok = audit_groups.audit_groups(p, pd.DataFrame([_sel_row()]), rec, sizes)
     assert ok["status"] == "PASS"
     rep = audit_groups.audit_groups(p, pd.DataFrame([bad]), rec, sizes)
-    assert rep["status"] == "FAIL" and rep["push_blocked"]
+    assert rep["status"] == "FAIL" and rep["blocked"]
 
 
 def test_auditor_fails_on_group_sizes_30k_20k():
     p = pd.DataFrame({VAL: [f"9{i:07d}" for i in range(50)], "GROUP_KEY": ["t1c"] * 30 + ["t1f"] * 20,
                       "NATIONALITY_GROUP": "Oman"})
     rep = audit_groups.audit_groups(p, pd.DataFrame(), pd.DataFrame({"BTL_NAME": []}), {"t1c": 25, "t1f": 25})
-    assert rep["push_blocked"] and next(c for c in rep["checks"] if c["id"] == "A-30")["status"] == "FAIL"
+    assert rep["blocked"] and next(c for c in rep["checks"] if c["id"] == "A-30")["status"] == "FAIL"
 
 
 # ---------------------------------------------------------------------------

@@ -181,6 +181,23 @@ def test_t0_blocks_on_a_missing_required_table_and_builds_no_cache(small_folder,
     assert not (tmp_path / "cache").exists()
 
 
+def test_t0_weekly_run_without_the_week0_history_is_not_blocked(small_folder, tmp_path):
+    """V4.0: from week 1 on the *_auto history is not exported; T0 detects train_weekly and only warns."""
+    folder = tmp_path / RUN_DATE.isoformat()
+    shutil.copytree(small_folder, folder)
+    history = [t for t in config.PIPELINE_TABLES["train_week0"]["required"]
+               if t not in config.PIPELINE_TABLES["train_weekly"]["required"]] + ["targeting_dataiku_auto"]
+    for f in folder.rglob("*"):
+        if f.is_file() and f.name.split(".")[0] in history:
+            f.unlink()
+    rep = data_agent.run_t0(folder, runs_root=tmp_path / "runs", cache_root=tmp_path / "cache")
+    assert rep["pipeline"] == "train_weekly" and rep["status"] == "done", rep["explanation"]
+    assert rep["issue_counts"]["blocking"] == 0
+    assert "not needed by the train_weekly pipeline" in rep["explanation"]
+    # the same tables stay blocking for a week-0 run
+    assert validate(JsonSource(folder), RUN_DATE, "train_week0").status == "blocked"
+
+
 def test_step_marks_a_failure_and_reruns_it(tmp_path):
     with pytest.raises(RuntimeError):
         with Step(tmp_path, "T2_features", inputs="a") as st:

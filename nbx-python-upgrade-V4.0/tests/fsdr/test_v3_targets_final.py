@@ -1,4 +1,4 @@
-"""V3.0: target upload folders, code 5 (F-01 … F-19) golden cases, the final step (push / per target / details)."""
+"""V3.0: target upload folders, code 5 (F-01 … F-19) golden cases, the final step (all groups / per target / details)."""
 from __future__ import annotations
 
 import json
@@ -161,12 +161,12 @@ def test_dummy_targets_are_written_in_the_upload_folders_and_used_by_the_panel(r
 
 def test_final_writes_push_per_target_and_details(run_v3):
     d, fin = run_v3["dir"], run_v3["final"]
-    assert fin["push_ready"] and all(c["status"] == "PASS" for c in fin["output_checks"])
-    push = csvstd.read_csv(d / "push" / f"input_flytxt{csvstd.SUFFIX}")
-    assert list(push.columns) == config.INPUT_FLYTXT_COLUMNS and push["msisdn"].is_unique
+    assert fin["ready"] and all(c["status"] == "PASS" for c in fin["output_checks"])
+    final_df = csvstd.read_csv(d / "all_groups" / f"input_flytxt{csvstd.SUFFIX}")
+    assert list(final_df.columns) == config.INPUT_FLYTXT_COLUMNS and final_df["msisdn"].is_unique
     parts = pd.concat([csvstd.read_csv(d / t / f"input_flytxt_{k}{csvstd.SUFFIX}")
                        for k, t in (("t1c", "target1"), ("t1f", "target1"), ("t2c", "target2"), ("t2f", "target2"))])
-    assert sorted(parts["msisdn"]) == sorted(push["msisdn"])
+    assert sorted(parts["msisdn"]) == sorted(final_df["msisdn"])
     t1 = csvstd.read_csv(d / "target1" / f"input_flytxt_target1{csvstd.SUFFIX}")
     t1_parts = pd.concat([csvstd.read_csv(d / "target1" / f"input_flytxt_{k}{csvstd.SUFFIX}") for k in ("t1c", "t1f")])
     assert set(t1["msisdn"]) == set(t1_parts["msisdn"])
@@ -176,9 +176,9 @@ def test_final_writes_push_per_target_and_details(run_v3):
     for col in ("ACTION_ORIGINAL", "ACTION_AGENT", "ACTION_SENT", "B26_AVG_REV_MONTHLY", "F05_MONTHLY", "SLOT_1",
                 "REASON_1", "IN_INPUT_FLYTXT", "DROP_RULE", "PROBA_CHURN", "reco_m1_selected_by"):
         assert col in det.columns, col
-    assert set(det.loc[det["IN_INPUT_FLYTXT"], VAL]) == set(push["msisdn"])
+    assert set(det.loc[det["IN_INPUT_FLYTXT"], VAL]) == set(final_df["msisdn"])
     ctrl = det[det["GROUP_KEY"] == "control"]
-    assert (ctrl["DROP_RULE"] == "control (H-01)").all() and not set(ctrl[VAL]) & set(push["msisdn"])
+    assert (ctrl["DROP_RULE"] == "control (H-01)").all() and not set(ctrl[VAL]) & set(final_df["msisdn"])
     man = json.loads((d / csvstd.OUTPUTS_MANIFEST).read_text(encoding="utf-8"))
     assert any(f["file"] == "input_flytxt.csv.gz" for f in man["files"])
 
@@ -187,9 +187,9 @@ def test_push_is_blocked_when_an_output_check_fails(run_v3, monkeypatch):
     monkeypatch.setattr(sg, "output_checks", lambda *a: [{"id": "A-20", "check": "broken on purpose", "status": "FAIL"}])
     fin = sg.run_p7_final(RUN_DATE, runs_root=run_v3["runs"], cache_root=run_v3["cache"], force=True)
     d = run_v3["dir"]
-    assert not fin["push_ready"] and (d / "push" / "BLOCKED.txt").exists()
-    assert not (d / "push" / f"input_flytxt{csvstd.SUFFIX}").exists()        # the earlier PASS file is removed
-    assert "broken on purpose" in (d / "push" / "BLOCKED.txt").read_text(encoding="utf-8")
+    assert not fin["ready"] and (d / "all_groups" / "BLOCKED.txt").exists()
+    assert not (d / "all_groups" / f"input_flytxt{csvstd.SUFFIX}").exists()        # the earlier PASS file is removed
+    assert "broken on purpose" in (d / "all_groups" / "BLOCKED.txt").read_text(encoding="utf-8")
 
 
 def test_target_checks_block_a_line_in_two_groups_and_drop_bad_lines(run_v3):

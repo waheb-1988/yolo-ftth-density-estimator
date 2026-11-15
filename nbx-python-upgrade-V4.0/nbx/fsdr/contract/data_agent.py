@@ -80,7 +80,7 @@ def run_t0(folder: Path | str, pipeline: str | None = None, run_date: date | Non
     with Step(runs_dir(run_date, runs_root) / "train", STEP, inputs=inputs, force=force) as st:
         if st.done:
             return {**st.read_json("summary.json"), "skipped": True}
-        rep = validate(src, run_date)
+        rep = validate(src, run_date, pipeline)
         st.write_json("validation_report.json", rep.to_dict())
         st.write_text("validation_report.md", rep.to_markdown())
         comp = completeness.check(src, pipeline, run_date)

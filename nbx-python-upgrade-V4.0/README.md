@@ -24,7 +24,7 @@ The base is **trained** once per run date: validation, features, segments, the t
    - `requirements-dev.txt` (+ tests);
    - `requirements-notebook.txt` (+ Jupyter).
 3. **Training and scoring data in separate folders** with the same 5 sub-folders: `data/training/<D>/` and `data/scoring/<D>/`, each with `usage/ models/ subscription/ catalog/ others/`. The target lists sit in `data/scoring/<D>/target1|target2/a_constraint|b_free/` and `control/`. T0 reads both folders as one run.
-4. **Each target scored separately** (its own P6 step, checks and files) into `data/output/<D>/target1/` and `target2/`, plus `control/`. `push/input_flytxt.csv.gz` merges both targets, and only when both PASS.
+4. **Each target scored separately** (its own P6 step, checks and files) into `data/output/<D>/target1/` and `target2/`, plus `control/`. `final/input_flytxt.csv.gz` merges both targets, and only when both PASS.
 5. **Up to 6 recommended offers per line** (3 monthly + 3 weekly):
    - slots 1–2 monthly, 3–4 weekly;
    - slot 5 = the 3rd monthly offer, slot 6 = the 3rd weekly one (rule EXT-6);
@@ -45,7 +45,7 @@ uv run python run.py fsdr-generate --date 2026-10-22 --n 3000      # dummy data 
 uv run python run.py fsdr-load --date 2026-10-22                   # training T0
 uv run python run.py fsdr-features --date 2026-10-22               # training T2 + T3
 uv run python run.py fsdr-targets --generate --date 2026-10-22     # dummy target lists
-uv run python run.py fsdr-run-targets --date 2026-10-22            # target 1, target 2, control, push -> data/output
+uv run python run.py fsdr-run-targets --date 2026-10-22            # target 1, target 2, control, final file -> data/output
 uv run python run.py start                                          # web UI http://localhost:7860, API :8000/docs
 ```
 
@@ -90,4 +90,4 @@ nbx-python-upgrade-V4.0/
   - Details: [docs/SETUP_NEW_LAPTOP.md](docs/SETUP_NEW_LAPTOP.md) §12a.
 - LLM prompts carry a salted pseudonym of the customer, never the MSISDN (`FSDR_PII_SALT`).
 - With `FSDR_API_KEY` set, every `/fsdr/*` route needs the `X-API-Key` header. Set it as soon as the API listens on the network.
-- The push file is written only when every check passes (H-08), and it still needs a human approval before it is sent.
+- The final file is written only when every check passes (H-08). The engine only saves files; it sends nothing.

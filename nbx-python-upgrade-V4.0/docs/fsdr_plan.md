@@ -17,7 +17,7 @@ Starting point: **V1.0** (`nbx-python-upgrade-V1.0`, 216 tests, 45 contract tabl
 | Arms | cg / free / cstr / llm in one sample | **Target 1 (20k), Target 2 (20k), control (10k, outside the 40k)** |
 | Final file | Offers per arm (JSON) | **`input_flytxt`**: exactly the 38 columns of code 5, plus a parity test against a replay of code 5 |
 | Pipelines | One weekly runner | **Two pipelines**: `fsdr-train`, which builds a validated **bundle**, and `fsdr-score`, which only reads the bundle |
-| Safety | Promotion rule, price floor | **⑨ auditor** (A/T/R checks, blocks the push), **⑬ revenue guard** (CAN-01…07), **H-08**: no push without audit PASS and human approval |
+| Safety | Promotion rule, price floor | **⑨ auditor** (A/T/R checks, blocks the final file), **⑬ revenue guard** (CAN-01…07), **H-08**: no final file without audit PASS; nothing is sent automatically (V4.0: the engine only saves the files) |
 | Traceability | Campaign log, LangSmith (opt-in) | **⑫ customer ledger**: one row per MSISDN per week (groups A–K), plus a version registry |
 | Data engine | pandas on JSON (typed) | **Parquet cache + polars** for the 1M-line base, pandas only on the 40k. No per-customer loops |
 
@@ -122,7 +122,7 @@ Guard against "ML deciding": a test fails if any ML library (`vowpalwabbit`, `im
 | ⑥A / ⑥B | `offers/production.py`, `offers/challenger.py` | apply rules | ⑥B writes proposals and memos | Target 1 passes |
 | ⑦ | `offers/code5.py` | applies F-01 … F-19 | summary | — |
 | ⑧ | `agents/strategy.py` | no | playbook, report | — |
-| ⑨ | `agents/auditor.py` | **blocks the push** | narrative only | — |
+| ⑨ | `agents/auditor.py` | **blocks the final file** | narrative only | — |
 | ⑩ / ⑪ | `agents/helpers/*` | **never** | none | off-switch → evidence only |
 | ⑫ | `agents/ledger.py` | no | copies justifications | — |
 | ⑬ | `guard/revenue_guard.py` | repairs or clears slots | narrative | — |
@@ -172,12 +172,10 @@ Guard against "ML deciding": a test fails if any ML library (`vowpalwabbit`, `im
 - `fsdr-score --bundle <id>`:
   - stages P0 … P10, each one checkpointed;
   - P3 and P5 are batched by segment (64 in parallel, priority order of §19.1a, Target 1 and Target 2 interleaved);
-  - it stops before approval.
+  - it stops after the final files.
 - `fsdr-score` refuses a bundle that is not validated or not from this week (except `--allow-previous-bundle`, which is logged). It never trains and never writes to the bundle; tests assert both.
-- `fsdr-run-week` = train, then score, stopping before approval.
-- `fsdr-approve` then `fsdr-push`:
-  - the push writes the CSV export plus the campaign log;
-  - the SFTP push is a **stub** until you give me the approved flow.
+- `fsdr-run-week` = train, then score; it saves the final files.
+- No sending step (V4.0 decision): the engine saves the final files in the campaign format; you hand them over yourself.
 
 ## 8. Phases, with the evidence I show at the end of each
 
@@ -191,7 +189,7 @@ Guard against "ML deciding": a test fails if any ML library (`vowpalwabbit`, `im
 | 6 | ④ LLM NBO, candidates per target, ⑥A, ⑥B C-v1 → reco tables | 10 traces per target | dev |
 | 7 | ⑦ code 5 + parity, ⑬ guard, ⑨ auditor + broken-on-purpose tests | first 5 rows of `input_flytxt`, parity diff, audit report | dev |
 | 8 | ★ levels 1/2, ⑤, ⑥B proposals, ⑧ | cell policies, 5 full traces, top proposals | dev |
-| 9 | Two pipelines, panel, snapshots, feedback, approval, push stub, rollback, scheduler; benchmarks | 3-week simulation (T1 vs T2 vs control with CIs); 1M benchmark; **2M + 8B/14B LLM benchmark on the P16** | dev + P16 |
+| 9 | Two pipelines, panel, snapshots, feedback, rollback, scheduler; benchmarks | 3-week simulation (T1 vs T2 vs control with CIs); 1M benchmark; **2M + 8B/14B LLM benchmark on the P16** | dev + P16 |
 | 10 | ⑫ ledger, UI tabs, API, CLI, docs | ledger rows of 3 customers over 2 weeks | dev |
 
 After each phase I run `run.py test`, show the evidence, and wait for `continue`. I commit only when you say so.
@@ -233,9 +231,9 @@ After each phase I run `run.py test`, show the evidence, and wait for `continue`
 | 8 | LLM model | Dev: Qwen2.5-3B-Instruct GPTQ-Int4. Prod: 8B instruct FP8 (Qwen3-8B-FP8 candidate); 14B AWQ benchmarked in Phase 9 |
 | 9 | Base size | 1M designed, 2M tested (on the P16) |
 | 10 | Guard thresholds | CAN-05 1.0×, CAN-03 4.3, Target 1 mode `repair` |
-| 11 | Push flow | CSV export + stub until you give the approved SFTP flow |
+| 11 | Hand-over | V4.0: the engine saves the CSV export; there is no automatic sending |
 | 12 | Prior clipping wording | Floor 0.01 on propensities only |
-| 13 | **Nationality in decisions** | Keep, with a fairness report; your compliance sign-off needed before the first real push |
+| 13 | **Nationality in decisions** | Keep, with a fairness report; your compliance sign-off needed before the first real campaign |
 | 14 | Dev vs prod machine | Phases 2–8 on this laptop (fake LLM + 3B); the 1M/2M + LLM benchmarks of Phase 9 on the ThinkPad P16. Please free ≥ 30 GB on C: before Phase 9 |
 
 ## 12. Security (carried over and extended)
@@ -312,11 +310,10 @@ data/runs/<run_date>/
 │   ├── P9_ledger/      ledger_rows.parquet                                 ⑫
 │   └── P10_report/     run_report.html
 └── final/
-    ├── input_flytxt_<D>.csv        the file to push: exactly the 38 code-5 columns
+    ├── input_flytxt_<D>.csv        the final file: exactly the 38 code-5 columns
     │                               (written only on audit PASS; otherwise BLOCKED.txt with the reasons)
     ├── control_<D>.csv             the 10k control lines (not contacted, kept for measurement)
     ├── summary.json                counts per target, LLM share vs fallback, run times, versions
-    └── approval.json               written by fsdr-approve (who, when); fsdr-push reads it
 ```
 
 In every step folder:
@@ -504,7 +501,7 @@ V3.0 = V2.0 (phases 1–3) + two spec changes, both in `docs/fsdr_reference/`:
 | `panel.py` (new) | P1: eligible pool (not Nursering, not in another campaign this week) → stratified random 5-way assignment; sample mapping cstr → T1C, free → T1F, cg → control, topped up; balance report (A-31) and size check (A-30) |
 | `offers/` (new) | `universe.py` (B-20b, `constraint_candidates`, `free_candidates`), `anchors.py` (B-26 / B-27, CC-03 split, micro-segment median for no spend), `selection.py` (`select_code3`, `select_code4`, `select_challenger`, all vectorised), `replay.py` (literal code 3 / code 4 selection, parity only), `recos.py` (the 13 tables) |
 | `rules/*.yaml` (new) | `production_rules_constraint.yaml`, `production_rules_free.yaml`, `challenger_rules_constraint_v1.yaml`, `challenger_rules_free_v1.yaml` (id, description, source, stage, hard / soft, parameters, check function); CC-v1 / CF-v1 `approved: false` until open item 4 |
-| `audit_groups.py` (new) | A-12 per group (FR-02 / FR-03, B-21 / CC-01, pass-1 band, C-02 band), A-12b, A-17, A-21, A-30, A-31; any FAIL blocks the push |
+| `audit_groups.py` (new) | A-12 per group (FR-02 / FR-03, B-21 / CC-01, pass-1 band, C-02 band), A-12b, A-17, A-21, A-30, A-31; any FAIL blocks the final file |
 | `llm_budget.py` (new) | level-2 queue: priority tier first inside each group, the 4 groups round-robin, so a budget cut leaves them the same coverage; past the budget → cell policy (`cell_policy_timebox`) |
 | `report_groups.py` (new) | each group vs control and the 2 × 2 effects (rules effect, universe effect, interaction) with 95 % CIs |
 | `pipelines/scoring_groups.py` (new) | `fsdr-panel` (P1_panel), `fsdr-offers` (P6_offers): the 13 tables as `.csv.gz`, traces, group report, group audit |
@@ -593,7 +590,7 @@ For T1F / T2F the NBO call does not depend on the action, so it runs in the same
   - Golden cases tested: F-05 (0, 4, 6) → 6.0, forced bundles 2.5 / 3.5 / 5.2, a popular offer held → no forcing, F-09, F-12 with the VOICE row ignored, F-04, the 38 columns.
   - The bug-reproduction replay for A-25 is still to come (Phase 7).
 - **Final step** (`fsdr-final`, part of `fsdr-run-groups`), `data/runs/<D>/final/`:
-  - `push/input_flytxt.csv.gz`, written only when A-20 … A-24 and the group audit pass; otherwise `push/BLOCKED.txt`, and an older push file is removed;
+  - `final/input_flytxt.csv.gz`, written only when A-20 … A-24 and the group audit pass; otherwise `final/BLOCKED.txt`, and an older final file is removed;
   - per target: `input_flytxt_<group>`, `input_flytxt_target1/2`, `details_<group>` (≈ 220 columns per line);
   - `details_all.parquet`, `final_rules_report.csv`, `_outputs_manifest.json`.
 - **Dummy data limit.** The dummy catalogue has no `CM_*` / `DM_*` offers, so F-08 never forces a bundle there; the unit tests cover it. Customers whose anchor is above every offer price get nothing (BR-82) and are dropped by F-04, which is visible in the details.
@@ -610,7 +607,7 @@ V4.0 = V3.0 + six changes. The new-laptop guide is [SETUP_NEW_LAPTOP.md](SETUP_N
 | 2 | **Three requirements files** exported from `uv.lock`: `requirements.txt` (runtime + tracing), `requirements-dev.txt`, `requirements-notebook.txt` | project root |
 | 3 | **Training and scoring folders**. `data/training/<D>/` and `data/scoring/<D>/` have the same 5 sub-folders. `JsonSource` reads both twins as one run (`config.run_twins`). A table on the wrong side → warning (`misfiled_tables.json`); two files on one side → block. The generator's `split` layout is the CLI default. | `config.py`, `datasource.py`, `validation.py`, `contract/data_agent.py`, `synth/generator.py` |
 | 4 | **Target lists in the scoring folder**: `target1/{a_constraint,b_free}/`, `target2/{a_constraint,b_free}/`, `control/`. P1 fingerprints only the list files. | `config.TARGET_FILES`, `targets.py` |
-| 5 | **Each target scored separately**. `run_p6_offers(target=…)` → `score/P6_offers_<target>/`, with only that target's tables, audit and report. `run_target_final` → `data/output/<D>/<target>/`. `write_control` → `output/<D>/control/`. `run_push` merges both targets into `output/<D>/push/` (both PASS, A-30 no MSISDN in two targets). `run_targets` chains them. The V3.0 four-group steps are kept. | `pipelines/scoring_groups.py`, CLI `fsdr-score-target`, `fsdr-push`, `fsdr-run-targets`, API `/fsdr/v4/*`, UI tab *FSDR Targets & Output* |
+| 5 | **Each target scored separately**. `run_p6_offers(target=…)` → `score/P6_offers_<target>/`, with only that target's tables, audit and report. `run_target_final` → `data/output/<D>/<target>/`. `write_control` → `output/<D>/control/`. `run_final_file` merges both targets into `output/<D>/final/` (both PASS, A-30 no MSISDN in two targets). `run_targets` chains them. The V3.0 four-group steps are kept. | `pipelines/scoring_groups.py`, CLI `fsdr-score-target`, `fsdr-final-file`, `fsdr-run-targets`, API `/fsdr/v4/*`, UI tab *FSDR Targets & Output* |
 | 6 | **6 recommended offers**. `selection.extend` (EXT-6, `pass` 6) adds a third offer per validity after the group's passes: same universe, price above the anchor (CH_ANCHOR for Target 2), not already selected, not the same service + price. Code 5: slot 5 = monthly rank 3, slot 6 = weekly rank 3; favourites and forced bundles only fill an empty 5 / 6. The details get `reco_m3_*` / `reco_w3_*`. `FSDR_RECO_OFFERS=4` restores V3.0. | `offers/selection.py`, `offers/recos.py`, `final_output.py`, `config.RECO_OFFERS` |
 | 7 | **Step-by-step notebooks** `01_training_step_by_step.ipynb` and `02_scoring_step_by_step.ipynb`. They are built from `notebooks/build_step_notebooks.py`, stored without outputs, and tested. `run.py notebook --name training|scoring`. | `notebooks/`, `tests/test_notebook.py` |
 | 8 | Obsolete V1.0 documents removed (`IMPROVEMENTS_V1.0.md`, `FSDR_REVIEW_2026-10.md`, `fsdr_verification_report.md`); V4.0 notes on the V1.0 guides | `docs/` |
@@ -631,7 +628,7 @@ V4.0 = V3.0 + six changes. The new-laptop guide is [SETUP_NEW_LAPTOP.md](SETUP_N
 
 ### 19.3 Results (dev laptop, 3,000 dummy lines)
 
-Each target took about 3 s, and the push file has 1,562 rows.
+Each target took about 3 s, and the final file has 1,562 rows.
 
 | Target | Lines | In the file | Offers per line | Checks |
 |---|---|---|---|---|
@@ -642,7 +639,7 @@ The test suite has 318 tests and passes in about 6 minutes; `tests/fsdr/test_v4_
 
 ### 19.4 Still to build
 
-As in §18.7: the evidence and the LLM agents (they replace the P6 fallbacks), the A-25 parity replay, the weekly report, and the SFTP push after approval (H-08).
+As in §18.7: the evidence and the LLM agents (they replace the P6 fallbacks), the A-25 parity replay, and the weekly report.
 
 ### 19.5 Local only and more local LLMs (2026-11-14)
 

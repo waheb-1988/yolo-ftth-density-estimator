@@ -172,8 +172,9 @@ def segment_partition(feat: pd.DataFrame, cache, part: int, run_date: date, cuto
     w0 = actions.week0_targeting(tg, ful, catalog, run_date, seg)
     seg = seg.merge(w0.drop(columns=["ACCESS_METHOD_VAL"], errors="ignore"), on="ACCESS_METHOD_ID", how="left")
     seg["W0_TARGETED"] = seg["W0_DATE"].notna().astype("int8")
-    seg["W0_REWARD"] = seg["W0_REWARD"].fillna(0).astype("int8")
-    seg["W0_BTL_REVENUE"] = seg["W0_BTL_REVENUE"].fillna(0.0)
+    # numeric first: without targeting_dataiku_auto (a weekly run) the merged columns are empty object columns
+    seg["W0_REWARD"] = pd.to_numeric(seg["W0_REWARD"], errors="coerce").fillna(0).astype("int8")
+    seg["W0_BTL_REVENUE"] = pd.to_numeric(seg["W0_BTL_REVENUE"], errors="coerce").fillna(0.0)
     seg = actions.apply_original(seg)
     seg = actions.apply_agent_dictionary(seg, agent_dict)
     return seg[SEGMENT_COLUMNS]

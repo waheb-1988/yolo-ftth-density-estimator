@@ -1,12 +1,12 @@
 """FSDR Targets & Output tab (V4.0): the whole flow from the interface, each target scored separately.
 
 1 generate / prepare (training) the run date  ->  2 upload (or generate) the target lists, check them
-->  3 panel, then Target 1 and Target 2 scored separately, then the push of both  ->  4 download the files.
+->  3 panel, then Target 1 and Target 2 scored separately, then the final file of both  ->  4 download the files.
 Every button calls the FastAPI /fsdr endpoints -- no business logic here.
 
 Folders (docs/SETUP_NEW_LAPTOP.md §5):
     data/training/<D>/   data/scoring/<D>/   (5 folders each)   data/scoring/<D>/target1|2/a_constraint|b_free/, control/
-    data/output/<D>/target1/  target2/  control/  push/
+    data/output/<D>/target1/  target2/  control/  final/
 """
 from __future__ import annotations
 
@@ -85,7 +85,7 @@ async def do_dummy_targets(d):
 
 
 def _target_html(f: dict) -> str:
-    state = "READY" if f["push_ready"] else "BLOCKED — see BLOCKED.txt"
+    state = "READY" if f["ready"] else "BLOCKED — see BLOCKED.txt"
     html = ft._section(f"{f['target']} · {state} · input_flytxt_{f['target']} {f['input_flytxt_rows']:,} rows · "
                        f"up to {f['reco_offers']} offers · details {f['details_rows']:,} lines × {f['details_columns']} "
                        f"columns · group audit {f['p6_group_audit']}",
@@ -94,19 +94,19 @@ def _target_html(f: dict) -> str:
                                                         GROUP_COLS))
 
 
-def _push_html(p: dict | None) -> str:
+def _final_html(p: dict | None) -> str:
     if not p:
-        return ft._section("Push", "Not built yet: score both targets, then 3d.")
-    if p["push_ready"]:
-        return ft._section(f"Push READY · input_flytxt {p['input_flytxt_rows']:,} rows",
+        return ft._section("Final file", "Not built yet: score both targets, then 3d.")
+    if p["ready"]:
+        return ft._section(f"Final file READY · input_flytxt {p['input_flytxt_rows']:,} rows",
                            ft._kv({"rows per target": p["rows_per_target"], "folder": p["step_dir"],
-                                   "next": "human approval (H-08) before sending"}))
-    return ft._section("Push BLOCKED", ft._kv({"reasons": "; ".join(p["reasons"]), "folder": p["step_dir"]}))
+                                   "next": "check it, then hand it over yourself (nothing is sent)"}))
+    return ft._section("Final file BLOCKED", ft._kv({"reasons": "; ".join(p["reasons"]), "folder": p["step_dir"]}))
 
 
 def _files(out_dir: str) -> list[str]:
     root = Path(out_dir)
-    found = sorted(root.glob("push/*.csv.gz"))
+    found = sorted(root.glob("final/*.csv.gz"))
     for t in ("target1", "target2"):
         found += sorted((root / t).glob("*.csv.gz")) + sorted((root / t).glob("*/*.csv.gz"))
         found += [root / t / "final_rules_report.csv"]
@@ -138,9 +138,9 @@ async def do_target2(d):
 
 
 async def do_push(d):
-    r = await ft._post(f"/fsdr/v4/{_run(d)}/push")
+    r = await ft._post(f"/fsdr/v4/{_run(d)}/final-file")
     out = str(Path(r["step_dir"]).parent)
-    return _push_html(r) + ft._section("Control", ft._kv(r["control"])), _files(out)
+    return _final_html(r) + ft._section("Control", ft._kv(r["control"])), _files(out)
 
 
 async def do_run_all(d):
@@ -148,14 +148,14 @@ async def do_run_all(d):
     p = r["panel"]
     html = ft._section(f"P1 panel · {p['mode']} · {p['status']}", ft._kv(p["sizes"]))
     html += "".join(_target_html(r[t]) for t in ("target1", "target2") if t in r)
-    html += _push_html(r["push"]) + ft._section("Control", ft._kv(r["control"]))
-    return html, _files(str(Path(r["push"]["step_dir"]).parent))
+    html += _final_html(r["final"]) + ft._section("Control", ft._kv(r["control"]))
+    return html, _files(str(Path(r["final"]["step_dir"]).parent))
 
 
 async def do_show(d):
     o = await ft._get(f"/fsdr/v4/{_run(d)}/output")
     html = "".join(_target_html(o[t]) for t in ("target1", "target2") if o.get(t))
-    return html + _push_html(o.get("push")), _files(o["folder"])
+    return html + _final_html(o.get("final")), _files(o["folder"])
 
 
 def build() -> None:
@@ -186,17 +186,17 @@ def build() -> None:
                 check_btn = gr.Button("2c · Check the lists")
             out2 = gr.HTML()
         with gr.Group():
-            gr.Markdown("**3 · Scoring, one target at a time** — `data/output/<D>/target1/`, `target2/`, `push/`")
+            gr.Markdown("**3 · Scoring, one target at a time** — `data/output/<D>/target1/`, `target2/`, `final/`")
             with gr.Row():
                 panel_btn = gr.Button("3a · Panel (from the lists)")
                 t1_btn = gr.Button("3b · Score Target 1", variant="primary")
                 t2_btn = gr.Button("3c · Score Target 2", variant="primary")
-                push_btn = gr.Button("3d · Build the push file")
+                final_btn = gr.Button("3d · Save the final file (both targets)")
             with gr.Row():
                 all_btn = gr.Button("3a → 3d in one go")
                 show_btn = gr.Button("Show the last output")
             out3 = gr.HTML()
-            files = gr.File(label="4 · Download: push file, per-target and per-group files, details, rules reports, control",
+            files = gr.File(label="4 · Download: final file, per-target and per-group files, details, rules reports, control",
                             file_count="multiple", interactive=False)
         gen_btn.click(do_generate, inputs=[run_date, gen_n, gen_force], outputs=out1)
         prep_btn.click(do_prepare, inputs=[run_date, prep_force], outputs=out1)
@@ -206,6 +206,6 @@ def build() -> None:
         panel_btn.click(do_panel, inputs=run_date, outputs=out3)
         t1_btn.click(do_target1, inputs=run_date, outputs=out3)
         t2_btn.click(do_target2, inputs=run_date, outputs=out3)
-        push_btn.click(do_push, inputs=run_date, outputs=[out3, files])
+        final_btn.click(do_push, inputs=run_date, outputs=[out3, files])
         all_btn.click(do_run_all, inputs=run_date, outputs=[out3, files])
         show_btn.click(do_show, inputs=run_date, outputs=[out3, files])

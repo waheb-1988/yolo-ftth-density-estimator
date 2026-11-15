@@ -165,11 +165,18 @@ def _num(df: pd.DataFrame, col: str) -> pd.Series:
 # ---------------------------------------------------------------------------
 # Checks
 # ---------------------------------------------------------------------------
-def _check_table(src: DataSource, schema: schemas.TableSchema, rep: ValidationReport) -> pd.DataFrame | None:
+def _check_table(src: DataSource, schema: schemas.TableSchema, rep: ValidationReport,
+                 pipeline: str | None = None) -> pd.DataFrame | None:
     name = schema.name
     if not src.has(name):
         level = "blocking" if schema.used_by_model and schema.required and schema.family != "model_score" else "warning"
+        # V4.0: a weekly run does not need the week-0 history (*_auto): missing, it is a warning, not a block
+        not_needed = (pipeline in config.PIPELINE_TABLES and level == "blocking"
+                      and name not in config.PIPELINE_TABLES[pipeline]["required"])
+        if not_needed:
+            level = "warning"
         why = ("missing model file: its score falls back to random 0-0.02 (BR-47)" if schema.family == "model_score"
+               else f"not needed by the {pipeline} pipeline (week-0 history)" if not_needed
                else "required table missing" if level == "blocking"
                else "optional table missing (fallback used)" if schema.used_by_model else "table missing (not used by the model)")
         rep.add(level, "file_present", name, why)
@@ -400,7 +407,8 @@ def _check_profile(src: DataSource, rep: ValidationReport, run_date: date | None
             rep.add("warning", f"profile_{name}", t, f"{count} line(s): {what}", count)
 
 
-def validate(src: DataSource, run_date: date | None = None) -> ValidationReport:
+def validate(src: DataSource, run_date: date | None = None, pipeline: str | None = None) -> ValidationReport:
+    """pipeline (train_week0 / train_weekly / score): a table that pipeline does not need may be missing (V4.0)."""
     manifest = src.manifest()
     if run_date is None and manifest.get("run_date"):
         run_date = date.fromisoformat(manifest["run_date"])
@@ -416,7 +424,7 @@ def validate(src: DataSource, run_date: date | None = None) -> ValidationReport:
         rep.add("warning", "run_date", "-", "run date unknown: date-window checks skipped")
 
     for schema in schemas.TABLES.values():
-        _check_table(src, schema, rep)
+        _check_table(src, schema, rep, pipeline)
         if isinstance(src, JsonSource):      # raw values are only needed by the per-table checks above (review #15)
             src.compact_table(schema.name)
     if isinstance(src, JsonSource):

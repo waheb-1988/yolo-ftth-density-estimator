@@ -1,5 +1,5 @@
 """V4.0: training / scoring twin folders, target lists in scoring/<D>/target1|2/a_constraint|b_free/, each target scored
-separately into data/output/<D>/<target>/, the push of both targets, and the 6 recommended offers."""
+separately into data/output/<D>/<target>/, the final file of both targets, and the 6 recommended offers."""
 from __future__ import annotations
 
 import pandas as pd
@@ -81,7 +81,7 @@ def test_each_target_is_scored_separately(split_run):
         own = {config.GROUPS[k][x] for k in keys for x in ("recos_monthly", "recos_weekly", "scored_table")}
         assert set(p6["tables"]) == own | {"results_scoring_nba"}
         f = res[t]
-        assert f["push_ready"], f["output_checks"]
+        assert f["ready"], f["output_checks"]
         flytxt = csvstd.read_csv(out / t / f"input_flytxt_{t}{csvstd.SUFFIX}")
         assert list(flytxt.columns) == config.INPUT_FLYTXT_COLUMNS
         parts = []
@@ -98,13 +98,13 @@ def test_each_target_is_scored_separately(split_run):
 
 def test_the_push_merges_both_targets_and_the_control_is_apart(split_run):
     res, out = split_run["res"], split_run["out"]
-    assert res["push"]["push_ready"]
-    push = csvstd.read_csv(out / "push" / f"input_flytxt{csvstd.SUFFIX}")
+    assert res["final"]["ready"]
+    final_df = csvstd.read_csv(out / "final" / f"input_flytxt{csvstd.SUFFIX}")
     t1 = csvstd.read_csv(out / "target1" / f"input_flytxt_target1{csvstd.SUFFIX}")
     t2 = csvstd.read_csv(out / "target2" / f"input_flytxt_target2{csvstd.SUFFIX}")
-    assert len(push) == len(t1) + len(t2) and push["msisdn"].is_unique
+    assert len(final_df) == len(t1) + len(t2) and final_df["msisdn"].is_unique
     ctrl = csvstd.read_csv(out / "control" / f"control_{RUN_DATE.isoformat()}{csvstd.SUFFIX}")
-    assert len(ctrl) == res["control"]["lines"] > 0 and not set(ctrl[VAL]) & set(push["msisdn"])
+    assert len(ctrl) == res["control"]["lines"] > 0 and not set(ctrl[VAL]) & set(final_df["msisdn"])
 
 
 def test_a_blocked_target_blocks_the_push(split_run, tmp_path):
@@ -113,9 +113,9 @@ def test_a_blocked_target_blocks_the_push(split_run, tmp_path):
     out = tmp_path / "output" / RUN_DATE.isoformat()
     shutil.copytree(split_run["out"], out)
     (out / "target2" / f"input_flytxt_target2{csvstd.SUFFIX}").unlink()
-    r = sg.run_push(RUN_DATE, out_root=tmp_path / "output")
-    assert not r["push_ready"] and "target2" in r["reasons"][0]
-    assert (out / "push" / "BLOCKED.txt").exists() and not list((out / "push").glob("input_flytxt*"))
+    r = sg.run_final_file(RUN_DATE, out_root=tmp_path / "output")
+    assert not r["ready"] and "target2" in r["reasons"][0]
+    assert (out / "final" / "BLOCKED.txt").exists() and not list((out / "final").glob("input_flytxt*"))
 
 
 def test_six_recommended_offers(split_run):
@@ -127,7 +127,7 @@ def test_six_recommended_offers(split_run):
     assert "reco_m3_btl_name" in det.columns and "reco_w3_btl_name" in det.columns
     sel = det.dropna(subset=["reco_m3_btl_name"])
     assert (sel["reco_m3_selected_by"] == selection.EXTENSION_RULE).any()
-    flytxt = csvstd.read_csv(out / "push" / f"input_flytxt{csvstd.SUFFIX}")
+    flytxt = csvstd.read_csv(out / "final" / f"input_flytxt{csvstd.SUFFIX}")
     n = flytxt[[f"destination_offer_name_{i}" for i in range(1, 7)]].ne("").sum(axis=1)
     assert n.max() == 6 and n.min() >= 1
 
@@ -169,11 +169,36 @@ def test_v4_api_routes_end_to_end(monkeypatch, tmp_path):
     assert c.post(f"/fsdr/v4/{run}/score/target1").status_code == 409            # no panel yet
     assert c.post(f"/fsdr/v4/{run}/panel").json()["status"] == "done"
     t1 = c.post(f"/fsdr/v4/{run}/score/target1").json()
-    assert t1["final"]["push_ready"] and {g["group"] for g in t1["final"]["per_group"]} == {"t1c", "t1f"}
-    early = c.post(f"/fsdr/v4/{run}/push").json()
-    assert not early["push_ready"] and "target2" in early["reasons"][0]          # target 2 not scored yet
+    assert t1["final"]["ready"] and {g["group"] for g in t1["final"]["per_group"]} == {"t1c", "t1f"}
+    early = c.post(f"/fsdr/v4/{run}/final-file").json()
+    assert not early["ready"] and "target2" in early["reasons"][0]          # target 2 not scored yet
     allr = c.post(f"/fsdr/v4/{run}/run").json()
-    assert allr["push"]["push_ready"] and allr["target2"]["push_ready"]
+    assert allr["final"]["ready"] and allr["target2"]["ready"]
     o = c.get(f"/fsdr/v4/{run}/output").json()
-    assert "push/input_flytxt.csv.gz" in o["files"] and "target1/a_constraint/input_flytxt_t1c.csv.gz" in o["files"]
+    assert "final/input_flytxt.csv.gz" in o["files"] and "target1/a_constraint/input_flytxt_t1c.csv.gz" in o["files"]
     assert c.get("/fsdr/v4/2031-01-01/output").status_code == 404
+
+
+def test_dummy_lists_never_overwrite_real_lists(split_run, tmp_path):
+    """A real list copied over a dummy one (the old generator manifest left behind) is detected by its checksum:
+    generate_targets refuses, and the lists are checked against the configured sizes, not the dummy ones."""
+    import shutil
+
+    from nbx.fsdr.pipelines.training import StageBlocked
+
+    runs = split_run["runs"]
+    sc = tmp_path / "data" / "scoring" / RUN_DATE.isoformat()
+    shutil.copytree(split_run["scoring"], sc)
+    assert targets.dummy_lists(sc) and not sg.real_targets(sc)
+    assert targets.expected_sizes(sc) != config.group_sizes()          # dummy lists: the generator's own sizes
+    real = targets.group_file(sc, "t1c")
+    df = csvstd.read_csv(real)
+    csvstd.write_csv(df.iloc[: len(df) // 2], real)                     # "your" list, same file name
+    assert not targets.dummy_lists(sc) and sg.real_targets(sc)
+    assert targets.expected_sizes(sc) == config.group_sizes()
+    before = real.read_bytes()
+    with pytest.raises(StageBlocked, match="real lists"):
+        sg.generate_targets(RUN_DATE, runs_root=runs, cache_root=split_run["cache"], folder=sc)
+    assert real.read_bytes() == before                                  # untouched
+    sg.generate_targets(RUN_DATE, runs_root=runs, cache_root=split_run["cache"], folder=sc, overwrite=True)
+    assert targets.dummy_lists(sc)

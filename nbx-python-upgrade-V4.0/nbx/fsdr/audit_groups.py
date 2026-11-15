@@ -1,8 +1,8 @@
 """⑨ auditor checks of the four groups (update §7): A-12 per group, A-12b, A-17, A-30, A-31. Deterministic; any FAIL
-blocks the push (H-08). The other A / T / R checks come with Phase 7.
+blocks the final file (H-08: it is not written). The other A / T / R checks come with Phase 7.
 
     rep = audit_groups(panel, selected, recommendable, sizes)
-    rep["status"]  "PASS" | "WARN" | "FAIL"      rep["push_blocked"]  True on any FAIL
+    rep["status"]  "PASS" | "WARN" | "FAIL"      rep["blocked"]  True on any FAIL
 """
 from __future__ import annotations
 
@@ -70,4 +70,4 @@ def audit_groups(panel: pd.DataFrame, selected: pd.DataFrame, recommendable: pd.
         checks.append(_check("A-17", "rules version", wrong, "each group uses only its own rules / approved version"))
         checks.append(_check("A-21", "H-01", selected[selected[VAL].isin(ctrl)], "no control line gets an offer"))
     status = "FAIL" if any(c["status"] == "FAIL" for c in checks) else ("WARN" if any(c["status"] == "WARN" for c in checks) else "PASS")
-    return {"status": status, "push_blocked": status == "FAIL", "checks": checks}
+    return {"status": status, "blocked": status == "FAIL", "checks": checks}

@@ -576,7 +576,7 @@ async def get_targets(run: str):
 
 @router.post("/groups/{run}/run")
 async def run_groups(run: str):
-    """P1 panel (uploaded lists, else drawn) -> P6 offers -> final files (push / per target / details)."""
+    """P1 panel (uploaded lists, else drawn) -> P6 offers -> final files (all groups / per target / details)."""
     from nbx.fsdr.pipelines import scoring_groups as sg
     from nbx.fsdr.pipelines.training import StageBlocked
 
@@ -671,10 +671,10 @@ async def v3_generate_targets(run: str):
 
 
 # ---------------------------------------------------------------------------
-# V4.0: each target scored separately into data/output/<D>/<target>/, then the push of both
+# V4.0: each target scored separately into data/output/<D>/<target>/, then the final file of both
 # ---------------------------------------------------------------------------
 def _short_final(r: dict) -> dict:
-    return {k: r.get(k) for k in ("target", "push_ready", "input_flytxt_rows", "output_checks", "p6_group_audit",
+    return {k: r.get(k) for k in ("target", "ready", "input_flytxt_rows", "output_checks", "p6_group_audit",
                                   "per_group", "reco_offers", "details_rows", "details_columns", "step_dir")}
 
 
@@ -708,9 +708,9 @@ async def v4_score_target(run: str, target: str):
     return {"offers": {"audit": p6["audit_status"], "groups": p6["groups"]}, "final": _short_final(fin)}
 
 
-@router.post("/v4/{run}/push")
+@router.post("/v4/{run}/final-file")
 async def v4_push(run: str):
-    """Both targets merged into data/output/<D>/push/input_flytxt.csv.gz (only when both PASS), + the control file."""
+    """Both targets merged into data/output/<D>/final/input_flytxt.csv.gz (only when both PASS), + the control file."""
     from nbx.fsdr.pipelines import scoring_groups as sg
 
     d = _run_date(run)
@@ -718,12 +718,12 @@ async def v4_push(run: str):
         ctrl = await asyncio.to_thread(sg.write_control, d)
     except FileNotFoundError:
         raise HTTPException(status_code=409, detail="no panel yet: run the panel (P1) first")
-    return {**await asyncio.to_thread(sg.run_push, d), "control": ctrl}
+    return {**await asyncio.to_thread(sg.run_final_file, d), "control": ctrl}
 
 
 @router.post("/v4/{run}/run")
 async def v4_run(run: str):
-    """P1 -> target 1 -> target 2 -> control -> push, in one call."""
+    """P1 -> target 1 -> target 2 -> control -> final file, in one call."""
     from nbx.fsdr.pipelines import scoring_groups as sg
     from nbx.fsdr.pipelines.training import StageBlocked
 
@@ -736,12 +736,12 @@ async def v4_run(run: str):
         raise HTTPException(status_code=409, detail={"panel": p1})
     return {"panel": {k: p1[k] for k in ("mode", "sizes", "status")},
             **{t: _short_final(res[t]) for t in config.TARGETS if t in res},
-            "control": res["control"], "push": res["push"]}
+            "control": res["control"], "final": res["final"]}
 
 
 @router.get("/v4/{run}/output")
 async def v4_output(run: str):
-    """What data/output/<D>/ holds: each target's summary, the push state, the files."""
+    """What data/output/<D>/ holds: each target's summary, the final file's state, the files."""
     out = config.output_folder(_run_date(run).isoformat())
     if not out.is_dir():
         raise HTTPException(status_code=404, detail=f"no output for {run}: score the targets first")
@@ -752,5 +752,5 @@ async def v4_output(run: str):
 
     files = sorted(str(f.relative_to(out)).replace("\\", "/") for f in out.rglob("*")
                    if f.is_file() and not f.name.endswith(".schema.json") and f.name != config.STEP_FILE)
-    return {"run": run, "folder": str(out), **{t: summary(t) for t in config.TARGETS}, "push": summary("push"),
+    return {"run": run, "folder": str(out), **{t: summary(t) for t in config.TARGETS}, "final": summary("final"),
             "files": files}

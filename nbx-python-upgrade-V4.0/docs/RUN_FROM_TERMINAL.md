@@ -136,7 +136,7 @@ partition by partition, and prints the segment counts. Same inputs again → `sk
 ```powershell
 uv run python run.py fsdr-score-target --target target1 --panel   # P1, then P6 + final of Target 1 (T1C a, T1F b)
 uv run python run.py fsdr-score-target --target target2           # P6 + final of Target 2 (T2C a, T2F b)
-uv run python run.py fsdr-push                                     # both targets merged (both PASS) -> data/output/<D>/push/
+uv run python run.py fsdr-final-file                                     # both targets merged (both PASS) -> data/output/<D>/final/
 uv run python run.py fsdr-run-targets                              # the three above in one go
 ```
 
@@ -164,7 +164,7 @@ A base smaller than 120k eligible lines gets every group scaled down by the same
 only) or `P6_offers/` (V3.0, the 4 groups): the tables as `.csv.gz` with their `.schema.json` and `_outputs_manifest.json`,
 `group_report.csv` (offers per rule / pass, 10.1 retries, LLM coverage at the 10 h budget), `traces.csv` (2 customers
 of the same type per group: action → candidates → score → pass / rule → offers), `audit_groups.json` (A-12, A-12b,
-A-17, A-21, A-30, A-31). Exit code 1 if the audit fails (push blocked).
+A-17, A-21, A-30, A-31). Exit code 1 if the audit fails (final file blocked).
 
 **6 offers (V4.0, `FSDR_RECO_OFFERS=6`):** after the passes of its group, a customer gets a third offer per validity:
 - same universe;
@@ -180,7 +180,7 @@ Sizes and switches (`.env`): `FSDR_T1_CONSTRAINT_SIZE`, `FSDR_T1_FREE_SIZE`, `FS
 `FSDR_T2_FREE_SIZE`, `FSDR_CONTROL_SIZE`, `FSDR_T2_SPLIT` (false = one 50k T2 with the CC rules),
 `FSDR_LLM_WEEKLY_BUDGET_H`, `FSDR_GUARD_MODE_TARGET1`.
 
-## 5a. Your own target lists, each target scored separately, and the file to push
+## 5a. Your own target lists, each target scored separately, and the final file
 
 **Upload folder.** Put one list per group in the run's **scoring** folder, one folder per target and one sub-folder per
 group (any extra columns are kept in the details):
@@ -200,14 +200,14 @@ When the folder holds lists, the panel uses them; otherwise it draws the groups 
 ```powershell
 uv run python run.py fsdr-targets --generate      # dummy lists for testing (stratified draw of the eligible base)
 uv run python run.py fsdr-targets                 # check the lists that are there
-uv run python run.py fsdr-run-targets             # panel (your lists) -> Target 1 -> Target 2 -> control -> push
+uv run python run.py fsdr-run-targets             # panel (your lists) -> Target 1 -> Target 2 -> control -> final file
 uv run python run.py fsdr-score-target --target target2   # re-score one target only (after fixing its list: add --panel)
-uv run python run.py fsdr-push                    # rebuild the push file from the two target folders
+uv run python run.py fsdr-final-file                    # rebuild the final file from the two target folders
 ```
 
 Through the app (API): `POST /fsdr/targets/<D>/<group>` (file upload, group = t1c / t1f / t2c / t2f / control),
 `GET /fsdr/targets/<D>` (lists + check), `POST /fsdr/v4/<D>/panel`, `POST /fsdr/v4/<D>/score/<target1|target2>`,
-`POST /fsdr/v4/<D>/push`, `POST /fsdr/v4/<D>/run`, `GET /fsdr/v4/<D>/output`.
+`POST /fsdr/v4/<D>/final-file`, `POST /fsdr/v4/<D>/run`, `GET /fsdr/v4/<D>/output`.
 
 **Checks of the lists:** a line in two groups or a missing list **blocks**; a line that is not an 8-digit MSISDN, not in
 the eligible base, in Nursering (B-02) or in another campaign this week (H-05) is **dropped** and listed in
@@ -218,7 +218,7 @@ more than 2 % is a warning.
 
 | File | What |
 |---|---|
-| `push/input_flytxt.csv.gz` | **the file to push**: the 38 columns of code 5, both targets, one row per MSISDN. Written only when both targets passed and no MSISDN is in two targets; otherwise `push/BLOCKED.txt` says why (H-08) |
+| `final/input_flytxt.csv.gz` | **the final file**: the 38 columns of code 5, both targets, one row per MSISDN. Written only when both targets passed and no MSISDN is in two targets; otherwise `final/BLOCKED.txt` says why (H-08) |
 | `target1/input_flytxt_target1.csv.gz` | Target 1's file (only when Target 1 passed, else `target1/BLOCKED.txt`) |
 | `target1/a_constraint/input_flytxt_t1c.csv.gz`, `target1/b_free/input_flytxt_t1f.csv.gz` | the same rows, per group |
 | `target2/…` | the same for Target 2 (`t2c`, `t2f`) |
@@ -247,7 +247,7 @@ tables of its two groups). The V3.0 `fsdr-run-groups` / `fsdr-final` still write
 
 ```powershell
 uv run python run.py notebook --name training    # 01_training_step_by_step.ipynb: data -> T0 -> cache -> T2 -> T3
-uv run python run.py notebook --name scoring     # 02_scoring_step_by_step.ipynb: lists -> P1 -> Target 1 -> Target 2 -> push
+uv run python run.py notebook --name scoring     # 02_scoring_step_by_step.ipynb: lists -> P1 -> Target 1 -> Target 2 -> final file
 ```
 
 They call the same functions as the commands above and write the same files. Rebuild them after editing
@@ -297,12 +297,12 @@ uv run python run.py fsdr-generate --date 2026-10-22 --mode small --layout folde
 |---|---|---|---|
 | 1 | `fsdr-load --date <D>` (data/training/<D> + data/scoring/<D>) | `train/T0_load/` | **built** |
 | 2 | `fsdr-features` (T2 features, T3 segments) | `train/T2_features/`, `train/T3_segments/` | **built** |
-| 2b | `fsdr-targets` (your lists or `--generate`), then `fsdr-run-targets` = panel + each target (P6 + final) + push (V4.0, LLM fallbacks) | `score/P1_panel/`, `score/P6_offers_target1/`, `…_target2/`, and `data/output/<D>/` (target1 / target2 / control / push) | **built** |
+| 2b | `fsdr-targets` (your lists or `--generate`), then `fsdr-run-targets` = panel + each target (P6 + final) + final file (V4.0, LLM fallbacks) | `score/P1_panel/`, `score/P6_offers_target1/`, `…_target2/`, and `data/output/<D>/` (target1 / target2 / control / final) | **built** |
 | 3 | `fsdr-train --weekly` (T1 feedback, T4 evidence … T8 bundle) | `train/T1_feedback/`, `T4_evidence/ … T8_validate/`, `models/bundle_<D>/` | 4–5, 9 |
 | 4 | `fsdr-score --bundle <D>` (P0 … P10, batches of 1,000) | `score/P0_bundle/ … P10_report/` | 5–8 |
 | 5 | — (written by scoring on audit PASS) | `final/input_flytxt.csv.gz` (≈100k rows, 38 columns), `input_flytxt_t1c/_t1f/_t2c/_t2f`, control, `summary.json` | 7 |
-| 6 | `fsdr-approve` then `fsdr-push` | `final/approval.json`, the export | 9 |
-| — | `fsdr-run-week` = 1 to 4, stops before approval | everything above | 9 |
+| 6 | — (no automatic sending: you hand over `data/output/<D>/final/input_flytxt.csv.gz` yourself) | — | — |
+| — | `fsdr-run-week` = 1 to 4 | everything above | 9 |
 | any time | `notebook` / `notebook-html` | `fsdr_results_<D>.html` | **built** |
 
 The V1.0 commands (`fsdr-train`, `fsdr-score`, `fsdr-recommend`, `fsdr-weekly`, `fsdr-simulate`, …) still work on a run folder until the V2.0 pipelines replace them. `uv run python run.py --help` lists every command.
@@ -312,7 +312,7 @@ The V1.0 commands (`fsdr-train`, `fsdr-score`, `fsdr-recommend`, `fsdr-weekly`, 
 | Folder | What | In git? |
 |---|---|---|
 | `data/training/<D>/`, `data/scoring/<D>/` | input tables (5 folders each), the target lists | no |
-| `data/output/<D>/` | each target's files, the control, the file to push | no |
+| `data/output/<D>/` | each target's files, the control, the final file | no |
 | `data/input/<D>/` | V3.0 single input folder (still accepted) | no |
 | `data/cache/<D>/` | Parquet cache, 16 partitions | no |
 | `data/runs/<D>/` | every step's outputs, the final file, the HTML report | no |
@@ -327,11 +327,11 @@ The V1.0 commands (`fsdr-train`, `fsdr-score`, `fsdr-recommend`, `fsdr-weekly`, 
 |---|---|
 | `T0_load BLOCKED` | read the explanation, or `validation_report.md` (blocking issues come first); fix the file, re-run `fsdr-load` |
 | `N table(s) are not .csv.gz` (T0 blocked) | real inputs must be the Dataiku `.csv.gz` export; for hand-made test files set `FSDR_ALLOW_TEST_FORMATS=true` in `.env` |
-| `fsdr-offers` exits with 1, `audit_groups.json` FAIL | a group rule was broken (A-12 / A-17 / A-30 / A-31): the failing check lists examples; nothing may be pushed |
+| `fsdr-offers` exits with 1, `audit_groups.json` FAIL | a group rule was broken (A-12 / A-17 / A-30 / A-31): the failing check lists examples; no final file is written |
 | `found in usage/, expected in catalog/` | the table is loaded anyway (warning); move the file to keep the folders clean |
 | `found under training/, expected under scoring/` | the table is on the wrong side (warning, `misfiled_tables.json`); move it |
 | `BLOCKED: P6_offers_target2 … is missing` | score that target first: `fsdr-score-target --target target2` |
-| `push BLOCKED` | a target is blocked or not scored: `data/output/<D>/push/BLOCKED.txt` names it |
+| `final file BLOCKED` | a target is blocked or not scored: `data/output/<D>/final/BLOCKED.txt` names it |
 | `N files for one table` | two copies of a table (for example `.json` and `.csv`): delete one |
 | `stale data: the manifest is for …` | `_manifest.json` is for another week: wrong folder or an old manifest |
 | `checksums: N file(s) CHANGED` in the notebook | a cache file was changed after T0: `fsdr-load --force` rebuilds it |

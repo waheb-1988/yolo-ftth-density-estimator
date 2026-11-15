@@ -3,7 +3,7 @@
 This guide starts from a laptop with nothing installed and ends with:
 
 - the two targets scored;
-- the file to push;
+- the final file;
 - the notebooks and the web interface running.
 
 Follow the sections in order. Every command is run **from the project folder** `nbx-python-upgrade-V4.0/`.
@@ -76,17 +76,24 @@ Open a **new** terminal after installing, then check with `uv --version`.
 
 ## 3. Get the code
 
+**Copy the folder (no git needed).** Copy `nbx-python-upgrade-V4.0/` to the new laptop, for example to `D:\production\nbx-python-upgrade-V4.0`, by USB, network share or zip. Leave out these folders: they are machine-specific or rebuilt:
+
+| Do not copy | Why |
+|---|---|
+| `.venv/` | it holds absolute paths and DLLs of the old machine; a copied `.venv` gives "access denied" or a dead kernel. `uv sync` creates it again (§4) |
+| `data/` (unless you want the same runs) | dummy data is generated again by the notebooks; real exports go in by hand (§9) |
+| `__pycache__/`, `.ipynb_checkpoints/`, `.pytest_cache/` | caches |
+
+To update the code later, copy the folder again over the old one, keep the new laptop's `.env`, `.venv/` and `data/`, and run `uv sync` (§4).
+
+Or with git:
+
 ```bash
 git clone <your repository URL> llm_recommendation_engin_telco
-cd llm_recommendation_engin_telco
-git checkout <the branch with V4.0>
-cd nbx-python-upgrade-V4.0
+cd llm_recommendation_engin_telco/nbx-python-upgrade-V4.0
 ```
 
-Or unzip the folder `nbx-python-upgrade-V4.0/` anywhere and `cd` into it.
-
-- **Windows:** avoid folders synced by OneDrive and very long paths; `C:\work\fsdr\` is a good place.
-- Never copy `.venv/` from another machine: create it again (§4).
+- **Windows:** avoid folders synced by OneDrive and very long paths; `C:\work\fsdr\` or `D:\production\` is a good place.
 
 What is in the folder:
 
@@ -109,6 +116,8 @@ nbx-python-upgrade-V4.0/
 ---
 
 ## 4. Create the environment
+
+The short, standalone version of §2–§4 (copy without `.venv`, then build it from scratch) is [UV_ENV_SETUP.md](UV_ENV_SETUP.md).
 
 ### Option A — uv (recommended: the exact locked versions)
 
@@ -219,7 +228,7 @@ data/
 │   │   └── final_rules_report.csv, output_checks.json, audit_groups.json, summary.json
 │   ├── target2/                   the same for T2C / T2F
 │   ├── control/control_<D>.csv.gz the control lines and their strata
-│   └── push/input_flytxt.csv.gz   THE FILE TO PUSH: both targets merged (only when both PASS; else BLOCKED.txt)
+│   └── final/input_flytxt.csv.gz   THE FINAL FILE: both targets merged (only when both PASS; else BLOCKED.txt)
 ├── runs/<D>/train/ score/         every step's folder: _step.json (status, rows, time), reports, Parquet outputs
 └── cache/<D>/                     Parquet cache of every table, 16 partitions (built by T0)
 ```
@@ -235,7 +244,7 @@ data/
 - **Target lists**: one row per line, with at least `access_method_val` (or `msisdn`). The other columns are kept and carried to the details.
   - Without lists, the panel is drawn at random (stratified).
 - Training and scoring use the **same run date** *D*.
-- **Each target is scored on its own**: it has its own P6 step, its own checks and its own folder. The push file waits for both targets to pass.
+- **Each target is scored on its own**: it has its own P6 step, its own checks and its own folder. The final file waits for both targets to pass.
 
 ---
 
@@ -310,7 +319,7 @@ uv run python run.py fsdr-run-targets --date 2026-10-22
 ```bash
 uv run python run.py fsdr-score-target --target target1 --panel --date 2026-10-22   # P1 panel, then Target 1
 uv run python run.py fsdr-score-target --target target2 --date 2026-10-22           # Target 2 on the same panel
-uv run python run.py fsdr-push --date 2026-10-22                                   # merge both -> push/
+uv run python run.py fsdr-final-file --date 2026-10-22                                   # merge both -> final file/
 ```
 
 The output looks like this:
@@ -322,7 +331,7 @@ target1 final DONE -- READY; input_flytxt_target1 762 rows; 6 offers per line ma
   t1c  a_constraint production_constraint  lines 465  in file 391  offers/line 4.96  F-04 dropped 74 ...
   t1f  b_free       production_free        lines 465  in file 371  offers/line 4.79  F-04 dropped 94 ...
 target2 final DONE -- READY; ...
-push READY -- 1,562 rows
+final file READY -- 1,562 rows
 ```
 
 **What each scoring step does:**
@@ -337,7 +346,7 @@ push READY -- 1,562 rows
 | Final (code 5) | slots 1–2 monthly, 3–4 weekly, 5 = 3rd monthly, 6 = 3rd weekly; favourites / forced fill an empty 5 / 6; F-09 / F-11 / F-12 clearing; scripts; checks A-20 … A-24 | the same |
 | Writes | `data/output/<D>/target1/` | `data/output/<D>/target2/` |
 
-**The push.** `data/output/<D>/push/input_flytxt.csv.gz` is written only when both targets passed and no MSISDN is in two targets. Otherwise you get `push/BLOCKED.txt` with the reasons. A **human approval** (H-08) is still required before the file goes to the campaign platform.
+**The final file.** `data/output/<D>/final/input_flytxt.csv.gz` is written only when both targets passed and no MSISDN is in two targets. Otherwise you get `final/BLOCKED.txt` with the reasons. Nothing is sent: you check the file and hand it over yourself (H-08) before the file goes to the campaign platform.
 
 `uv run python run.py check` now shows `[ok]` for `data/training/`, `data/scoring/` and `data/output/`.
 
@@ -350,16 +359,42 @@ There are three notebooks in `notebooks/`, stored without outputs:
 | Notebook | Use it to |
 |---|---|
 | `01_training_step_by_step.ipynb` | run T0 → T2 → T3 one cell at a time. Each step has an explanation of its rules and shows what it wrote: the validation issues, completeness, the cache, feature statistics, segment counts, the action cross-table, the priors. |
-| `02_scoring_step_by_step.ipynb` | run the target lists → P1 → Target 1 (P6, final) → Target 2 (P6, final) → control + push → the final validation of the file to push. Each step shows its audit, its rules (`selected_by`), the offers per line, what fills each of the 6 slots, and one line end to end. |
+| `02_scoring_step_by_step.ipynb` | run the target lists → P1 → Target 1 (P6, final) → Target 2 (P6, final) → control + final file → the final validation of the final file. Each step shows its audit, its rules (`selected_by`), the offers per line, what fills each of the 6 slots, and one line end to end. |
 | `fsdr_results.ipynb` | read-only view of a run (computes nothing). |
+
+**The two step-by-step notebooks are standalone.** They import nothing from the project folder:
+- **Part A** holds the code of every engine module the steps use, one cell per module, copied from `nbx/` by the builder. The first line of each cell, `%%engine nbx.fsdr.csvstd` for example, registers that cell under the module's name.
+- **Part B** holds the steps.
+- The only imports are pip packages: pandas, numpy, pyarrow, pyyaml, python-dotenv, matplotlib.
+- **vowpalwabbit is never loaded.** Loaded after pandas, it crashes the Jupyter kernel on Windows: two copies of `msvcp140.dll`, so the kernel dies or access is denied (§13).
+- A last cell proves it: `… all defined in this notebook: True`, `vowpalwabbit loaded: False`.
+- T2 / T3 run in the notebook's own process (`WORKERS = 1`).
+
+You can copy the two `.ipynb` files to any folder with a `pyproject.toml` and run them there, with any Python 3.12 that has the pip packages above. The data is then written to that folder's `data/`.
+
+**Each notebook starts with two cells to read first:**
+- **Your machine**: the Python of the kernel (it must be `…\.venv\Scripts\python.exe`), the NVIDIA GPU (`nvidia-smi`: name, driver, memory, how busy, which programs use it) and whether the local LLM server of `.env` is listening. The steps themselves run on the CPU (pandas); the GPU is used only by the local LLM server, so it stays idle during these steps in V4.0. To watch it, run `nvidia-smi -l 1` in a terminal while the LLM answers.
+- **The agents, Agent 1 … Agent 9**: what each one does, in which step, and how it decides in V4.0. The step titles repeat the agent (`· Agent 1 (①) data agent`). In V4.0 no agent invents actions: every action and offer comes from the versioned rules (`DECIDED_BY = fallback_rule_action`).
+
+**In JupyterLab (the browser):**
+
+```powershell
+cd D:\production\nbx-python-upgrade-V4.0
+uv run jupyter lab                 # opens http://localhost:8888 in the browser; uses .venv, no activation needed
+```
+
+Then open `notebooks/01_training_step_by_step.ipynb`, check that the kernel (top right) is **Python 3 (ipykernel)**, and use **Kernel → Restart Kernel and Run All Cells**, or Shift+Enter cell by cell. The first cell must print `kernel  : OK, the project's .venv`. Then do the same with `02_scoring_step_by_step.ipynb`. Stop JupyterLab with Ctrl+C in the terminal.
+
+(If you activated the venv first, `.venv\Scripts\activate` then `jupyter lab` does the same.)
 
 **In VS Code:**
 
 1. Open the folder `nbx-python-upgrade-V4.0/` in VS Code.
 2. Open `notebooks/01_training_step_by_step.ipynb`.
 3. Click **Select Kernel** → *Python Environments* → `.venv (Python 3.12)`. It is the project's `.venv`; with Option B, pick your venv.
-4. In the first code cell, set `RUN_DATE`, `GENERATE` (True = dummy data), `N_LINES` and `WORKERS`.
-5. Run the cells one by one with **Shift+Enter**, reading the explanation above each step. Then open `02_scoring_step_by_step.ipynb` with the same `RUN_DATE`.
+4. In the first code cell, set `RUN_DATE`, `GENERATE` (True = dummy data) and `N_LINES`.
+5. Run Part A once: **Run All**, or the cells one by one; it takes a few seconds.
+6. Run the steps of Part B one by one with **Shift+Enter**, reading the explanation above each step. Then open `02_scoring_step_by_step.ipynb` with the same `RUN_DATE`.
 
 Or from the terminal:
 
@@ -383,6 +418,8 @@ If you ran a notebook in place, clear its outputs before committing: in VS Code,
 
 ## 9. Run on real data
 
+The full step-by-step guide for real data, with every table and check, is [DATA_UPDATE.md](DATA_UPDATE.md).
+
 1. Create the two folders of the run date. For example, for Thursday 2026-11-12:
    ```
    data/training/2026-11-12/{usage,models,subscription,catalog,others}/
@@ -395,7 +432,7 @@ If you ran a notebook in place, clear its outputs before committing: in VS Code,
    - `data/runs/<D>/train/T0_load/validation_report.md` (data);
    - `fsdr-targets --date <D>` (lists: blocking / dropped / warnings);
    - `data/output/<D>/<target>/output_checks.json` and `audit_groups.json`.
-6. Validate the details with the business (`details_<target>.parquet`, or `details_<group>.csv.gz` per group). Then send `data/output/<D>/push/input_flytxt.csv.gz` after **human approval**.
+6. Validate the details with the business (`details_<target>.parquet`, or `details_<group>.csv.gz` per group). Then hand over `data/output/<D>/final/input_flytxt.csv.gz` yourself: the engine saves it in the campaign format and sends nothing.
 
 The generator refuses to overwrite a folder that holds non-generated data unless you pass `--force`. Real exports cannot be replaced by dummy data by mistake.
 
@@ -425,10 +462,10 @@ Open <http://localhost:7860> and go to the tab **FSDR Targets & Output**. Then:
    - **3a** builds the panel;
    - **3b** scores Target 1;
    - **3c** scores Target 2;
-   - **3d** builds the push file.
+   - **3d** builds the final file.
 
    **3a → 3d in one go** does all four steps.
-4. **Download.** The file to push, each target's and group's files, the details and the rules reports appear in the download box.
+4. **Download.** The final file, each target's and group's files, the details and the rules reports appear in the download box.
 
 API equivalent (local docs with a *Try it* form at <http://localhost:8000/docs>):
 
@@ -441,7 +478,7 @@ API equivalent (local docs with a *Try it* form at <http://localhost:8000/docs>)
 | `POST /fsdr/v4/<D>/targets/generate` | dummy lists |
 | `POST /fsdr/v4/<D>/panel` | P1 |
 | `POST /fsdr/v4/<D>/score/<target1\|target2>` | one target: P6 + final |
-| `POST /fsdr/v4/<D>/push` | control file + push |
+| `POST /fsdr/v4/<D>/final-file` | control file + final file |
 | `POST /fsdr/v4/<D>/run` | everything after training |
 | `GET /fsdr/v4/<D>/output` | the summaries and the files of `data/output/<D>/` |
 
@@ -510,7 +547,7 @@ V4.0 makes **no call to any cloud service**:
 | Web UI | Gradio's references to Google Fonts and to a cdnjs script are removed from the page; the fonts are local. |
 | API docs | `/docs` is a local page with a *Try it* form. Swagger UI would load from a CDN; `FSDR_SWAGGER_CDN=true` brings it back. |
 | Tracing | Only a self-hosted LangSmith on this machine; the cloud endpoint is refused. |
-| Data | Everything under `data/` stays on disk. The push file is handed over by you, after approval. |
+| Data | Everything under `data/` stays on disk. The final file is handed over by you; the engine sends nothing. |
 
 `uv run python run.py check` prints the local-only state, and every setting that would leave the machine if you changed it.
 
@@ -531,9 +568,11 @@ V4.0 makes **no call to any cloud service**:
 | `misfiled tables` warning | A table is on the wrong side (training / scoring); it still loads. Move it to silence the warning (§5) |
 | `P1_panel BLOCKED` | The lists: a line in two groups, or a missing list. Run `fsdr-targets --date <D>` for the details |
 | `BLOCKED: P6_offers_target2 ... is missing` | Score the target first: `fsdr-score-target --target target2` |
-| `push BLOCKED` | One target failed a check or is not scored yet: read `data/output/<D>/push/BLOCKED.txt` and `<target>/BLOCKED.txt` |
+| `final file BLOCKED` | One target failed a check or is not scored yet: read `data/output/<D>/final/BLOCKED.txt` and `<target>/BLOCKED.txt` |
 | Port 8000 / 7860 in use | Stop the other app, or set `FASTAPI_PORT` / `GRADIO_PORT` in `.env` |
-| Notebook: `ModuleNotFoundError: nbx` | The kernel is not the project's `.venv`: select it (§8). The first cell finds the project root itself |
+| Notebook: the kernel dies / restarts, "access denied", or a crash in `msvcp140.dll` | This was the `vowpalwabbit` DLL conflict on Windows; V4.0 fixes it: the step-by-step notebooks never load `vowpalwabbit`, and `nbx` no longer preloads it inside a Jupyter kernel or after pandas. **Delete the workaround file if you created one**, because it forces `vowpalwabbit` into every Python start: `del .venv\Lib\site-packages\00_vw_preload.pth`. Then restart the kernel and run the notebook from the top. Installing the latest Visual C++ runtime (`vc_redist.x64.exe`) also helps the V1.0 bandit commands |
+| Notebook: `ModuleNotFoundError: No module named 'nbx…'` in Part B | Part A was not run (or the kernel was restarted): run the Part A cells, then the step again |
+| Notebook: `ModuleNotFoundError: No module named 'pandas'` (or numpy, …) | The kernel is not the project's `.venv`: select it (§8), or install `requirements-notebook.txt` in the Python you use |
 | Out of memory at 1M lines | `FSDR_FEATURE_WORKERS=1`, close other apps, use 32 GB |
 | Health `degraded` with a local LLM | The server is not running, or `DEFAULT_LLM` is not served: `ollama list` / the LM Studio model id / `VLLM_SERVED_NAME` |
 | `FSDR_LOCAL_ONLY: … is not on this machine; refused` | The LLM URL points elsewhere: use 127.0.0.1, or add your own host to `FSDR_LOCAL_HOSTS` |
@@ -557,7 +596,7 @@ uv run python run.py fsdr-features --date D                   # T2 + T3 (trainin
 uv run python run.py fsdr-targets --generate --date D         # dummy lists only (else: check yours)
 uv run python run.py fsdr-score-target --target target1 --panel --date D
 uv run python run.py fsdr-score-target --target target2 --date D
-uv run python run.py fsdr-push --date D                       # -> data/output/D/push/input_flytxt.csv.gz
+uv run python run.py fsdr-final-file --date D                       # -> data/output/D/final/input_flytxt.csv.gz
 #   (or the last 3 in one: uv run python run.py fsdr-run-targets --date D)
 
 # notebooks, interface, tests

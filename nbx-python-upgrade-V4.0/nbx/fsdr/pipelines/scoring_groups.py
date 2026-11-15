@@ -9,8 +9,8 @@ V4.0, each target scored separately (its own steps, its own output folder):
     run_p6_offers(D, target="target1")   score/P6_offers_target1/   the tables of T1C (a) and T1F (b) only
     run_target_final(D, "target1")       data/output/<D>/target1/   input_flytxt_target1 (on PASS), a_constraint/ and
                                                                     b_free/ files, details, checks, summary
-    run_push(D)                          data/output/<D>/push/      both targets merged when both PASS; control/
-    run_targets(D)                       P1, then P6 + final of each target, then the push
+    run_final_file(D)                          data/output/<D>/final/      both targets merged when both PASS; control/
+    run_targets(D)                       P1, then P6 + final of each target, then the final file
 
 P6 uses the documented fallbacks of the LLM agents until Phases 5-6 build them (recos.py says which); the rules,
 universes, anchors, passes and bands are the final ones.
@@ -83,17 +83,28 @@ def input_folder(run_date: date, runs_root: Path | None = None) -> Path:
 
 
 def generate_targets(run_date: date, runs_root: Path | None = None, cache_root: Path | None = None,
-                     fmt: str = "csv.gz", seed: int = config.GENERATOR_SEED, folder: Path | None = None) -> dict:
-    """Dummy target lists for tests: a stratified draw of the eligible base, written to <input>/targets/."""
+                     fmt: str = "csv.gz", seed: int = config.GENERATOR_SEED, folder: Path | None = None,
+                     overwrite: bool = False) -> dict:
+    """Dummy target lists for tests: a stratified draw of the eligible base, written to <input>/targets/.
+    Lists that the generator did not write (your real lists) are never replaced, unless overwrite=True."""
+    folder = Path(folder or input_folder(run_date, runs_root))
+    if not overwrite and real_targets(folder):
+        raise StageBlocked(f"{targets_mod.targets_dir(folder)} holds target lists the generator did not write "
+                           "(real lists): they are kept. Use them (GENERATE_TARGETS = False, or no --generate), "
+                           "or delete them first to write dummy lists")
     seg = base_segments(run_date, runs_root)
     cache = CacheSource(run_date, cache_root)
     busy = other_campaigns(cache, run_date)
     pool = eligible_pool(seg, exclude=busy)
     panel, rep = assign_panel(pool, config.group_sizes(), seed)
-    folder = Path(folder or input_folder(run_date, runs_root))
     files = targets_mod.write_targets(panel, folder, fmt, {"run_date": run_date.isoformat(), "seed": seed,
                                                             "scale_factor": rep["scale_factor"]})
     return {"folder": str(targets_mod.targets_dir(folder)), "files": [str(f) for f in files], **rep}
+
+
+def real_targets(folder: Path) -> bool:
+    """True when the folder holds lists that are not the generator's dummy lists (see targets.dummy_lists)."""
+    return targets_mod.has_targets(folder) and not targets_mod.dummy_lists(folder)
 
 
 def _panel_from_targets(folder: Path, seg: pd.DataFrame, busy: set[str]) -> tuple[pd.DataFrame, pd.DataFrame, list, dict]:
@@ -246,7 +257,7 @@ def run_p6_offers(run_date: date, runs_root: Path | None = None, cache_root: Pat
         summary = {"run_date": run_date.isoformat(), "stage": p6_name(target), "target": target or "all",
                    "decisions": "fallback (LLM agents: Phases 5-6)", "reco_offers": config.RECO_OFFERS,
                    "tables": [n for n in out if not n.startswith("_") and n in own], "groups": per_group,
-                   "audit_status": audit["status"], "push_blocked": audit["push_blocked"],
+                   "audit_status": audit["status"], "blocked": audit["blocked"],
                    "step_dir": str(st.dir)}
         st.rows(rows_in=len(panel), rows_out=len(sel))
         st.write_json("summary.json", summary)
@@ -254,7 +265,7 @@ def run_p6_offers(run_date: date, runs_root: Path | None = None, cache_root: Pat
 
 
 # ---------------------------------------------------------------------------
-# P7 final: input_flytxt (push) + per-target files + details (the "big data" behind every row)
+# P7 final: input_flytxt (final file) + per-target files + details (the "big data" behind every row)
 # ---------------------------------------------------------------------------
 FINAL = "final"
 TARGET_DIRS = {"t1c": "target1", "t1f": "target1", "t2c": "target2", "t2f": "target2", "control": "control"}
@@ -283,7 +294,7 @@ def _flat_recos(recos: pd.DataFrame, prefix: str) -> pd.DataFrame:
 
 
 def output_checks(flytxt: pd.DataFrame, control: set[str], catalog_names: set[str], run_date: date) -> list[dict]:
-    """A-20 … A-24 on the file to push (the full set comes with Phase 7)."""
+    """A-20 … A-24 on the final file (the full set comes with Phase 7)."""
     offers = pd.unique(flytxt[[f"destination_offer_name_{i}" for i in range(1, 7)]].to_numpy().ravel())
     not_cat = sorted(o for o in offers if o and o not in catalog_names)
     checks = [("A-20", "38 columns in the F-19 order", list(flytxt.columns) == config.INPUT_FLYTXT_COLUMNS),
@@ -354,7 +365,7 @@ def _final_core(run_date: date, runs_root: Path | None, cache_root: Path | None,
     control = set(panel.loc[panel["GROUP_KEY"] == config.CONTROL_GROUP, VAL])
     checks = output_checks(flytxt, control, set(catalog["BTL_NAME"]), run_date)
     audit6 = json.loads((d6 / "audit_groups.json").read_text(encoding="utf-8"))
-    ok = all(c["status"] == "PASS" for c in checks) and not audit6["push_blocked"]
+    ok = all(c["status"] == "PASS" for c in checks) and not audit6["blocked"]
     details = _details(run_date, runs_root, dec, panel, recos, slots, arpu_anchors(cache),
                        f05_anchors(cache, panel[VAL]))
     return {"panel": panel, "groups": groups, "flytxt": flytxt, "checks": checks, "audit6": audit6, "ok": ok,
@@ -376,12 +387,12 @@ def _group_report(key: str, det: pd.DataFrame, part: pd.DataFrame) -> dict:
 def _blocked_text(what: str, checks: list[dict], audit6: dict) -> str:
     return (f"{what} NOT written (H-08). Failed checks:\n"
             + "\n".join(f"- {c['id']} {c['check']}" for c in checks if c["status"] != "PASS")
-            + ("\n- P6 group audit FAIL (audit_groups.json)" if audit6["push_blocked"] else ""))
+            + ("\n- P6 group audit FAIL (audit_groups.json)" if audit6["blocked"] else ""))
 
 
 def run_p7_final(run_date: date, runs_root: Path | None = None, cache_root: Path | None = None,
                  force: bool = False) -> dict:
-    """V3.0 final of the four groups together: data/runs/<D>/final/ (push/, target1/, target2/, control/)."""
+    """V3.0 final of the four groups together: data/runs/<D>/final/ (all_groups/, target1/, target2/, control/)."""
     run = runs_dir(run_date, runs_root)
     p6 = read_step(run / "score" / P6)
     if p6.get("status") != "done":
@@ -395,16 +406,16 @@ def run_p7_final(run_date: date, runs_root: Path | None = None, cache_root: Path
         flytxt, details, group_of, checks, audit6, ok = (c["flytxt"], c["details"], c["group_of"], c["checks"],
                                                          c["audit6"], c["ok"])
         files = []
-        if (st.dir / "push" / "BLOCKED.txt").exists():
-            (st.dir / "push" / "BLOCKED.txt").unlink()
-        if ok:                                                                    # H-08: push file only on PASS
-            files.append(csvstd.write_csv(flytxt, st.output(f"push/input_flytxt{csvstd.SUFFIX}")))
-            if config.PUSH_COMPRESSION == "none":
-                files.append(csvstd.write_csv(flytxt, st.output("push/input_flytxt.csv"), compress=False))
+        if (st.dir / "all_groups" / "BLOCKED.txt").exists():
+            (st.dir / "all_groups" / "BLOCKED.txt").unlink()
+        if ok:                                                                    # H-08: final file only on PASS
+            files.append(csvstd.write_csv(flytxt, st.output(f"all_groups/input_flytxt{csvstd.SUFFIX}")))
+            if config.OUTPUT_COMPRESSION == "none":
+                files.append(csvstd.write_csv(flytxt, st.output("all_groups/input_flytxt.csv"), compress=False))
         else:
-            for stale in (st.dir / "push").glob("input_flytxt*"):              # never leave an older file to push
+            for stale in (st.dir / "all_groups").glob("input_flytxt*"):              # never leave an older final file
                 stale.unlink()
-            st.output("push/BLOCKED.txt").write_text(_blocked_text("input_flytxt", checks, audit6), encoding="utf-8")
+            st.output("all_groups/BLOCKED.txt").write_text(_blocked_text("input_flytxt", checks, audit6), encoding="utf-8")
         per_target = []
         for key in c["groups"] + [config.CONTROL_GROUP]:
             folder = TARGET_DIRS[key]
@@ -426,28 +437,28 @@ def run_p7_final(run_date: date, runs_root: Path | None = None, cache_root: Path
         st.output(csvstd.OUTPUTS_MANIFEST)
         csvstd.write_outputs_manifest(st.dir, files, run_id=f"final_{run_date.isoformat()}",
                                       versions={k: g["rules_version"] for k, g in config.GROUPS.items()})
-        summary = {"run_date": run_date.isoformat(), "stage": FINAL, "push_ready": ok,
+        summary = {"run_date": run_date.isoformat(), "stage": FINAL, "ready": ok,
                    "input_flytxt_rows": len(flytxt), "output_checks": checks, "p6_group_audit": audit6["status"],
                    "per_target": per_target, "details_rows": len(details), "details_columns": int(details.shape[1]),
                    "reco_offers": config.RECO_OFFERS, "step_dir": str(st.dir)}
         if not ok:
-            st.block("push blocked: see push/BLOCKED.txt")
+            st.block("final file blocked: see all_groups/BLOCKED.txt")
         st.rows(rows_in=len(c["panel"]), rows_out=len(flytxt))
         st.write_json("summary.json", summary)
         return summary
 
 
 # ---------------------------------------------------------------------------
-# V4.0: each target scored separately into data/output/<D>/<target>/, then one push file
+# V4.0: each target scored separately into data/output/<D>/<target>/, then one final file of both targets
 # ---------------------------------------------------------------------------
-PUSH, CONTROL_DIR = "push", "control"
+FINAL_FILE, CONTROL_DIR = "final", "control"
 
 
 def run_target_final(run_date: date, target: str, runs_root: Path | None = None, cache_root: Path | None = None,
                      out_root: Path | None = None, force: bool = False) -> dict:
     """Code 5 on ONE target -> data/output/<D>/<target>/:
 
-        input_flytxt_<target>.csv.gz        the target's file to push (only on PASS, else BLOCKED.txt)
+        input_flytxt_<target>.csv.gz        the target's final file (only on PASS, else BLOCKED.txt)
         a_constraint/input_flytxt_<t?c>.csv.gz   details_<t?c>.csv.gz     group a (constraint universe)
         b_free/input_flytxt_<t?f>.csv.gz         details_<t?f>.csv.gz     group b (free universe)
         details_<target>.parquet            every line of the target with every column (the big file to validate)
@@ -467,7 +478,7 @@ def run_target_final(run_date: date, target: str, runs_root: Path | None = None,
             return {**st.read_json("summary.json"), "skipped": True}
         c = _final_core(run_date, runs_root, cache_root, d6, keys)
         flytxt, details, group_of = c["flytxt"], c["details"], c["group_of"]
-        for stale in [*st.dir.glob(f"input_flytxt_{target}*"), st.dir / "BLOCKED.txt"]:   # never an older file to push
+        for stale in [*st.dir.glob(f"input_flytxt_{target}*"), st.dir / "BLOCKED.txt"]:   # never an older final file
             if stale.exists():
                 stale.unlink()
         files = []
@@ -492,7 +503,7 @@ def run_target_final(run_date: date, target: str, runs_root: Path | None = None,
         csvstd.write_outputs_manifest(st.dir, files, run_id=f"final_{run_date.isoformat()}_{target}",
                                       versions={k: config.GROUPS[k]["rules_version"] for k in keys})
         summary = {"run_date": run_date.isoformat(), "stage": f"final_{target}", "target": target, "groups": keys,
-                   "push_ready": c["ok"], "input_flytxt_rows": len(flytxt), "output_checks": c["checks"],
+                   "ready": c["ok"], "input_flytxt_rows": len(flytxt), "output_checks": c["checks"],
                    "p6_group_audit": c["audit6"]["status"], "per_group": per_group, "reco_offers": config.RECO_OFFERS,
                    "details_rows": int((details["GROUP_KEY"] != config.CONTROL_GROUP).sum()),
                    "details_columns": int(details.shape[1]), "step_dir": str(st.dir)}
@@ -515,13 +526,13 @@ def write_control(run_date: date, runs_root: Path | None = None, out_root: Path 
     return {"file": str(path), "lines": len(ctrl)}
 
 
-def run_push(run_date: date, out_root: Path | None = None, force: bool = True) -> dict:
-    """data/output/<D>/push/input_flytxt.csv.gz: the target files merged, only when EVERY target passed (H-08) and no
-    MSISDN is in two targets (A-30); else push/BLOCKED.txt and no file."""
+def run_final_file(run_date: date, out_root: Path | None = None, force: bool = True) -> dict:
+    """data/output/<D>/final/input_flytxt.csv.gz: the target files merged, only when EVERY target passed (H-08) and no
+    MSISDN is in two targets (A-30); else final/BLOCKED.txt and no file."""
     out = config.output_folder(run_date.isoformat(), out_root)
     states = {t: read_step(out / t) for t in config.TARGETS}
     inputs = fingerprint({t: s.get("started") for t, s in states.items()})
-    with Step(out, PUSH, inputs=inputs, force=force) as st:
+    with Step(out, FINAL_FILE, inputs=inputs, force=force) as st:
         if st.done:
             return {**st.read_json("summary.json"), "skipped": True}
         for stale in [*st.dir.glob("input_flytxt*"), st.dir / "BLOCKED.txt"]:
@@ -544,16 +555,16 @@ def run_push(run_date: date, out_root: Path | None = None, force: bool = True) -
         if ok:
             flytxt = flytxt[config.INPUT_FLYTXT_COLUMNS]
             files.append(csvstd.write_csv(flytxt, st.output(f"input_flytxt{csvstd.SUFFIX}")))
-            if config.PUSH_COMPRESSION == "none":
+            if config.OUTPUT_COMPRESSION == "none":
                 files.append(csvstd.write_csv(flytxt, st.output("input_flytxt.csv"), compress=False))
             st.output(csvstd.OUTPUTS_MANIFEST)
-            csvstd.write_outputs_manifest(st.dir, files, run_id=f"push_{run_date.isoformat()}",
+            csvstd.write_outputs_manifest(st.dir, files, run_id=f"final_{run_date.isoformat()}",
                                           versions={k: g["rules_version"] for k, g in config.GROUPS.items()})
         else:
             st.output("BLOCKED.txt").write_text("input_flytxt NOT written (H-08):\n" + "\n".join(f"- {r}" for r in reasons),
                                                 encoding="utf-8")
             st.block("; ".join(reasons))
-        summary = {"run_date": run_date.isoformat(), "stage": PUSH, "push_ready": ok, "rows_per_target": rows,
+        summary = {"run_date": run_date.isoformat(), "stage": FINAL_FILE, "ready": ok, "rows_per_target": rows,
                    "input_flytxt_rows": len(flytxt) if ok else 0, "reasons": reasons, "step_dir": str(st.dir)}
         st.rows(rows_out=summary["input_flytxt_rows"])
         st.write_json("summary.json", summary)
@@ -562,7 +573,7 @@ def run_push(run_date: date, out_root: Path | None = None, force: bool = True) -
 
 def run_targets(run_date: date, runs_root: Path | None = None, cache_root: Path | None = None,
                 out_root: Path | None = None, targets: list[str] | None = None, force: bool = True) -> dict:
-    """V4.0 scoring in one go: P1 panel, then each target on its own (P6 + final), the control file, the push."""
+    """V4.0 scoring in one go: P1 panel, then each target on its own (P6 + final), the control file, the final file."""
     p1 = run_p1_panel(run_date, runs_root, cache_root, force=force)
     res = {"P1_panel": p1}
     if p1["status"] != "done":
@@ -571,5 +582,5 @@ def run_targets(run_date: date, runs_root: Path | None = None, cache_root: Path 
         res[f"P6_{t}"] = run_p6_offers(run_date, runs_root, cache_root, force=force, target=t)
         res[t] = run_target_final(run_date, t, runs_root, cache_root, out_root, force=force)
     res["control"] = write_control(run_date, runs_root, out_root)
-    res["push"] = run_push(run_date, out_root)
+    res["final"] = run_final_file(run_date, out_root)
     return res

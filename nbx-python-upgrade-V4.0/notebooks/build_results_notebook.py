@@ -19,7 +19,7 @@ by one with their explanations, use `01_training_step_by_step.ipynb` and `02_sco
 | Where | What |
 |---|---|
 | `data/training/<D>/` + `data/scoring/<D>/` | the input (V4.0): 5 folders `usage/ models/ subscription/ catalog/ others/` each |
-| `data/output/<D>/target1/ target2/ control/ push/` | V4.0: each target's files, the control, the file to push |
+| `data/output/<D>/target1/ target2/ control/ final/` | V4.0: each target's files, the control, the final file |
 | `data/runs/<D>/train/T0_load … T8_*/` | training steps on the full base (≈ 1M lines) |
 | `data/runs/<D>/score/P0_* … P10_*/` | scoring steps on the 40k panel + 10k control |
 | `data/runs/<D>/final/` | V3.0 runs only: the four groups together |
@@ -247,20 +247,20 @@ for phase in ("train", "score", "final"):
                 elif f.is_dir():
                     print(f"  {f.name}/: {len(list(f.glob('*.parquet')))} partition files (see the _preview.csv)")"""),
 
-    md("""## 10. Final output: each target, the file to push, and the details
+    md("""## 10. Final output: each target, the final file, and the details
 
 V4.0, `data/output/<D>/`: `target1/` and `target2/` (each scored separately: `input_flytxt_<target>.csv.gz` on PASS,
 `a_constraint/` and `b_free/` with the per-group file and `details_<group>.csv.gz`, `details_<target>.parquet`),
-`control/`, and `push/input_flytxt.csv.gz` (both targets, only when both PASS). A V3.0 run is read from
+`control/`, and `final/input_flytxt.csv.gz` (both targets, only when both PASS). A V3.0 run is read from
 `data/runs/<D>/final/` instead."""),
     code("""OUT = config.output_folder(str(RUN_DATE))
 FIN = RUN / "final"
-if (OUT / "push" / "summary.json").exists():
+if (OUT / "final" / "summary.json").exists():
     for t in config.TARGETS:
         if not (OUT / t / "summary.json").exists():
             print(f"{t}: not scored yet"); continue
         st = json.loads((OUT / t / "summary.json").read_text(encoding="utf-8"))
-        display(Markdown(f"### {t} · {'READY' if st['push_ready'] else 'BLOCKED'} · {st['input_flytxt_rows']:,} rows · "
+        display(Markdown(f"### {t} · {'READY' if st['ready'] else 'BLOCKED'} · {st['input_flytxt_rows']:,} rows · "
                          f"up to {st['reco_offers']} offers · group audit {st['p6_group_audit']}"))
         print("checks:", ", ".join(f"{c['id']} {c['status']}" for c in st["output_checks"]))
         if (OUT / t / "BLOCKED.txt").exists():
@@ -269,14 +269,14 @@ if (OUT / "push" / "summary.json").exists():
         det = pd.read_parquet(OUT / t / f"details_{t}.parquet")
         print(f"details_{t}: {len(det):,} lines x {det.shape[1]} columns")
         display(det.groupby(["GROUP_KEY", "DROP_RULE"]).size().rename("lines").reset_index())
-    sp = json.loads((OUT / "push" / "summary.json").read_text(encoding="utf-8"))
-    display(Markdown(f"### push · {'READY' if sp['push_ready'] else 'BLOCKED'} · {sp['input_flytxt_rows']:,} rows "
+    sp = json.loads((OUT / "final" / "summary.json").read_text(encoding="utf-8"))
+    display(Markdown(f"### final file · {'READY' if sp['ready'] else 'BLOCKED'} · {sp['input_flytxt_rows']:,} rows "
                      f"{sp['rows_per_target']}"))
     if sp["reasons"]:
         print("reasons:", sp["reasons"])
-    push = OUT / "push" / "input_flytxt.csv.gz"
-    if push.exists():
-        f = csvstd.read_csv(push)
+    final_df = OUT / "final" / "input_flytxt.csv.gz"
+    if final_df.exists():
+        f = csvstd.read_csv(final_df)
         n = f[[f"destination_offer_name_{i}" for i in range(1, 7)]].ne("").sum(axis=1)
         print(f"offers per line: mean {n.mean():.2f}, distribution {n.value_counts().sort_index().to_dict()}")
         display(f.head(PREVIEW_ROWS))
@@ -284,14 +284,14 @@ elif not (FIN / "summary.json").exists():
     print("No final output yet: run  uv run python run.py fsdr-run-targets --date", RUN_DATE)
 else:
     sf = json.loads((FIN / "summary.json").read_text(encoding="utf-8"))
-    print("push ready:", sf["push_ready"], "| rows:", sf["input_flytxt_rows"], "| checks:",
+    print("final file ready:", sf["ready"], "| rows:", sf["input_flytxt_rows"], "| checks:",
           ", ".join(f"{c['id']} {c['status']}" for c in sf["output_checks"]))
-    if (FIN / "push" / "BLOCKED.txt").exists():
-        print((FIN / "push" / "BLOCKED.txt").read_text(encoding="utf-8"))
+    if (FIN / "all_groups" / "BLOCKED.txt").exists():
+        print((FIN / "all_groups" / "BLOCKED.txt").read_text(encoding="utf-8"))
     display(pd.read_csv(FIN / "final_rules_report.csv"))
-    push = FIN / "push" / "input_flytxt.csv.gz"
-    if push.exists():
-        display(csvstd.read_csv(push).head(PREVIEW_ROWS))
+    final_df = FIN / "all_groups" / "input_flytxt.csv.gz"
+    if final_df.exists():
+        display(csvstd.read_csv(final_df).head(PREVIEW_ROWS))
     det = pd.read_parquet(FIN / "details_all.parquet")
     print(f"details: {len(det):,} lines x {det.shape[1]} columns")
     display(det.groupby(["GROUP_KEY", "DROP_RULE"]).size().rename("lines").reset_index())

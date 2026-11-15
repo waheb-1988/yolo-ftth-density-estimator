@@ -185,13 +185,13 @@ def cmd_offers(a) -> int:
         return 1
     skip = " (skipped: same inputs, already done)" if r.get("skipped") else ""
     print(f"P6_offers DONE{skip} -- decisions: {r['decisions']}; group audit {r['audit_status']}"
-          f"{' (push blocked)' if r['push_blocked'] else ''}")
+          f"{' (final file blocked)' if r['blocked'] else ''}")
     for g in r["groups"]:
         print(f"  {g['group']:4s} {g['rules']:22s} contacted {g['contacted']:7,d}  with offers {g['with_offers']:7,d}  "
               f"offers {g['offers']:8,d}  10.1 retries {g['consistency_retry']:6,d}")
     print(f"  tables (.csv.gz): {', '.join(r['tables'])}")
     print(f"Step outputs: {r['step_dir']}")
-    return 1 if r["push_blocked"] else 0
+    return 1 if r["blocked"] else 0
 
 
 def cmd_targets(a) -> int:
@@ -203,13 +203,13 @@ def cmd_targets(a) -> int:
     folder = sg.input_folder(run_date)
     try:
         if a.generate:
-            r = sg.generate_targets(run_date, fmt=a.format, seed=a.seed)
+            r = sg.generate_targets(run_date, fmt=a.format, seed=a.seed, overwrite=a.force)
             scaled = f" (scaled x{r['scale_factor']} to the base)" if r["scale_factor"] < 1 else ""
             print(f"Dummy target lists written to {r['folder']}{scaled}:")
             for f in r["files"]:
                 print(f"  {Path(f).relative_to(r['folder'])}")
             print("  sizes:", r["sizes"])
-            print("Next: fsdr-run-targets (panel from these lists -> target 1 -> target 2 -> push)")
+            print("Next: fsdr-run-targets (panel from these lists -> target 1 -> target 2 -> final file)")
             return 0
         if not tg.has_targets(folder):
             print(f"No target lists in {tg.targets_dir(folder)} (P1 will draw the panel at random).")
@@ -241,12 +241,12 @@ def cmd_final(a) -> int:
         print(f"BLOCKED: {e}")
         return 1
     _print_final(r)
-    return 0 if r["push_ready"] else 1
+    return 0 if r["ready"] else 1
 
 
 def _print_final(r: dict) -> None:
     skip = " (skipped: same inputs, already done)" if r.get("skipped") else ""
-    state = "READY TO PUSH" if r["push_ready"] else "PUSH BLOCKED (see push/BLOCKED.txt)"
+    state = "READY TO FINAL_FILE" if r["ready"] else "BLOCKED (see all_groups/BLOCKED.txt)"
     print(f"final DONE{skip} -- {state}; input_flytxt {r['input_flytxt_rows']:,} rows; details {r['details_rows']:,} "
           f"lines x {r['details_columns']} columns")
     print("  checks:", ", ".join(f"{c['id']} {c['status']}" for c in r["output_checks"]), "| group audit", r["p6_group_audit"])
@@ -255,7 +255,7 @@ def _print_final(r: dict) -> None:
                                                     f"forced {t['forced_F08']:,}  cleared F-09/F-11/F-12 "
                                                     f"{t['cleared_F09']}/{t['cleared_F11']}/{t['cleared_F12']}")
         print(f"  {t['group']:8s} {t['rules']:22s} lines {t['lines']:7,d}  in file {t['in_input_flytxt']:7,d}{extra}")
-    print(f"Files: {r['step_dir']}  (push/, target1/, target2/, control/)")
+    print(f"Files: {r['step_dir']}  (all_groups/, target1/, target2/, control/)")
 
 
 def cmd_run_groups(a) -> int:
@@ -280,12 +280,12 @@ def cmd_run_groups(a) -> int:
         print(f"BLOCKED: {e}")
         return 1
     _print_final(r)
-    return 0 if r["push_ready"] else 1
+    return 0 if r["ready"] else 1
 
 
 def _print_target(r: dict) -> None:
     skip = " (skipped: same inputs, already done)" if r.get("skipped") else ""
-    state = "READY" if r["push_ready"] else f"BLOCKED (see {r['target']}/BLOCKED.txt)"
+    state = "READY" if r["ready"] else f"BLOCKED (see {r['target']}/BLOCKED.txt)"
     print(f"{r['target']} final DONE{skip} -- {state}; input_flytxt_{r['target']} {r['input_flytxt_rows']:,} rows; "
           f"{r['reco_offers']} offers per line max; details {r['details_rows']:,} lines x {r['details_columns']} columns")
     print("  checks:", ", ".join(f"{c['id']} {c['status']}" for c in r["output_checks"]), "| group audit", r["p6_group_audit"])
@@ -315,24 +315,24 @@ def cmd_score_target(a) -> int:
         print(f"BLOCKED: {e}")
         return 1
     _print_target(r)
-    return 0 if r["push_ready"] else 1
+    return 0 if r["ready"] else 1
 
 
-def cmd_push(a) -> int:
+def cmd_final_file(a) -> int:
     from nbx.fsdr.pipelines import scoring_groups as sg
 
     run_date = a.date or _latest_run_date()
-    r = sg.run_push(run_date)
-    if r["push_ready"]:
-        print(f"push READY -- input_flytxt {r['input_flytxt_rows']:,} rows {r['rows_per_target']} -> {r['step_dir']}")
-        print("Human approval (H-08) before it is sent to the campaign platform.")
+    r = sg.run_final_file(run_date)
+    if r["ready"]:
+        print(f"final file READY -- input_flytxt {r['input_flytxt_rows']:,} rows {r['rows_per_target']} -> {r['step_dir']}")
+        print("Saved in the campaign format; nothing is sent: check it, then hand it over yourself.")
         return 0
-    print("push BLOCKED -- " + "; ".join(r["reasons"]) + f"  ({r['step_dir']}/BLOCKED.txt)")
+    print("final file BLOCKED -- " + "; ".join(r["reasons"]) + f"  ({r['step_dir']}/BLOCKED.txt)")
     return 1
 
 
 def cmd_run_targets(a) -> int:
-    """V4.0: P1 panel, then target 1 and target 2 scored separately, the control file and the push."""
+    """V4.0: P1 panel, then target 1 and target 2 scored separately, the control file and the final file."""
     from nbx.fsdr.pipelines import scoring_groups as sg
     from nbx.fsdr.pipelines.training import StageBlocked
 
@@ -353,10 +353,10 @@ def cmd_run_targets(a) -> int:
         if t in res:
             _print_target(res[t])
     print(f"control: {res['control']['lines']:,} lines -> {res['control']['file']}")
-    r = res["push"]
-    print(("push READY -- " + f"{r['input_flytxt_rows']:,} rows" if r["push_ready"] else "push BLOCKED -- "
+    r = res["final"]
+    print(("final file READY -- " + f"{r['input_flytxt_rows']:,} rows" if r["ready"] else "final file BLOCKED -- "
            + "; ".join(r["reasons"])) + f"  ({r['step_dir']})")
-    return 0 if r["push_ready"] else 1
+    return 0 if r["ready"] else 1
 
 
 def _latest_run_date():
@@ -621,9 +621,10 @@ def main(argv: list[str] | None = None) -> int:
     tg.add_argument("--generate", action="store_true", help="write dummy lists (stratified draw of the eligible base)")
     tg.add_argument("--format", choices=["csv.gz", "csv", "json"], default="csv.gz")
     tg.add_argument("--seed", type=int, default=config.GENERATOR_SEED)
+    tg.add_argument("--force", action="store_true", help="with --generate: replace lists that are not dummy lists")
     tg.set_defaults(fn=cmd_targets)
 
-    fi = sub.add_parser("fsdr-final", help="final step: input_flytxt to push + per-target files + details")
+    fi = sub.add_parser("fsdr-final", help="V3.0 final step: input_flytxt of the four groups + per-target files + details")
     fi.add_argument("--date", type=date.fromisoformat, help="run date (default: the latest run)")
     fi.add_argument("--force", action="store_true")
     fi.set_defaults(fn=cmd_final)
@@ -640,14 +641,14 @@ def main(argv: list[str] | None = None) -> int:
     stg.add_argument("--force", action="store_true")
     stg.set_defaults(fn=cmd_score_target)
 
-    ps = sub.add_parser("fsdr-push", help="V4.0: data/output/<D>/push/input_flytxt.csv.gz from both targets (both PASS)")
+    ps = sub.add_parser("fsdr-final-file", help="V4.0: data/output/<D>/final/input_flytxt.csv.gz from both targets (both PASS)")
     ps.add_argument("--date", type=date.fromisoformat, help="run date (default: the latest run)")
-    ps.set_defaults(fn=cmd_push)
+    ps.set_defaults(fn=cmd_final_file)
 
     rt = sub.add_parser("fsdr-run-targets", help="V4.0: panel -> target 1 -> target 2 (each scored separately) -> "
-                                                 "control -> push, into data/output/<D>/")
+                                                 "control -> final file, into data/output/<D>/")
     rt.add_argument("--date", type=date.fromisoformat, help="run date (default: the latest run)")
-    rt.add_argument("--target", choices=list(config.TARGETS), help="only this target (the push then waits for the other)")
+    rt.add_argument("--target", choices=list(config.TARGETS), help="only this target (the final file then waits for the other)")
     rt.set_defaults(fn=cmd_run_targets)
 
     v = sub.add_parser("fsdr-validate", help="validate a run folder (5 input folders or flat)")

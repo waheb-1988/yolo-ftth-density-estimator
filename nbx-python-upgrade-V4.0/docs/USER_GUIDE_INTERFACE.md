@@ -13,7 +13,7 @@ To install the app on a new laptop first, see [SETUP_NEW_LAPTOP.md](SETUP_NEW_LA
 1. [What the interface is](#1-what-the-interface-is)
 2. [Start and stop the app](#2-start-and-stop-the-app)
 3. [The tabs at a glance](#3-the-tabs-at-a-glance)
-4. [Main workflow: two targets, scored separately, and the file to push (tab *FSDR Targets & Output*)](#4-main-workflow-two-targets-scored-separately-and-the-file-to-push)
+4. [Main workflow: two targets, scored separately, and the final file (tab *FSDR Targets & Output*)](#4-main-workflow-two-targets-scored-separately-and-the-final-file)
 5. [Demo per customer (tab *FSDR Journey*)](#5-demo-per-customer-tab-fsdr-journey)
 6. [Tab *FSDR Data*](#6-tab-fsdr-data)
 7. [Tab *FSDR Training & Scoring*](#7-tab-fsdr-training--scoring)
@@ -43,7 +43,7 @@ The app has two parts that run together:
 
 | Data area | Used by | What it holds |
 |---|---|---|
-| `data/training/<D>/` + `data/scoring/<D>/` → `data/output/<D>/` (+ `data/runs/<D>/`) | **FSDR Targets & Output** (V4.0) | The training and the scoring input of run date D (5 folders each), your target lists, the files of each target and the file to push |
+| `data/training/<D>/` + `data/scoring/<D>/` → `data/output/<D>/` (+ `data/runs/<D>/`) | **FSDR Targets & Output** (V4.0) | The training and the scoring input of run date D (5 folders each), your target lists, the files of each target and the final file |
 | `data/fsdr/<D>/` | FSDR Data, Training & Scoring, Offers, Agentic Recommender, Journey, Simulation (V1.0 cycle) | A run folder of the earlier version: the bandit training, the arms cstr / free / llm |
 
 **For the campaign file, use the tab *FSDR Targets & Output* (section 4).** The other tabs remain for demos, the per-customer journey and the V1.0 cycle.
@@ -56,7 +56,7 @@ The app has two parts that run together:
 |---|---|
 | Data contract and validation, features, segments, micro-segments, both actions (`action_original`, `action_agent`) | The action sent = the group's rule action (`decided_by = fallback_rule_action`) |
 | The four groups and their rules: code 3, code 4, CC-v1, CF-v1, anchors, price passes and bands, the 6-offer extension EXT-6 | The offer score = own past purchase, then buyer share (`score_source = fallback:E-O3+E-O1`) |
-| Code 5 (the 38-column `input_flytxt`), the checks, the push block | |
+| Code 5 (the 38-column `input_flytxt`), the checks, the final-file block | |
 
 Every row of every output says which one it used.
 
@@ -116,11 +116,11 @@ Open http://localhost:8000/health. Expected: `{"status": "ok" or "degraded", "op
 | **FSDR Offers** | Offers per arm (cstr / free / llm), download as CSV | 8 |
 | **FSDR Agentic Recommender** | Run the agents for one customer with the full trace, or for a batch | 9 |
 | **FSDR Simulation** | Closed-loop simulation over several weeks; feedback, operations agents, weekly report, campaign log | 10 |
-| **FSDR Targets & Output** | **V4.0:** training of a run date, the target lists, Target 1 and Target 2 scored separately, the file to push and the details | **4** |
+| **FSDR Targets & Output** | **V4.0:** training of a run date, the target lists, Target 1 and Target 2 scored separately, the final file and the details | **4** |
 
 ---
 
-## 4. Main workflow: two targets, scored separately, and the file to push
+## 4. Main workflow: two targets, scored separately, and the final file
 
 Tab **FSDR Targets & Output**. One run date, four steps. It takes about 1 minute on 3,000 lines and a few minutes on 1M lines, after a 15-minute T0.
 
@@ -136,7 +136,7 @@ Tab **FSDR Targets & Output**. One run date, four steps. It takes about 1 minute
 
 The configured sizes are 25,000 per group and 20,000 for control. They are set in `.env`: `FSDR_T1_CONSTRAINT_SIZE`, `FSDR_T1_FREE_SIZE`, `FSDR_T2_CONSTRAINT_SIZE`, `FSDR_T2_FREE_SIZE`, `FSDR_CONTROL_SIZE`.
 
-**Each target is scored on its own.** Each target has its own P6 step, its own group audit, its own code-5 run and checks, and its own folder `data/output/<D>/<target>/`. The file to push merges both targets, and only when both passed.
+**Each target is scored on its own.** Each target has its own P6 step, its own group audit, its own code-5 run and checks, and its own folder `data/output/<D>/<target>/`. The final file merges both targets, and only when both passed.
 
 **Up to 6 offers per line** (`FSDR_RECO_OFFERS=6`, the default): 3 monthly + 3 weekly. Set `4` for the V3.0 file.
 
@@ -264,7 +264,7 @@ Every dropped line and its reason is saved in `data/runs/<D>/score/P1_panel/targ
 | **3a · Panel (from the lists)** | **P1**: takes your lists (mode `uploaded`) or draws the groups (mode `drawn`); sizes (A-30) and balance (A-31) | `data/runs/<D>/score/P1_panel/` |
 | **3b · Score Target 1** | **P6** for T1C + T1F only (rule action `action_original`; code 3 / code 4 passes; EXT-6 third offer; 10.1 retry for T1C), then **code 5** on Target 1 → its files and checks | `data/runs/<D>/score/P6_offers_target1/`, **`data/output/<D>/target1/`** |
 | **3c · Score Target 2** | The same for T2C + T2F (rule action `action_agent`; CC-v1 / CF-v1 bands) | `…/P6_offers_target2/`, **`data/output/<D>/target2/`** |
-| **3d · Build the push file** | The control file, then both targets merged into the file to push, only when **both** passed and no MSISDN is in two targets | **`data/output/<D>/control/`**, **`data/output/<D>/push/`** |
+| **3d · Save the final file (both targets)** | The control file, then both targets merged into the final file, only when **both** passed and no MSISDN is in two targets | **`data/output/<D>/control/`**, **`data/output/<D>/final/`** |
 | **3a → 3d in one go** | The four buttons above, in order | all of the above |
 | **Show the last output** | Shows the result of the last run of that date again, without re-running | — |
 
@@ -294,7 +294,7 @@ You can score Target 1 and Target 2 in any order, and re-score one target withou
    - favourites added, forced bundles (F-08);
    - slots cleared by F-09 (same type and price), F-11 (same offer twice) and F-12 (conflicting pair).
 
-**After 3d:** **Push READY** with the rows per target, or **Push BLOCKED** with the reasons, plus the control file.
+**After 3d:** **Final file READY** with the rows per target, or **Final file BLOCKED** with the reasons, plus the control file.
 
 ### 4.5 Step 4 — download
 
@@ -302,7 +302,7 @@ The box **4 · Download** lists the files of the run. Click a file to download i
 
 | File | What it is | Who uses it |
 |---|---|---|
-| `push/input_flytxt.csv.gz` | **The file to push**: the 38 lower-case columns of code 5, both targets, one row per MSISDN. Written **only when both targets passed** | The campaign platform (after approval) |
+| `final/input_flytxt.csv.gz` | **The final file**: the 38 lower-case columns of code 5, both targets, one row per MSISDN. Written **only when both targets passed** | You, to hand over to the campaign platform (the engine sends nothing) |
 | `target1/input_flytxt_target1.csv.gz` | Target 1's file (T1C + T1F), written only when Target 1 passed | Target 1 review |
 | `target1/a_constraint/input_flytxt_t1c.csv.gz`, `target1/b_free/input_flytxt_t1f.csv.gz` | The same rows, per group | Audit, per-group review |
 | `target2/…` | The same for Target 2 (`t2c`, `t2f`) | Target 2 review |
@@ -351,17 +351,17 @@ An empty slot is an empty field, never `nbo_LFM_nan`.
 1. Choose *Data → Get Data → From File → From Text/CSV*.
 2. Excel reads the `.csv.gz` directly in recent versions. Otherwise unzip it with 7-Zip first.
 
-### 4.6 When a target or the push is blocked
+### 4.6 When a target or the final file is blocked
 
 If a check of a target fails:
-- `<target>/input_flytxt_<target>.csv.gz` is **not** written, and an older one is deleted, so nothing stale can be pushed by mistake.
+- `<target>/input_flytxt_<target>.csv.gz` is **not** written, and an older one is deleted, so nothing stale can be handed over by mistake.
 - `<target>/BLOCKED.txt` lists the failed checks.
 - The per-group and details files are still written, so you can investigate.
-- The push (3d) is then blocked too: `push/BLOCKED.txt` names the target.
+- The final file (3d) is then blocked too: `final/BLOCKED.txt` names the target.
 
 Fix the cause (usually the lists, or the input data), then score that target again (**3a** if the lists changed, then **3b** or **3c**, then **3d**).
 
-**Rule H-08:** nothing is pushed without every check passing and a human approval. The SFTP push itself is not automated yet: it comes with a later phase.
+**Rule H-08:** the final file is written only when every check passes. The engine sends nothing: you check the file and hand it over yourself.
 
 ### 4.7 Run again
 
@@ -506,19 +506,19 @@ Open **http://localhost:8000/docs**: a local page (no CDN) that lists every rout
 | `GET /fsdr/targets/{run}` | The lists and their check (button 2c) |
 | `POST /fsdr/v4/{run}/panel` | P1 (button 3a) |
 | `POST /fsdr/v4/{run}/score/{target}` | One target, `target1` or `target2`: P6 + final (buttons 3b / 3c). HTTP 409 without a panel |
-| `POST /fsdr/v4/{run}/push` | Control file + push (button 3d) |
+| `POST /fsdr/v4/{run}/final-file` | Control file + final file (button 3d) |
 | `POST /fsdr/v4/{run}/run` | 3a → 3d in one call. HTTP 409 when the lists block |
-| `GET /fsdr/v4/{run}/output` | Each target's summary, the push state and the files of `data/output/<D>/` |
+| `GET /fsdr/v4/{run}/output` | Each target's summary, the final file's state and the files of `data/output/<D>/` |
 
 The V3.0 routes (`/fsdr/v3/…`, `POST /fsdr/groups/{run}/run`, `GET /fsdr/final/{run}`) still work. They score the four groups together into `data/runs/<D>/final/`.
 
-**Example in PowerShell:** upload the T2C list, then score Target 2 and build the push.
+**Example in PowerShell:** upload the T2C list, then score Target 2 and save the final file.
 
 ```powershell
 curl.exe -F "file=@C:\lists\target2_a.csv.gz" http://localhost:8000/fsdr/targets/2026-10-22/t2c
 curl.exe -X POST http://localhost:8000/fsdr/v4/2026-10-22/panel
 curl.exe -X POST http://localhost:8000/fsdr/v4/2026-10-22/score/target2
-curl.exe -X POST http://localhost:8000/fsdr/v4/2026-10-22/push
+curl.exe -X POST http://localhost:8000/fsdr/v4/2026-10-22/final-file
 ```
 
 If `FSDR_API_KEY` is set in `.env`, add the header `-H "X-API-Key: <key>"`; the UI sends it itself.
@@ -530,7 +530,7 @@ uv run python run.py fsdr-generate --date 2026-10-22 --n 3000
 uv run python run.py fsdr-load --date 2026-10-22
 uv run python run.py fsdr-features --date 2026-10-22
 uv run python run.py fsdr-targets --date 2026-10-22 --generate     # or copy your lists into data/scoring/<D>/target1|2/
-uv run python run.py fsdr-run-targets --date 2026-10-22            # or fsdr-score-target --target target1|target2, fsdr-push
+uv run python run.py fsdr-run-targets --date 2026-10-22            # or fsdr-score-target --target target1|target2, fsdr-final-file
 ```
 
 See `docs/RUN_FROM_TERMINAL.md` for every command.
@@ -548,7 +548,7 @@ See `docs/RUN_FROM_TERMINAL.md` for every command.
 | `data/runs/<D>/score/P1_panel/` | `panel.parquet`, `group_sizes.csv`, `balance.csv`, `targets_rejected.csv`, `targets_check.json` | no |
 | `data/runs/<D>/score/P6_offers_target1/`, `P6_offers_target2/` | Per target: the code-2 tables of its groups (`TG_*_scored_nba`, `results_scoring_nba`), its 4 reco tables (`recos_monthly/weekly_…`), `traces.csv`, `group_report.csv`, `audit_groups.json`, `decisions.parquet` | no |
 | `data/output/<D>/target1/`, `target2/` | `input_flytxt_<target>.csv.gz`, `a_constraint/`, `b_free/` (per-group file + details), `details_<target>.parquet`, `final_rules_report.csv`, `output_checks.json`, `audit_groups.json`, `_outputs_manifest.json`, `summary.json` | no |
-| `data/output/<D>/control/`, `push/` | The control file; the file to push (or `BLOCKED.txt`) | no |
+| `data/output/<D>/control/`, `final/` | The control file; the final file (or `BLOCKED.txt`) | no |
 | `data/fsdr/<D>/` | The V1.0 run folders (tabs of sections 5–10) | no |
 | `.env` | Your settings and keys | no |
 
@@ -562,14 +562,14 @@ Every step folder has a `_step.json`: status, start, duration, rows, input finge
 
 ```powershell
 uv run python run.py notebook --name training    # 01_training_step_by_step.ipynb: run T0 -> T2 -> T3, cell by cell
-uv run python run.py notebook --name scoring     # 02_scoring_step_by_step.ipynb: lists -> P1 -> Target 1 -> Target 2 -> push
+uv run python run.py notebook --name scoring     # 02_scoring_step_by_step.ipynb: lists -> P1 -> Target 1 -> Target 2 -> final file
 uv run python run.py notebook                    # fsdr_results.ipynb: read-only view of a run (then Run All)
 uv run python run.py notebook-html --date 2026-10-22   # no browser: an HTML report of fsdr_results in data/runs/<D>/
 ```
 
 The two step-by-step notebooks run every step with the explanation of its rules and show its details:
 - **training**: validation issues, completeness, the cache, feature statistics, segments, the action cross-table;
-- **scoring**: the list checks, the panel balance, each target's audit and `selected_by` rules, the offers per line, what fills each of the 6 slots, one line end to end, and the final checks of the file to push.
+- **scoring**: the list checks, the panel balance, each target's audit and `selected_by` rules, the offers per line, what fills each of the 6 slots, one line end to end, and the final checks of the final file.
 
 Set `RUN_DATE` in the first code cell. They are stored without outputs; do not commit them with outputs (MSISDNs).
 
@@ -589,7 +589,7 @@ Set `RUN_DATE` in the first code cell. They are stored without outputs; do not c
 | 3b / 3c: `P1_panel … is missing` (HTTP 409) | The panel was not built | Click **3a** first |
 | 3a: `fsdr-features first` / `not done` | Step 1b was not run for this date | Click **1b** |
 | 3b / 3c: **BLOCKED** | An output check or the target's group audit failed | Open `data/output/<D>/<target>/BLOCKED.txt`; the per-group and details files show the lines concerned |
-| 3d: **Push BLOCKED** | A target is blocked or not scored yet | Read `push/BLOCKED.txt`: it names the target; score or fix it, then 3d again |
+| 3d: **Final file BLOCKED** | A target is blocked or not scored yet | Read `final/BLOCKED.txt`: it names the target; score or fix it, then 3d again |
 | Many customers with `DROP_RULE = F-04` | Their spend anchor is above every offer price, so no offer fits (code 3 / 4 rule BR-82); frequent on dummy data, whose catalogue is small | Normal on dummy data; on real data, check the catalogue and the anchors in the details file |
 | `forced_F08` is always 0 | The forced bundles `CM_*` / `DM_*` are not in the catalogue, or slot 6 is already taken by the 3rd weekly offer | Normal on dummy data; on real data they apply when they are in `btl_catalog` and slot 6 is empty |
 | A size warning (`configured 25,000`) | Your lists are smaller or larger than the configured sizes | Information only; change the sizes in `.env` if your design differs |
@@ -615,5 +615,5 @@ Set `RUN_DATE` in the first code cell. They are stored without outputs; do not c
 | **EXT-6** | V4.0: the third offer of a validity (6 offers per line), above the anchor, in the group's universe |
 | **Slots 1–6** | The 6 offers of `input_flytxt`: monthly 1–2, weekly 1–2, then the 3rd monthly (5) and 3rd weekly (6), else favourites / forced bundle |
 | **F-04, F-09, F-11, F-12** | Code-5 rules: drop without offer; same type and price; same offer twice; conflicting pair |
-| **H-08** | No push without every check passing and a human approval |
+| **H-08** | No final file without every check passing; the engine sends nothing, you hand the file over |
 | **Fallback** | The deterministic decision used when the LLM is not available (or not built yet); always marked |

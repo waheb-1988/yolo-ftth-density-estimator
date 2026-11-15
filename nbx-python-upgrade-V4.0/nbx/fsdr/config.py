@@ -39,7 +39,7 @@ FSDR_RUNS_DIR = Path(os.getenv("FSDR_RUNS_DIR", str(nbx_config.DATA_DIR / "runs"
 #   data/training/<D>/{usage,models,subscription,catalog,others}/     the base, history and model scores (T0 - T3)
 #   data/scoring/<D>/{usage,models,subscription,catalog,others}/      this week's scoring tables (P1 - P7)
 #   data/scoring/<D>/target1/{a_constraint,b_free}/  target2/{a_constraint,b_free}/  control/   the target lists
-#   data/output/<D>/target1/  target2/  control/  push/                one folder per target, scored separately
+#   data/output/<D>/target1/  target2/  control/  final/                one folder per target, scored separately
 TRAINING_FOLDER, SCORING_FOLDER = "training", "scoring"
 FSDR_TRAINING_DIR = Path(os.getenv("FSDR_TRAINING_DIR", str(nbx_config.DATA_DIR / TRAINING_FOLDER)))
 FSDR_SCORING_DIR = Path(os.getenv("FSDR_SCORING_DIR", str(nbx_config.DATA_DIR / SCORING_FOLDER)))
@@ -52,7 +52,7 @@ ALLOW_TEST_FORMATS = os.getenv("FSDR_ALLOW_TEST_FORMATS", "false").lower() == "t
 CSV_GZIP_LEVEL = 6                                # FSDR CSV standard
 ID_TEXT_COLUMNS = {"ACCESS_METHOD_VAL", "MSISDN", "ACCESS_METHOD_ID", "ACCOUNT_ID", "PARTY_ID", "SUBSCRIPTION_ID",
                    "UBSCRIPTION_ID"}              # always read and written as text
-PUSH_COMPRESSION = os.getenv("FSDR_PUSH_COMPRESSION", "gzip")    # "gzip" | "none" (also writes input_flytxt.csv)
+OUTPUT_COMPRESSION = os.getenv("FSDR_OUTPUT_COMPRESSION", os.getenv("FSDR_PUSH_COMPRESSION", "gzip"))    # "gzip" | "none" (also writes input_flytxt.csv)
 CACHE_PARTITIONS = int(os.getenv("FSDR_CACHE_PARTITIONS", "16"))     # plan §15: hash of ACCESS_METHOD_ID
 TABLE_FOLDERS = {                                 # plan §13; the 11 model-score tables go to "models"
     "usage": ["subs_amt_auto", "subs_amt_score", "activities_w1_auto", "activities_w2_auto", "activities_w3_auto",
@@ -657,7 +657,7 @@ ONLY_OWN_PAST_OFFERS = os.getenv("FSDR_ONLY_OWN_PAST_OFFERS", "false").lower() =
 MAX_CANDIDATES_PER_VALIDITY = 25                  # §10: candidates per validity sent to the NBO agent
 TARGET1_FREE_SHARE = 0.0                          # B-23: the code-4 part now lives in its own group (T1F)
 
-# Challenger CC-v1 (T2C) and CF-v1 (T2F): open item 4, approved before the first push
+# Challenger CC-v1 (T2C) and CF-v1 (T2F): open item 4, approved before the first campaign
 CHALLENGER_BAND = (1.0, 1.5)                      # CC-02 / CF-02: price between 1.0x and 1.5x the anchor
 CHALLENGER_BAND_WIDENED = (1.0, 2.0)              # CC-04 / CF-04: widened once, upwards only
 CHALLENGER_UPSELL_STEP = 0.5                      # minimum +0.5 OMR above the anchor for the UPSELL actions

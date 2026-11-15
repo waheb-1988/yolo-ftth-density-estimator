@@ -1,12 +1,14 @@
-"""Builds the two step-by-step notebooks of V4.0 (run it again after editing the cells below):
+"""Builds the two STANDALONE step-by-step notebooks of V4.0 (run it again after editing the cells below or the engine):
 
     uv run python notebooks/build_step_notebooks.py
 
     notebooks/01_training_step_by_step.ipynb   data -> T0 validation + cache -> T2 features -> T3 segments and actions
-    notebooks/02_scoring_step_by_step.ipynb    target lists -> P1 panel -> Target 1 (P6 + final) -> Target 2 -> push
+    notebooks/02_scoring_step_by_step.ipynb    target lists -> P1 panel -> Target 1 (P6 + final) -> Target 2 -> final file
 
+Standalone: the code of every engine module the steps use is copied into the notebook (Part A, one cell per
+module, `%%engine <module>`), so a notebook imports nothing from the project folder and never loads vowpalwabbit.
 Both call the same functions as the terminal commands (fsdr-generate, fsdr-load, fsdr-features, fsdr-targets,
-fsdr-score-target, fsdr-push), one step per cell, and show what each step wrote. They are stored WITHOUT outputs:
+fsdr-score-target, fsdr-final-file), one step per cell, and show what each step wrote. They are stored WITHOUT outputs:
 outputs hold MSISDNs (tests/test_notebook.py checks it).
 """
 from __future__ import annotations
@@ -125,7 +127,7 @@ T0 reads the two folders **as one run**. A table filed on the wrong side is stil
 Every step is **resumable**: a step already done with the same inputs is skipped, and `FORCE = True` re-runs it."""),
     code("""# --- settings -------------------------------------------------------------------
 RUN_DATE = "2026-10-22"     # the run date D (a Thursday in production)
-GENERATE = True             # True: write dummy data for D first (tests); False: use the exports you copied
+GENERATE = True             # True: dummy data for D (tests). REAL DATA: False (real exports are never overwritten)
 N_LINES = 3000              # dummy lines (2000 = 30 s; 1,000,000 = the production size, ~16 min to generate)
 WORKERS = 2                 # partitions in parallel for T2 / T3 (2 on a laptop, 8 on a big machine)
 FORCE = False               # True: re-run every step even if its inputs did not change
@@ -140,7 +142,7 @@ The generator writes the 47 tables of run date *D* as `.csv.gz`, the FSDR CSV st
 - The scoring tables of the week go to `data/scoring/<D>/`: `subscriptions_tg`, `usage_data_voice_payg_tg`, `sub_btl_3months`, `targeting_auto`, the catalogue, the scripts, the conflicts, consent, and the `*_score` tables.
 - `btl_catalog` is written to both sides.
 
-The manifest says `source: generator`, so real exports are never overwritten silently. With real data, set `GENERATE = False` and copy your files into the same folders."""),
+The manifest says `source: generator`, so real exports are never overwritten: with real files in the folder and `GENERATE = True`, this cell stops. With real data, set `GENERATE = False` and copy your files into the folders (see **How to add new data** above)."""),
     code("""if GENERATE:
     from nbx.fsdr.synth import generator
 
@@ -179,7 +181,7 @@ print(f"tables found: {inputs.present.sum()} / {len(inputs)} | misfiled: {src.mi
 display(inputs.groupby(["side", "folder"]).agg(tables=("table", "count"), MB=("MB", "sum")).round(2))
 show(inputs, n=60)"""),
 
-    md("""## Step 2 · T0: validation, completeness, Parquet cache (① data agent)
+    md("""## Step 2 · T0: validation, completeness, Parquet cache · Agent 1 (①) data agent
 
 T0 runs before anything else and does three things.
 
@@ -187,7 +189,8 @@ T0 runs before anything else and does three things.
    - A *blocking* issue stops the run.
    - A *warning* is reported and the run continues.
 2. **Completeness**: are the tables the pipeline needs all present?
-   - Week 0 needs the `*_auto` tables; a weekly run needs the `*_score` tables.
+   - T0 chooses the mode from the files. **Week 0** (`train_week0`): `activities_w1_auto`, `subs_amt_auto` and `targeting_dataiku_auto` are present, and the features come from the `*_auto` history.
+   - **Every next week** (`train_weekly`): no `*_auto` history; the features come from this week's `*_score` tables. The missing history tables are then warnings ("not needed by the train_weekly pipeline"), not blocking issues.
    - A missing optional table (sample, consent) falls back to a documented default.
 3. **Cache**: every table is written to Parquet in 16 partitions, by a hash of `ACCESS_METHOD_ID`.
    - Every later step reads this cache, never the `.csv.gz` again, so 1M lines fit in memory partition by partition.
@@ -200,7 +203,10 @@ print(f"T0_load {t0['status'].upper()}{' (skipped: same inputs)' if t0.get('skip
       f"{t0['tables']} tables, {t0['rows_in']:,} rows, validation {t0['validation']} {t0['issue_counts']}")
 print("read as one run:", t0.get("training_source"), "+", t0.get("scoring_source"))
 print()
-print(t0["explanation"])"""),
+print(t0["explanation"])
+if t0["pipeline"] == "train_weekly":
+    print()
+    print("weekly run: features from this week's *_score tables; the agent dictionary comes from the previous run")"""),
     code("""T0 = RUN / "train" / "T0_load"
 rep = json.loads((T0 / "validation_report.json").read_text(encoding="utf-8"))
 issues = pd.DataFrame(rep["issues"])
@@ -261,7 +267,7 @@ stats = json.loads((T2 / "stats.json").read_text(encoding="utf-8"))
 show(pd.DataFrame(stats["medians_by_nationality"]).T.round(4), n=10, title="B-05 medians by nationality (missing scores)")
 show(T2 / "base_features_preview.csv", n=5)"""),
 
-    md("""## Step 5 · T3: segments, micro-segments and the two actions
+    md("""## Step 5 · T3: segments, micro-segments and the two actions · Agents 2 (②) segmentation and 2b (②b) agent dictionary
 
 For every line of T2:
 
@@ -317,7 +323,7 @@ TARGET_P6 = '''TARGET = "{t}"
 p6 = scoring_groups.run_p6_offers(D, force=FORCE, target=TARGET)
 P6 = RUN / "score" / f"P6_offers_{{TARGET}}"
 print(f"{{p6['stage']}} DONE{{' (skipped)' if p6.get('skipped') else ''}} -- group audit {{p6['audit_status']}}"
-      f"{{' (PUSH BLOCKED)' if p6['push_blocked'] else ''}}, up to {{p6['reco_offers']}} offers per line")
+      f"{{' (FINAL_FILE BLOCKED)' if p6['blocked'] else ''}}, up to {{p6['reco_offers']}} offers per line")
 show(pd.read_csv(P6 / "group_report.csv"), title="per group")
 audit = json.loads((P6 / "audit_groups.json").read_text(encoding="utf-8"))
 show([{{k: c[k] for k in ("id", "rule", "status", "count", "what")}} for c in audit["checks"]], n=20, title="group audit")'''
@@ -336,7 +342,7 @@ show(P6 / "traces.csv", n=6)'''
 
 TARGET_FINAL = '''fin = scoring_groups.run_target_final(D, TARGET, force=FORCE)
 OUT_T = OUTPUT / TARGET
-print(f"{{TARGET}} final {{'READY' if fin['push_ready'] else 'BLOCKED (see BLOCKED.txt)'}} -- input_flytxt_{{TARGET}} "
+print(f"{{TARGET}} final {{'READY' if fin['ready'] else 'BLOCKED (see BLOCKED.txt)'}} -- input_flytxt_{{TARGET}} "
       f"{{fin['input_flytxt_rows']:,}} rows; details {{fin['details_rows']:,}} lines x {{fin['details_columns']}} columns")
 show(fin["output_checks"], title="output checks A-20 ... A-24")
 show(fin["per_group"], title="per group a / b")
@@ -347,7 +353,7 @@ reasons = pd.concat([det[f"REASON_{{i}}"].fillna("(empty)").value_counts().renam
 display(Markdown("**What fills each slot** (V4.0: 5 = 3rd monthly, 6 = 3rd weekly; a favourite or a forced offer only "
                  "fills a slot 5 / 6 left empty)"))
 display(reasons.fillna(0).astype(int))
-flytxt = csvstd.read_csv(OUT_T / f"input_flytxt_{{TARGET}}{{csvstd.SUFFIX}}") if fin["push_ready"] else None
+flytxt = csvstd.read_csv(OUT_T / f"input_flytxt_{{TARGET}}{{csvstd.SUFFIX}}") if fin["ready"] else None
 if flytxt is not None:
     n = flytxt[[f"destination_offer_name_{{i}}" for i in range(1, 7)]].ne("").sum(axis=1)
     n.value_counts().sort_index().plot.bar(title=f"{{TARGET}}: offers per line in the file", figsize=(6, 3))
@@ -362,7 +368,7 @@ SCORING_CELLS = [
     md("""# 02 · Scoring, step by step (FSDR V4.0), each target separately
 
 Scoring runs after training (`01_training_step_by_step.ipynb`) on the **same run date**. It takes the target lists, builds the panel, and scores **Target 1** and **Target 2 separately**, each into its own output folder.
-It then builds the single file to push.
+It then saves the single final file of both targets (`input_flytxt.csv.gz`, the campaign format). Nothing is sent anywhere: the files stay in `data/output/<D>/`.
 
 | Target | Group a (`a_constraint`) | Group b (`b_free`) | Action used |
 |---|---|---|---|
@@ -377,15 +383,15 @@ It then builds the single file to push.
 | 3 | **P1** panel from the lists, sizes, balance | `data/runs/<D>/score/P1_panel/` |
 | 4–5 | **Target 1**: P6 offers, then the final files | `data/runs/<D>/score/P6_offers_target1/`, `data/output/<D>/target1/` |
 | 6–7 | **Target 2**: the same | `…/P6_offers_target2/`, `data/output/<D>/target2/` |
-| 8 | control file and **push** (both targets PASS) | `data/output/<D>/control/`, `data/output/<D>/push/` |
-| 9 | validate the file to push | — |
+| 8 | control file and the **final file** (both targets PASS) | `data/output/<D>/control/`, `data/output/<D>/final/` |
+| 9 | validate the final file | — |
 
 **Up to 6 offers per line (V4.0).** Slots 1–2 are the 2 best monthly offers and slots 3–4 the 2 best weekly ones. Slot 5 is the 3rd monthly offer and slot 6 the 3rd weekly one (rule EXT-6: same universe, above the anchor, not the same service and price). Favourites and forced bundles only fill a slot 5 / 6 left empty. Set `FSDR_RECO_OFFERS=4` in `.env` for the V3.0 file (4 recommended offers).
 
 Decisions use the documented fallbacks of the LLM agents (rule action, NBO order E-O3 + E-O1) until Phases 5–6 build them, and every row says so (`DECIDED_BY`, `score_source`)."""),
     code("""# --- settings -------------------------------------------------------------------
 RUN_DATE = "2026-10-22"         # the same run date as the training notebook
-GENERATE_TARGETS = True         # True: dummy lists (stratified draw of the eligible base); False: your uploaded lists
+GENERATE_TARGETS = True         # True: dummy lists (tests). REAL LISTS: False (real lists are never overwritten)
 FORCE = True                    # scoring is quick: re-run every step by default
 PREVIEW_ROWS = 8
 """ + SETUP + """
@@ -426,10 +432,14 @@ data/scoring/<D>/control/control.csv.gz                   control
 - **Warning**: a size more than 2 % off the configured size."""),
     code("""from nbx.fsdr.contract.cache import CacheSource
 
-if GENERATE_TARGETS:
+folder = scoring_groups.input_folder(D)
+if GENERATE_TARGETS and scoring_groups.real_targets(folder):
+    print("GENERATE_TARGETS = True, but the folder holds YOUR lists (not dummy lists): they are kept and used.",
+          "Set GENERATE_TARGETS = False to remove this message.")
+elif GENERATE_TARGETS:
     gen = scoring_groups.generate_targets(D)
     print(f"dummy lists written (scaled x{gen['scale_factor']} to the base): {gen['sizes']}")
-folder = scoring_groups.input_folder(D)
+print("lists are", "DUMMY (generator)" if targets.dummy_lists(folder) else "YOURS (checked against the configured sizes)")
 print("lists:", {k: str(targets.group_file(folder, k).relative_to(folder)) if targets.group_file(folder, k) else "MISSING"
                  for k in config.TARGET_FILES})
 seg = scoring_groups.base_segments(D)
@@ -454,7 +464,7 @@ show(P1 / "group_sizes.csv")
 bal = pd.read_csv(P1 / "balance.csv")
 show(bal.sort_values("max_gap_points", ascending=False), n=10, title="balance: largest gaps between groups")"""),
 
-    md("""## Step 4 · Target 1, scoring (P6): T1C (a) and T1F (b)
+    md("""## Step 4 · Target 1, scoring (P6): T1C (a) and T1F (b) · Agents 3 (③) NBA, 4 (④) NBO, 6A (⑥A) production rules, 9 (⑨) auditor
 
 These rules apply only to the two groups of Target 1:
 
@@ -471,11 +481,11 @@ These rules apply only to the two groups of Target 1:
 4. **EXT-6 (V4.0)**: a third offer per validity.
 5. **10.1 consistency** (T1C only): a customer with no offer is retried once with his second action.
 
-The **group audit** (A-12 universe, A-12b catalogue, A-17 rules version, A-21 no control line, A-30 / A-31) must PASS, or the push is blocked."""),
+The **group audit** (A-12 universe, A-12b catalogue, A-17 rules version, A-21 no control line, A-30 / A-31) must PASS, or the final file is not written."""),
     code(TARGET_P6.format(t="target1")),
     code(TARGET_P6_DETAIL.format(a="t1c")),
 
-    md("""## Step 5 · Target 1, final files (code 5) → `data/output/<D>/target1/`
+    md("""## Step 5 · Target 1, final files (code 5) → `data/output/<D>/target1/` · Agent 7 (⑦) code 5
 
 Code 5 turns the recommended offers into the campaign file `input_flytxt`, which has 38 columns:
 
@@ -501,7 +511,7 @@ The **output checks** A-20 … A-24 run on the file: 38 columns in order, one ro
     code(TARGET_FINAL.format()),
     code(TARGET_DETAILS.format()),
 
-    md("""## Step 6 · Target 2, scoring (P6): T2C (a) and T2F (b), the challenger
+    md("""## Step 6 · Target 2, scoring (P6): T2C (a) and T2F (b), the challenger · Agents 3 (③), 4 (④), 6B (⑥B) challenger rules, 9 (⑨) auditor
 
 These rules apply only to the two groups of Target 2:
 
@@ -516,26 +526,27 @@ These rules apply only to the two groups of Target 2:
     code(TARGET_P6.format(t="target2")),
     code(TARGET_P6_DETAIL.format(a="t2c")),
 
-    md("""## Step 7 · Target 2, final files → `data/output/<D>/target2/`
+    md("""## Step 7 · Target 2, final files → `data/output/<D>/target2/` · Agent 7 (⑦) code 5
 
 Same code 5 and the same checks as Target 1, on the Target 2 lines only. The files are the same, with `t2c` / `t2f` in their names."""),
     code(TARGET_FINAL.format()),
     code(TARGET_DETAILS.format()),
 
-    md("""## Step 8 · Control file and the push
+    md("""## Step 8 · Control file and the final file · Agent 9 (⑨) auditor: no final file unless both targets PASS
 
 - `data/output/<D>/control/control_<D>.csv.gz` holds the control lines, which are never contacted (H-01), with their strata. They are the baseline for measuring uplift.
-- `data/output/<D>/push/input_flytxt.csv.gz` holds both target files merged. It is written **only if both targets passed** and no MSISDN is in two targets (A-30); otherwise you get `push/BLOCKED.txt`.
+- `data/output/<D>/final/input_flytxt.csv.gz` holds both target files merged. It is written **only if both targets passed** and no MSISDN is in two targets (A-30); otherwise you get `final/BLOCKED.txt`.
 
-A **human approval** (H-08) is still needed before the file goes to the campaign platform."""),
+The engine only **saves** these files in the campaign format (38 columns, `.csv.gz`); it sends nothing. You hand
+`final/input_flytxt.csv.gz` over yourself, once you have checked it (Step 9)."""),
     code("""ctrl = scoring_groups.write_control(D)
 print(f"control: {ctrl['lines']:,} lines -> {ctrl['file']}")
-push = scoring_groups.run_push(D)
-print(f"push {'READY' if push['push_ready'] else 'BLOCKED'} -- {push['input_flytxt_rows']:,} rows {push['rows_per_target']}"
-      + (f" -- reasons: {push['reasons']}" if push["reasons"] else ""))
+fin = scoring_groups.run_final_file(D)
+print(f"final file {'READY' if fin['ready'] else 'BLOCKED'} -- {fin['input_flytxt_rows']:,} rows {fin['rows_per_target']}"
+      + (f" -- reasons: {fin['reasons']}" if fin["reasons"] else ""))
 tree(OUTPUT, depth=3)"""),
 
-    md("""## Step 9 · Validate the file to push
+    md("""## Step 9 · Validate the final file
 
 These are the last checks before handing the file over:
 - the 38 columns in order;
@@ -543,32 +554,392 @@ These are the last checks before handing the file over:
 - no control line in the file;
 - every line found in the details with `IN_INPUT_FLYTXT = True`;
 - offers per line between 1 and 6."""),
-    code("""f = csvstd.read_csv(OUTPUT / "push" / f"input_flytxt{csvstd.SUFFIX}")
-details = pd.concat([pd.read_parquet(OUTPUT / t / f"details_{t}.parquet") for t in config.TARGETS])
-control = csvstd.read_csv(OUTPUT / "control" / f"control_{RUN_DATE}{csvstd.SUFFIX}")
-n = f[[f"destination_offer_name_{i}" for i in range(1, 7)]].ne("").sum(axis=1)
-checks = {
-    "38 columns in order": list(f.columns) == config.INPUT_FLYTXT_COLUMNS,
-    "one row per msisdn": bool(f["msisdn"].is_unique),
-    "8-digit text msisdn": bool(f["msisdn"].astype(str).str.fullmatch(r"\\d{8}").all()),
-    "no control line": not (set(f["msisdn"]) & set(control["ACCESS_METHOD_VAL"])),
-    "every line in the details": set(f["msisdn"]) == set(details.loc[details["IN_INPUT_FLYTXT"], "ACCESS_METHOD_VAL"]),
-    "offers per line 1..6 (recommended + favourites / forced)": bool(n.between(1, 6).all()),
-}
-show([{"check": k, "status": "PASS" if v else "FAIL"} for k, v in checks.items()], title="push file")
-print(f"{len(f):,} lines, {n.mean():.2f} offers per line on average; segment (action) mix:")
-display(f["segment"].value_counts().to_frame("lines"))
-show(f, n=5, title="input_flytxt.csv.gz (first rows)")"""),
+    code("""final_file = OUTPUT / "final" / f"input_flytxt{csvstd.SUFFIX}"
+if not final_file.exists():
+    blocked = OUTPUT / "final" / "BLOCKED.txt"
+    print("NO FINAL FILE: it is blocked. Fix the reason below, then run Steps 2-8 again.")
+    print()
+    print(blocked.read_text(encoding="utf-8") if blocked.exists() else "final/ is empty: run Step 8 first")
+    for t in config.TARGETS:
+        s = OUTPUT / t / "summary.json"
+        if s.exists():
+            r = json.loads(s.read_text(encoding="utf-8"))
+            print(f"{t}: {'READY' if r.get('ready') else 'BLOCKED'}, group audit {r.get('p6_group_audit')}, "
+                  f"failed checks {[c['id'] for c in r.get('output_checks', []) if c.get('status') != 'PASS']}")
+        if (OUTPUT / t / "BLOCKED.txt").exists():
+            print("   ", (OUTPUT / t / "BLOCKED.txt").read_text(encoding="utf-8").strip().replace("\\n", "\\n    "))
+else:
+    f = csvstd.read_csv(final_file)
+    details = pd.concat([pd.read_parquet(OUTPUT / t / f"details_{t}.parquet") for t in config.TARGETS])
+    control = csvstd.read_csv(OUTPUT / "control" / f"control_{RUN_DATE}{csvstd.SUFFIX}")
+    n = f[[f"destination_offer_name_{i}" for i in range(1, 7)]].ne("").sum(axis=1)
+    checks = {
+        "38 columns in order": list(f.columns) == config.INPUT_FLYTXT_COLUMNS,
+        "one row per msisdn": bool(f["msisdn"].is_unique),
+        "8-digit text msisdn": bool(f["msisdn"].astype(str).str.fullmatch(r"\\d{8}").all()),
+        "no control line": not (set(f["msisdn"]) & set(control["ACCESS_METHOD_VAL"])),
+        "every line in the details": set(f["msisdn"]) == set(details.loc[details["IN_INPUT_FLYTXT"], "ACCESS_METHOD_VAL"]),
+        "offers per line 1..6 (recommended + favourites / forced)": bool(n.between(1, 6).all()),
+    }
+    show([{"check": k, "status": "PASS" if v else "FAIL"} for k, v in checks.items()], title="final file")
+    print(f"{len(f):,} lines, {n.mean():.2f} offers per line on average; segment (action) mix:")
+    display(f["segment"].value_counts().to_frame("lines"))
+    show(f, n=5, title="input_flytxt.csv.gz (first rows)")"""),
 ]
 
 NOTEBOOKS = {"01_training_step_by_step.ipynb": TRAINING_CELLS, "02_scoring_step_by_step.ipynb": SCORING_CELLS}
+
+
+# ---------------------------------------------------------------------------
+# Standalone notebooks (V4.0): the engine code is copied INTO the notebook (Part A), nothing is imported from the
+# project folder, and vowpalwabbit is never loaded (it crashed Jupyter kernels on Windows: msvcp140.dll conflict).
+# ---------------------------------------------------------------------------
+import ast  # noqa: E402
+import re  # noqa: E402
+
+ROOT = HERE.parent
+ROOTS = {"01_training_step_by_step.ipynb": ["nbx.fsdr.synth.generator", "nbx.fsdr.datasource", "nbx.fsdr.schemas",
+                                            "nbx.fsdr.contract.data_agent", "nbx.fsdr.contract.cache",
+                                            "nbx.fsdr.pipelines.training", "nbx.fsdr.steps", "nbx.fsdr.csvstd"],
+         "02_scoring_step_by_step.ipynb": ["nbx.fsdr.pipelines.scoring_groups", "nbx.fsdr.targets",
+                                           "nbx.fsdr.contract.cache", "nbx.fsdr.steps", "nbx.fsdr.csvstd"]}
+# the V1.0 bandit modules: only reached by V1.0 code paths the V4.0 steps never call (a call would fail loudly)
+EXCLUDED = {"nbx.core.vw_format", "nbx.fsdr.bandit", "nbx.fsdr.registry"}
+FORBIDDEN = {"vowpalwabbit", "implicit", "gradio", "fastapi", "uvicorn", "httpx", "langsmith", "openai", "anthropic"}
+# the package root of the notebook: telemetry off, and NO vowpalwabbit (the V1.0 bandit is not part of V4.0)
+NBX_INIT = '''"""NBX engine, standalone in this notebook (V4.0 training / scoring). vowpalwabbit is never loaded."""
+import os
+
+for _k, _v in {"GRADIO_ANALYTICS_ENABLED": "False", "HF_HUB_DISABLE_TELEMETRY": "1", "DO_NOT_TRACK": "1",
+               "VLLM_NO_USAGE_STATS": "1", "ANONYMIZED_TELEMETRY": "False"}.items():
+    os.environ.setdefault(_k, _v)
+
+__version__ = "4.0.0"
+'''
+
+LOADER = '''# --- Part A loader: the cells below hold the engine code; %%engine registers each one as a module -------------
+# Nothing is imported from the project folder: a cell "%%engine nbx.fsdr.csvstd" runs ITS OWN code and makes it
+# available to the other cells under that name. Only pip packages are imported (pandas, numpy, pyarrow, pyyaml,
+# python-dotenv, matplotlib). vowpalwabbit is never loaded.
+import linecache, os, sys, types
+from pathlib import Path
+
+from IPython.core.magic import register_cell_magic
+
+ROOT = Path.cwd()
+while not (ROOT / "pyproject.toml").exists() and ROOT != ROOT.parent:      # the project folder (for data/ and .env)
+    ROOT = ROOT.parent
+os.chdir(ROOT)
+for _name in [m for m in sys.modules if m == "nbx" or m.startswith("nbx.")]:
+    del sys.modules[_name]                                                  # a re-run starts clean
+
+
+def _module(name, package=False):
+    mod = types.ModuleType(name)
+    mod.__fsdr_notebook__ = True                                            # proof: defined in this notebook
+    if package:
+        mod.__path__ = []          # its sub-modules are cells of this notebook, never files on disk
+    mod.__file__ = str(ROOT / (name.replace(".", "/") + ("/__init__.py" if package else ".py")))  # paths only
+    mod.__package__ = name if package else name.rpartition(".")[0]
+    sys.modules[name] = mod
+    parent, _, child = name.rpartition(".")
+    if parent:
+        setattr(_package(parent), child, mod)
+    return mod
+
+
+def _package(name):
+    m = sys.modules.get(name)
+    return m if getattr(m, "__fsdr_notebook__", False) else _module(name, package=True)
+
+
+@register_cell_magic
+def engine(line, cell):
+    """%%engine <module> [package]: run this cell's code as that module."""
+    name, *flags = line.split()
+    mod = _package(name) if "package" in flags else _module(name)
+    filename = f"<notebook: {name}>"
+    linecache.cache[filename] = (len(cell), None, cell.splitlines(True), filename)   # readable tracebacks
+    exec(compile(cell, filename, "exec"), mod.__dict__)
+
+
+def use(module, *names):
+    """The objects of an engine module (defined by a cell below), e.g. config, csvstd = use("nbx.fsdr", "config", "csvstd")."""
+    mod = sys.modules[module]
+    out = [getattr(mod, n) if hasattr(mod, n) else sys.modules[f"{module}.{n}"] for n in names]
+    return out[0] if len(out) == 1 else tuple(out)
+
+
+print("engine loader ready: the next cells define the engine modules")'''
+
+PROOF = '''# --- proof: everything ran from this notebook ------------------------------------------------------------
+mods = sorted(m for m in sys.modules if m == "nbx" or m.startswith("nbx."))
+from_disk = [m for m in mods if not getattr(sys.modules[m], "__fsdr_notebook__", False)]
+print(f"{len(mods)} engine modules, all defined in this notebook: {not from_disk}")
+print("vowpalwabbit loaded:", "vowpalwabbit" in sys.modules)
+assert not from_disk, f"loaded from the project folder: {from_disk}"
+assert "vowpalwabbit" not in sys.modules'''
+
+
+def _file(mod: str) -> Path:
+    p = ROOT / mod.replace(".", "/")
+    return p / "__init__.py" if p.is_dir() else p.with_suffix(".py")
+
+
+def _resolve(mod: str, name: str | None = None) -> str:
+    """'from nbx.fsdr import config' -> nbx.fsdr.config (a module file) or nbx.fsdr (an attribute of the package)."""
+    if name and (ROOT / (mod + "." + name).replace(".", "/")).with_suffix(".py").exists():
+        return f"{mod}.{name}"
+    if name and (ROOT / (mod + "." + name).replace(".", "/")).is_dir():
+        return f"{mod}.{name}"
+    return mod
+
+
+def _deps(mod: str, top_only: bool) -> set[str]:
+    tree = ast.parse(_file(mod).read_text(encoding="utf-8"))
+    nodes = tree.body if top_only else list(ast.walk(tree))
+    out: set[str] = set()
+    for n in nodes:
+        if isinstance(n, ast.ImportFrom) and n.module and n.module.split(".")[0] == "nbx":
+            out |= {_resolve(n.module, a.name) for a in n.names}
+        elif isinstance(n, ast.Import):
+            out |= {_resolve(a.name) for a in n.names if a.name.split(".")[0] == "nbx"}
+    parts = mod.split(".")
+    out |= {".".join(parts[:i]) for i in range(1, len(parts))}               # the parent packages run first
+    return out - {mod}
+
+
+def _third_party(mod: str) -> set[str]:
+    out = set()
+    for n in ast.walk(ast.parse(_file(mod).read_text(encoding="utf-8"))):
+        if isinstance(n, ast.Import):
+            out |= {a.name.split(".")[0] for a in n.names}
+        elif isinstance(n, ast.ImportFrom) and n.module and n.level == 0:
+            out.add(n.module.split(".")[0])
+    return out
+
+
+def engine_modules(roots: list[str]) -> list[str]:
+    """Every engine module the roots need (lazy imports included), parents and dependencies first."""
+    need, todo = set(), list(roots)
+    while todo:
+        m = todo.pop()
+        if m not in need and m not in EXCLUDED:
+            need.add(m)
+            todo += sorted(_deps(m, top_only=False))
+    bad = {m: _third_party(m) & FORBIDDEN for m in need if m != "nbx" and _third_party(m) & FORBIDDEN}
+    if bad:
+        raise SystemExit(f"these engine modules import forbidden packages: {bad}")
+    order: list[str] = []
+
+    def visit(m, stack=()):
+        if m in order:
+            return
+        for d in sorted(_deps(m, top_only=True) & need):
+            if d not in stack:
+                visit(d, (*stack, m))
+        order.append(m)
+    for m in sorted(need):
+        visit(m)
+    return order
+
+
+_IMPORT = re.compile(r"^(?P<ind>\s*)from (?P<mod>nbx[\w.]*) import (?P<names>[\w, ]+)$", re.M)
+
+
+def _use_imports(src: str) -> str:
+    """Step cells: 'from nbx.fsdr import config, csvstd' -> 'config, csvstd = use("nbx.fsdr", "config", "csvstd")'."""
+    def sub(m):
+        names = [n.strip() for n in m["names"].split(",") if n.strip()]
+        return f'{m["ind"]}{", ".join(names)} = use("{m["mod"]}", {", ".join(repr(n) for n in names)})'.replace("'", '"')
+    return _IMPORT.sub(sub, src)
+
+
+def _engine_cells(mods: list[str]) -> list:
+    rows = []
+    for m in mods:
+        src = _file(m).read_text(encoding="utf-8")
+        doc = (ast.get_docstring(ast.parse(src)) or "").strip().split("\n")[0]
+        rows.append((m, str(_file(m).relative_to(ROOT)).replace("\\", "/"), len(src.splitlines()), doc))
+    table = "\n".join(f"| `{m}` | `{f}` | {n} | {d.replace('|', '/')} |" for m, f, n, d in rows)
+    cells = [md(f"""## Part A · The engine code ({len(mods)} modules, {sum(r[2] for r in rows):,} lines)
+
+This notebook is **standalone**: every function the steps call is defined in the cells of this part. Nothing is
+imported from the project folder (`nbx/`), and the only imports are pip packages (pandas, numpy, pyarrow, pyyaml,
+python-dotenv, matplotlib). **vowpalwabbit is never loaded**: it is the V1.0 bandit only, and loaded after pandas it
+crashes the Jupyter kernel on Windows (two copies of `msvcp140.dll`).
+
+Each cell starts with `%%engine <module>`: the cell runs its own code and registers it under that name, so the
+cells can call each other (an `import` of `nbx.…` inside these cells resolves to the cell above, never to a file).
+The code is copied from the project by `notebooks/build_step_notebooks.py`, so it is **exactly** the code of the
+terminal commands. Run this part once (it takes a few seconds), then go to Part B.
+
+T2 / T3 run in this process (`WORKERS = 1`): worker processes would have to import the code from files.
+
+| Module | Copied from | Lines | What it does |
+|---|---|---|---|
+{table}"""), code(LOADER)]
+    for m in mods:
+        src = NBX_INIT if m == "nbx" else _file(m).read_text(encoding="utf-8")
+        is_pkg = _file(m).name == "__init__.py"
+        cells.append(code(f"%%engine {m}{' package' if is_pkg else ''}\n" + src.rstrip() + "\n"))
+    return cells
+
+
+def standalone(cells: list, name: str) -> list:
+    """The step cells, with the engine (Part A) inserted after the settings and the nbx imports turned into use()."""
+    title, settings, *steps = cells
+    head, _, helpers = settings.source.partition("# --- paths and helpers")
+    head = re.sub(r"^WORKERS = .*$", "WORKERS = 1                 # standalone notebook: T2 / T3 run in this process "
+                  "(the engine code lives here, not in files)", head, flags=re.M)
+    helpers = "# --- paths and helpers" + helpers
+    helpers = helpers.replace("sys.path.insert(0, str(ROOT))\n", "")
+    part_b = md("## Part B · The steps\n\nThe engine is loaded. Each step below calls it and shows what it wrote.")
+    out = [title, MACHINE_MD, code(MACHINE_CHECK), AGENTS_MD, NEW_DATA_MD, code(head.rstrip() + "\n"),
+           *_engine_cells(engine_modules(ROOTS[name])), part_b,
+           code(_use_imports(helpers))]
+    for c in steps:
+        out.append(code(_use_imports(c.source)) if c.cell_type == "code" else c)
+    out += [md("## Proof: nothing came from the project folder\n\nEvery engine module was defined by a cell of "
+               "this notebook, and vowpalwabbit was never loaded."), code(PROOF)]
+    return out
+
+
+MACHINE_MD = md("""## Your machine: Python, GPU and the local LLM
+
+Run this cell first. It only **reads** (nothing is installed, nothing leaves the machine) and prints:
+- the Python of the kernel: it must be the project's `.venv` (`…\\.venv\\Scripts\\python.exe`);
+- the NVIDIA GPU of the laptop (`nvidia-smi`): name, driver, memory, how busy it is now, and which programs use it;
+- the local LLM server of `.env` (`LLM_BACKEND`): is it listening?
+
+**Who uses the GPU.** The steps of this notebook (pandas, Parquet) run on the **CPU**. The GPU is used only by the
+local LLM server (vLLM, Ollama, llama.cpp or LM Studio), when an agent calls it. In V4.0 the decisions use the
+agents' rule fallbacks (see the agent map below), so the GPU stays idle during these steps; that is expected.
+
+**To see the GPU working:** start your LLM server (for example `ollama serve`), run this cell again, and look at
+`programs on the GPU`. Or, in a terminal, run `nvidia-smi -l 1` (it refreshes every second) while the LLM answers:
+`GPU-Util` goes up and the server process (`ollama.exe`, `python`, `llama-server`) is listed.""")
+
+MACHINE_CHECK = '''# --- your machine: Python, GPU, local LLM (read only) -------------------------------------------------------
+import os, platform, shutil, socket, subprocess, sys
+from pathlib import Path
+from urllib.parse import urlparse
+
+print("Python  :", sys.version.split()[0], "|", sys.executable)
+_venv = Path(sys.executable).parent.parent
+print("kernel  :", "OK, the project's .venv" if _venv.name == ".venv" else
+      f"NOT the project's .venv ({_venv}): choose the .venv kernel (top right)")
+print("machine :", platform.platform(), "|", os.cpu_count(), "CPU threads")
+
+_smi = shutil.which("nvidia-smi")
+if not _smi:
+    print("GPU     : no NVIDIA GPU found (nvidia-smi is not on the PATH: no NVIDIA driver, or another GPU brand)")
+else:
+    def _q(args):
+        try:
+            r = subprocess.run([_smi, *args, "--format=csv,noheader"], capture_output=True, text=True, timeout=20)
+            return [l.strip() for l in r.stdout.splitlines() if l.strip()]
+        except (OSError, subprocess.SubprocessError) as e:
+            return [f"nvidia-smi failed: {e}"]
+    for i, row in enumerate(_q(["--query-gpu=name,driver_version,memory.total,memory.used,utilization.gpu"])):
+        print(f"GPU {i}   : {row}   (name, driver, memory total, memory used, busy now)")
+    apps = _q(["--query-compute-apps=process_name,used_memory"])
+    print("programs on the GPU:", "; ".join(apps) if apps else "none right now (the LLM server is not running or idle)")
+
+try:                                              # optional: only if PyTorch is installed in this venv
+    import importlib.util
+    if importlib.util.find_spec("torch"):
+        import torch
+        print("PyTorch : CUDA available =", torch.cuda.is_available(),
+              f"({torch.cuda.get_device_name(0)})" if torch.cuda.is_available() else "")
+except Exception as e:                            # noqa: BLE001 - a check, never a failure
+    print("PyTorch : check failed:", e)
+
+# the local LLM server of .env (the key is never printed)
+_root = Path.cwd()
+while not (_root / "pyproject.toml").exists() and _root != _root.parent:
+    _root = _root.parent
+try:
+    from dotenv import dotenv_values
+    _env = {**dotenv_values(_root / ".env"), **os.environ}
+except ImportError:
+    _env = dict(os.environ)
+_backend = (_env.get("LLM_BACKEND") or "offline").lower()
+_urls = {"vllm": ("VLLM_URL", "http://127.0.0.1:8001"), "ollama": ("OLLAMA_URL", "http://127.0.0.1:11434"),
+         "llamacpp": ("LLAMACPP_URL", "http://127.0.0.1:8080"), "lmstudio": ("LMSTUDIO_URL", "http://127.0.0.1:1234")}
+if _backend not in _urls:
+    print(f"LLM     : LLM_BACKEND = {_backend}: no LLM server, the agents use their rule fallbacks (GPU not needed)")
+else:
+    _u = urlparse(_env.get(_urls[_backend][0]) or _urls[_backend][1])
+    try:
+        socket.create_connection((_u.hostname, _u.port or 80), timeout=2).close()
+        _up = "listening"
+    except OSError:
+        _up = "NOT running (start it, or set LLM_BACKEND=offline)"
+    print(f"LLM     : {_backend} at {_u.scheme}://{_u.hostname}:{_u.port} -> {_up}")
+'''
+
+AGENTS_MD = md("""## The agents: Agent 1 … Agent 9
+
+The engine is organised as numbered agents (the numbers of the plan, `docs/fsdr_plan.md` §5). The step titles below
+say which agent works in each step.
+
+| Agent | Name | Step (notebook) | What it does | How it decides in V4.0 |
+|---|---|---|---|---|
+| **Agent 1** ① | Data agent | 01 · Step 2 (T0) | validates the 47 tables, completeness, cache; **blocks the run** on bad data | rules (contract checks); its summary is fixed text |
+| **Agent 2** ② | Segmentation | 01 · Step 5 (T3) | S-rules → segment, bands, micro-segment | rules (first rule that matches wins) |
+| **Agent 2b** ②b | Agent dictionary | 01 · Step 5 (T3) | segment → `action_agent` (used by Target 2) | week 0: a copy of the production dictionary (v0) |
+| **Agent 3** ③ | NBA, next best action | 02 · Steps 4 and 6 | the action of each line | fallback: the rule action (`action_original` for Target 1, `action_agent` for Target 2) |
+| **Agent 4** ④ | NBO, next best offer | 02 · Steps 4 and 6 | scores the allowed offers of each line | fallback: the order E-O3 + E-O1 (`score_source` says it) |
+| **Agent 6A** ⑥A | Production rules | 02 · Step 4 | Target 1: code 3 (B-20 … B-32) and code 4 (FR-01 … FR-14) passes, up to 6 offers | rules (YAML in `nbx/fsdr/rules/`) |
+| **Agent 6B** ⑥B | Challenger rules | 02 · Step 6 | Target 2: CC-v1 and CF-v1, relative ARPU band | rules |
+| **Agent 7** ⑦ | Code 5 | 02 · Steps 5 and 7 | the 38-column `input_flytxt` file, F-01 … F-19 | rules |
+| **Agent 9** ⑨ | Auditor | 02 · Steps 4, 6 and 8 | A-12, A-12b, A-17, A-30, A-31; **blocks the final file** on any FAIL | rules |
+
+Not in these notebooks: Agent 5 ⑤ (market intelligence, removed in V4.0), Agent 8 ⑧ (strategy report),
+Agents 10 / 11 (⑩ bandit, ⑪ ranker: evidence helpers), Agent 12 ⑫ (ledger), Agent 13 ⑬ (revenue guard) and the
+orchestrator ★. They belong to later phases or to the web interface.
+
+**Does an agent create the actions by itself? Not in V4.0.** Every action and every offer of these notebooks comes
+from fixed, versioned rules, and each row says so: `DECIDED_BY = fallback_rule_action`. When the LLM agents ③ / ④
+are switched on (plan Phases 5–6), the local LLM will only **score** the actions and offers that the rules allow;
+the code then picks the action (with ε exploration and a logged propensity), rejects any action or offer id the LLM
+invents, and ⑨ can still block the final file. The LLM proposes; the rules decide.""")
+
+
+NEW_DATA_MD = md("""## How to add new data (real data, or the next week)
+
+Everything is driven by the **run date `D`** (`YYYY-MM-DD`, the extraction date). Each week has its own folders;
+the old weeks stay. The full guide, with every table, is `docs/DATA_UPDATE.md`.
+
+1. **Create the folders of `D`** (5 sub-folders on each side, plus the target folders):
+   ```
+   data/training/<D>/  usage/ models/ subscription/ catalog/ others/
+   data/scoring/<D>/   usage/ models/ subscription/ catalog/ others/
+                       target1/a_constraint/ target1/b_free/ target2/a_constraint/ target2/b_free/ control/
+   ```
+2. **Copy the exports**: file name = the exact table name + `.csv.gz` (or `.csv`, `.parquet`), e.g. `activities_w1_score.csv.gz`.
+   - **Training side**: `base_prepaid`, `consumer_aact_account`, `subs_btl_auto`, the 11 model tables, `btl_catalog`.
+     **Week 0 only**: the history `activities_*_auto`, `subs_amt_auto`, `party_auto`, `access_method_id_auto`,
+     `targeting_dataiku_auto`. **Leave them out from week 1 on**, or T0 runs week 0 again on the old history.
+   - **Scoring side** (every week): `subscriptions_tg`, `usage_data_voice_payg_tg`, `sub_btl_3months`,
+     `activities_w1…w4_score`, `activities_m1…m3_score`, `subs_amt_score`, `party_scoring`, `targeting_auto`,
+     `btl_catalog`, `BTL_script_english_arabic_ok`, `conflicting_offers_h`, `consent_contact`.
+3. **Copy the 5 target lists** (column `access_method_val`, 8 digits): `target1/a_constraint/target1_a.csv.gz`,
+   `target1/b_free/target1_b.csv.gz`, `target2/a_constraint/target2_a.csv.gz`, `target2/b_free/target2_b.csv.gz`,
+   `control/control.csv.gz`.
+4. **Settings**: `RUN_DATE = "<D>"` in both notebooks, `GENERATE = False` (training) and `GENERATE_TARGETS = False`
+   (scoring). Real exports and real lists are never overwritten by dummy data, even if you forget.
+5. **Run** training (T0 → T2 → T3), then scoring. Check: T0 **DONE** (`train_week0` the first week,
+   `train_weekly` after), both target audits **PASS**, and `data/output/<D>/final/input_flytxt.csv.gz` exists.
+6. **Hand over** `data/output/<D>/final/input_flytxt.csv.gz` once it is checked. The engine only saves files, it sends nothing. Keep `data/runs/<D>/` and `data/output/<D>/`.""")
 
 
 def build(out_dir: Path = HERE) -> list[Path]:
     paths = []
     for name, cells in NOTEBOOKS.items():
         nb = nbf.v4.new_notebook()
-        nb.cells = cells
+        nb.cells = standalone(cells, name)
         nb.metadata = {"kernelspec": {"display_name": "Python 3 (.venv)", "language": "python", "name": "python3"},
                        "language_info": {"name": "python"}}
         p = Path(out_dir) / name

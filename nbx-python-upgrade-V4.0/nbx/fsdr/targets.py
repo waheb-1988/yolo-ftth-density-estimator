@@ -20,6 +20,7 @@ Checks (read_targets + check_targets), each with a count and examples:
 """
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -52,11 +53,37 @@ def has_targets(input_folder: Path) -> bool:
     return any(group_file(input_folder, k) for k in config.TARGET_FILES)
 
 
+def _sha(path: Path) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def dummy_lists(input_folder: Path) -> bool:
+    """True when the lists present are exactly the ones the generator wrote: its manifest is there and every list
+    file still has the checksum it recorded. A list copied over a dummy one (your real list) makes this False, even
+    if the old manifest was left behind."""
+    m = targets_dir(input_folder) / config.TARGETS_MANIFEST
+    try:
+        man = json.loads(m.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    if man.get("source") != "generator":
+        return False
+    sums = man.get("sha256")
+    if sums is None:                # an older manifest, without checksums: cannot prove the lists are dummy ones,
+        return False                # so they are treated as real lists (kept; configured sizes)
+    for key in config.TARGET_FILES:
+        f = group_file(input_folder, key)
+        if f is not None and sums.get(key) != _sha(f):
+            return False
+    return True
+
+
 def expected_sizes(input_folder: Path) -> dict[str, int]:
     """Sizes to check the lists against: the generator's own sizes for dummy lists, else the configured sizes."""
-    m = targets_dir(input_folder) / config.TARGETS_MANIFEST
-    man = json.loads(m.read_text(encoding="utf-8")) if m.exists() else {}
-    return {k: int(v) for k, v in man["sizes"].items()} if man.get("source") == "generator" else config.group_sizes()
+    if not dummy_lists(input_folder):
+        return config.group_sizes()
+    man = json.loads((targets_dir(input_folder) / config.TARGETS_MANIFEST).read_text(encoding="utf-8"))
+    return {k: int(v) for k, v in man["sizes"].items()}
 
 
 def _read(path: Path) -> pd.DataFrame:
@@ -138,7 +165,7 @@ def write_targets(panel: pd.DataFrame, input_folder: Path, fmt: str = "csv.gz", 
     """Writes one list per group (dummy targets for tests, or a drawn panel to hand over)."""
     cols = [VAL, "ACCESS_METHOD_ID", "NATIONALITY_GROUP", "SEGMENT", "MICRO_SEGMENT", "VALUE_BAND", "USAGE_TYPE",
             "CURRENT_PLAN", "STRATUM"]
-    written = []
+    written, sums = [], {}
     for key, rel in config.TARGET_FILES.items():
         part = panel.loc[panel["GROUP_KEY"] == key, [c for c in cols if c in panel.columns]]
         part = part.rename(columns={VAL: "access_method_val", "STRATUM": "Final"})
@@ -152,6 +179,8 @@ def write_targets(panel: pd.DataFrame, input_folder: Path, fmt: str = "csv.gz", 
         else:
             part.to_json(p, orient="records", lines=fmt == "jsonl")
         written.append(p)
-    man = {"source": "generator", "sizes": panel["GROUP_KEY"].value_counts().to_dict(), "format": fmt, **(meta or {})}
+        sums[key] = _sha(p)
+    man = {"source": "generator", "sizes": panel["GROUP_KEY"].value_counts().to_dict(), "format": fmt,
+           "sha256": sums, **(meta or {})}
     (targets_dir(input_folder) / config.TARGETS_MANIFEST).write_text(json.dumps(man, indent=2), encoding="utf-8")
     return written
