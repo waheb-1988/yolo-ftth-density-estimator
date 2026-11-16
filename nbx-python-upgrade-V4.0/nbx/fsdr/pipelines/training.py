@@ -228,6 +228,9 @@ def run_t3(run_date: date, runs_root: Path | None = None, cache_root: Path | Non
         cache = CacheSource(run_date, cache_root)
         cutoffs = json.loads((train / T2 / "stats.json").read_text(encoding="utf-8"))["arpu_tertiles"]
         agent_dict, problems = actions.validate_agent_dictionary(prev_dict or actions.initial_agent_dictionary(run_date), prev_dict)
+        for f in actions.dictionary_files(st.dir):          # an agent-2b version of an earlier T3 run of this date:
+            if f.name != f"{agent_dict['name']}.json":     # the segments are rewritten with agent_dict, so drop it
+                f.unlink()
         st.write_json(f"{agent_dict['name']}.json", agent_dict)
         st.write_json("agent_dictionary_check.json", {"version": agent_dict["name"], "source": str(prev_path or "v0 (week 0)"),
                                                       "problems": problems})
@@ -250,6 +253,48 @@ def run_t3(run_date: date, runs_root: Path | None = None, cache_root: Path | Non
         st.note(rules_version=rules_version(), agent_dictionary=agent_dict["name"])
         st.write_json("summary.json", summary)
         return summary
+
+
+def current_agent_dictionary(run_date: date, runs_root: Path | None = None) -> dict:
+    """The agent dictionary T3 of this run date applied last (the highest version in its folder)."""
+    t3 = runs_dir(run_date, runs_root) / "train" / T3
+    files = actions.dictionary_files(t3)
+    if not files:
+        raise StageBlocked(f"T3_segments of {run_date} has no agent dictionary: run fsdr-features first")
+    return json.loads(files[-1].read_text(encoding="utf-8"))
+
+
+def update_agent_dictionary(run_date: date, proposal: dict, runs_root: Path | None = None,
+                            made_by: str = "agent 2b") -> dict:
+    """Agent 2b (V4.0): a new version of the agent dictionary for this run date. The proposal (cells as in v0) is
+    checked by validate_agent_dictionary against the current version (an invalid cell keeps its current value),
+    saved as dict_segm_actions_agent_v<N+1>.json in T3_segments/, and applied to every segment partition
+    (ACTION_AGENT, ACTION_AGENT_RANK2, ACTION_AGENT_VERSION), so the panel and Target 2 use it. Next week's T3
+    starts from this version. Returns the version, the changed cells and the problems."""
+    t3 = runs_dir(run_date, runs_root) / "train" / T3
+    if read_step(t3).get("status") != "done":
+        raise StageBlocked(f"T3_segments of {run_date} is not done: run fsdr-features first")
+    current = current_agent_dictionary(run_date, runs_root)
+    version = int(current["version"]) + 1
+    draft = {**proposal, "version": version, "name": f"{config.AGENT_DICTIONARY_PREFIX}{version}",
+             "created": _iso(run_date), "parent": current["name"], "made_by": made_by}
+    new, problems = actions.validate_agent_dictionary(draft, current)
+    old = {(c["segment"], c["nationality_group"]): [a["action"] for a in c["actions"]] for c in current["cells"]}
+    changed = [{"segment": c["segment"], "nationality_group": c["nationality_group"],
+                "before": old.get((c["segment"], c["nationality_group"])), "after": [a["action"] for a in c["actions"]],
+                "reason": (c["actions"][0].get("reason", "") if c["actions"] else "")}
+               for c in new["cells"] if old.get((c["segment"], c["nationality_group"])) != [a["action"] for a in c["actions"]]]
+    (t3 / f"{new['name']}.json").write_text(json.dumps(new, indent=2, default=str), encoding="utf-8")
+    (t3 / f"agent_dictionary_check_v{version}.json").write_text(
+        json.dumps({"version": new["name"], "parent": current["name"], "made_by": made_by, "changed": changed,
+                    "problems": problems}, indent=2, default=str), encoding="utf-8")
+    lines = 0
+    for part in sorted((t3 / "segments").glob("part-*.parquet")):
+        seg = actions.apply_agent_dictionary(pd.read_parquet(part), new)
+        seg.to_parquet(part, index=False)
+        lines += len(seg)
+    return {"version": new["name"], "parent": current["name"], "changed_cells": changed, "problems": problems,
+            "lines": lines}
 
 
 def _t3_reports(st: Step, counts: list[dict], run_date: date, crosswalk: pd.DataFrame, agent_dict: dict) -> dict:

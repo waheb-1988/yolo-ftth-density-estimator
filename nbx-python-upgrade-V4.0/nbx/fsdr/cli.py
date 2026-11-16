@@ -20,7 +20,7 @@ import time
 from datetime import date
 from pathlib import Path
 
-from nbx.fsdr import config
+from nbx.fsdr import config, csvstd
 
 
 def _date(s: str) -> date:
@@ -194,6 +194,61 @@ def cmd_offers(a) -> int:
     return 1 if r["blocked"] else 0
 
 
+def folder_plan(run_date: date, layout: str = "weekly") -> dict:
+    """V4.0: the folders of one run date and the file each table goes to. layout "weekly" = the one folder of the GPU
+    notebooks (data/weekly/<D>/, fresh *_auto history, no *_score); "split" = data/training/<D>/ + data/scoring/<D>/
+    (notebooks 01 / 02). The target lists follow the active targets (FSDR_TARGETS, FSDR_CONTROL_SIZE)."""
+    from nbx.fsdr import schemas
+
+    d = run_date.isoformat()
+    roots = ({"weekly": config.FSDR_WEEKLY_DIR / d} if layout == "weekly"
+             else {"training": config.training_folder(d), "scoring": config.scoring_folder(d)})
+    need = set(config.PIPELINE_TABLES["train_week0"]["required"]) | set(config.PIPELINE_TABLES["score"]["required"])
+    not_needed = {"party_scoring", "subs_amt_score"} | {f"activities_{p}_score" for p in ("w1", "w2", "w3", "w4", "m1", "m2", "m3")}
+    rows = []
+    for t, s in schemas.TABLES.items():
+        if layout == "weekly" and t in not_needed:
+            continue
+        sides = (["weekly"] if layout == "weekly" else
+                 (["training", "scoring"] if t in config.BOTH_TABLES else [config.table_side(t)]))
+        for side in sides:
+            rows.append({"folder": str(roots[side] / s.folder), "file": f"{t}{csvstd.SUFFIX}",
+                         "needed": "required" if t in need else "optional"})
+    lists_root = roots["weekly" if layout == "weekly" else "scoring"]
+    lists = {k: str(lists_root / f"{v}{csvstd.SUFFIX}") for k, v in config.TARGET_FILES.items()}
+    return {"layout": layout, "roots": {k: str(v) for k, v in roots.items()}, "tables": rows, "lists": lists}
+
+
+def cmd_folders(a) -> int:
+    plan = folder_plan(a.date, a.layout)
+    made = []
+    for root in plan["roots"].values():
+        for f in config.INPUT_FOLDERS:
+            (Path(root) / f).mkdir(parents=True, exist_ok=True)
+            made.append(Path(root) / f)
+    for p in plan["lists"].values():
+        Path(p).parent.mkdir(parents=True, exist_ok=True)
+        made.append(Path(p).parent)
+    print(f"Folders of {a.date} ({a.layout} layout, notebooks {'03 / 04' if a.layout == 'weekly' else '01 / 02'}):")
+    for p in made:
+        print("  ", p)
+    print()
+    print("Copy each export as <table>.csv.gz into its folder (file name = the exact table name):")
+    last = None
+    for r in sorted(plan["tables"], key=lambda r: (r["folder"], r["file"])):
+        if r["folder"] != last:
+            print(f"  {r['folder']}")
+            last = r["folder"]
+        print(f"      {r['file']:<70} {r['needed']}")
+    print()
+    print("Target lists (column access_method_val, 8-digit MSISDN; active targets: " + ", ".join(config.TARGETS) + "):")
+    for k, p in plan["lists"].items():
+        print(f"  {k:8s} {p}" + (f"   ({config.group_sizes().get(k):,} lines)" if config.group_sizes().get(k) else ""))
+    print()
+    print(f"Next: set RUN_DATE = \"{a.date}\" and GENERATE = False / GENERATE_TARGETS = False in the notebooks.")
+    return 0
+
+
 def cmd_targets(a) -> int:
     from nbx.fsdr import targets as tg
     from nbx.fsdr.pipelines import scoring_groups as sg
@@ -209,7 +264,7 @@ def cmd_targets(a) -> int:
             for f in r["files"]:
                 print(f"  {Path(f).relative_to(r['folder'])}")
             print("  sizes:", r["sizes"])
-            print("Next: fsdr-run-targets (panel from these lists -> target 1 -> target 2 -> final file)")
+            print("Next: fsdr-run-targets (panel from these lists -> the active targets (FSDR_TARGETS, default target2) -> final file)")
             return 0
         if not tg.has_targets(folder):
             print(f"No target lists in {tg.targets_dir(folder)} (P1 will draw the panel at random).")
@@ -352,7 +407,8 @@ def cmd_run_targets(a) -> int:
     for t in config.TARGETS:
         if t in res:
             _print_target(res[t])
-    print(f"control: {res['control']['lines']:,} lines -> {res['control']['file']}")
+    if res["control"]["file"]:
+        print(f"control: {res['control']['lines']:,} lines -> {res['control']['file']}")
     r = res["final"]
     print(("final file READY -- " + f"{r['input_flytxt_rows']:,} rows" if r["ready"] else "final file BLOCKED -- "
            + "; ".join(r["reasons"])) + f"  ({r['step_dir']})")
@@ -615,6 +671,12 @@ def main(argv: list[str] | None = None) -> int:
     of.add_argument("--force", action="store_true")
     of.set_defaults(fn=cmd_offers)
 
+    fo = sub.add_parser("fsdr-folders", help="V4.0: create the folders of a run date and list the file of every table")
+    fo.add_argument("--date", type=date.fromisoformat, required=True, help="the run date D, e.g. 2026-11-19")
+    fo.add_argument("--layout", choices=["weekly", "split"], default="weekly",
+                    help="weekly = data/weekly/<D>/ (notebooks 03 / 04); split = data/training + data/scoring (01 / 02)")
+    fo.set_defaults(fn=cmd_folders)
+
     tg = sub.add_parser("fsdr-targets", help="the target lists of data/scoring/<D>/target1|2/a_constraint|b_free/: "
                                              "check them, or --generate dummy ones")
     tg.add_argument("--date", type=date.fromisoformat, help="run date (default: the latest run)")
@@ -645,7 +707,7 @@ def main(argv: list[str] | None = None) -> int:
     ps.add_argument("--date", type=date.fromisoformat, help="run date (default: the latest run)")
     ps.set_defaults(fn=cmd_final_file)
 
-    rt = sub.add_parser("fsdr-run-targets", help="V4.0: panel -> target 1 -> target 2 (each scored separately) -> "
+    rt = sub.add_parser("fsdr-run-targets", help="V4.0: panel -> each active target (FSDR_TARGETS, default target2) -> "
                                                  "control -> final file, into data/output/<D>/")
     rt.add_argument("--date", type=date.fromisoformat, help="run date (default: the latest run)")
     rt.add_argument("--target", choices=list(config.TARGETS), help="only this target (the final file then waits for the other)")

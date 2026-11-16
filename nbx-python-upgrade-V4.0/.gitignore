@@ -24,6 +24,7 @@ data/ledger/
 data/training/
 data/scoring/
 data/output/
+data/weekly/
 models/
 
 # Raw reference extracts (original SQL, Python codes, code 5): local only, never commit

@@ -207,8 +207,10 @@ def p6_name(target: str | None) -> str:
 
 
 def run_p6_offers(run_date: date, runs_root: Path | None = None, cache_root: Path | None = None,
-                  seconds_per_customer: float = 0.36, force: bool = False, target: str | None = None) -> dict:
-    """P6 of the four groups (target None), or of one target only (V4.0: target1 = T1C + T1F, target2 = T2C + T2F)."""
+                  seconds_per_customer: float = 0.36, force: bool = False, target: str | None = None,
+                  agents: dict | None = None) -> dict:
+    """P6 of the four groups (target None), or of one target only (V4.0: target1 = T1C + T1F, target2 = T2C + T2F).
+    agents: the LLM agents ③ NBA / ④ NBO of the GPU notebook (offers/recos.py); None = the documented fallbacks."""
     score = runs_dir(run_date, runs_root) / "score"
     p1 = read_step(score / P1)
     if p1.get("status") != "done":
@@ -216,14 +218,15 @@ def run_p6_offers(run_date: date, runs_root: Path | None = None, cache_root: Pat
                            f"target lists if it is blocked)")
     keys = target_keys(target)
     inputs = fingerprint({"p1": p1.get("started"), "groups": config.GROUPS, "band": config.CHALLENGER_BAND,
-                          "keys": keys, "reco_offers": config.RECO_OFFERS})
+                          "keys": keys, "reco_offers": config.RECO_OFFERS,
+                          "agents": (agents or {}).get("label", ""), "agent_groups": sorted((agents or {}).get("groups", ()))})
     with Step(score, p6_name(target), inputs=inputs, force=force) as st:
         if st.done:
             return {**st.read_json("summary.json"), "skipped": True}
         panel = pd.read_parquet(score / P1 / "panel.parquet")
         panel = panel[panel["GROUP_KEY"].isin(keys + [config.CONTROL_GROUP])].reset_index(drop=True)
         cache = CacheSource(run_date, cache_root)
-        out = build_group_recos(panel, cache)
+        out = build_group_recos(panel, cache, agents=agents)
         own = {"results_scoring_nba"} | {config.GROUPS[k][t] for k in keys
                                          for t in ("scored_table", "recos_monthly", "recos_weekly")}
         files = []
@@ -252,10 +255,14 @@ def run_p6_offers(run_date: date, runs_root: Path | None = None, cache_root: Pat
                               "with_offers": int(s[VAL].nunique()) if len(s) else 0,
                               "offers": len(s), "consistency_retry": int(d["CONSISTENCY_RETRY"].sum()),
                               "by_rule": s["SELECTED_BY"].value_counts().to_dict() if len(s) else {},
+                              "decided_by": d["DECIDED_BY"].value_counts().to_dict(),
+                              "llm_scored_offers": int(s["SCORE_SOURCE"].astype(str).str.startswith("llm:").sum()) if len(s) else 0,
                               "llm_coverage_at_budget": float(llm_budget.coverage(q).get(key, 0.0))})
-        st.write_csv(pd.DataFrame(per_group).assign(by_rule=lambda d: d["by_rule"].map(json.dumps)), "group_report.csv")
+        st.write_csv(pd.DataFrame(per_group).assign(by_rule=lambda d: d["by_rule"].map(json.dumps),
+                                                      decided_by=lambda d: d["decided_by"].map(json.dumps)), "group_report.csv")
         summary = {"run_date": run_date.isoformat(), "stage": p6_name(target), "target": target or "all",
-                   "decisions": "fallback (LLM agents: Phases 5-6)", "reco_offers": config.RECO_OFFERS,
+                   "decisions": (f"agents {agents.get('label', '')} on {sorted(agents.get('groups', ()))}, fallbacks elsewhere"
+                                 if agents else "fallback (LLM agents: the GPU notebook)"), "reco_offers": config.RECO_OFFERS,
                    "tables": [n for n in out if not n.startswith("_") and n in own], "groups": per_group,
                    "audit_status": audit["status"], "blocked": audit["blocked"],
                    "step_dir": str(st.dir)}
@@ -518,6 +525,8 @@ def write_control(run_date: date, runs_root: Path | None = None, out_root: Path 
     """data/output/<D>/control/control_<D>.csv.gz: the control lines (never contacted, H-01) and their strata."""
     panel = pd.read_parquet(runs_dir(run_date, runs_root) / "score" / P1 / "panel.parquet")
     ctrl = panel[panel["GROUP_KEY"] == config.CONTROL_GROUP]
+    if not len(ctrl):                                   # V4.0 default: no control group (FSDR_CONTROL_SIZE=0)
+        return {"file": None, "lines": 0}
     cols = [VAL, "GROUP_KEY", "STRATUM", "SEGMENT", "MICRO_SEGMENT", "NATIONALITY_GROUP", "VALUE_BAND", "USAGE_TYPE"]
     cols += [c for c in ctrl.columns if c.startswith("T_")]
     path = config.output_folder(run_date.isoformat(), out_root) / CONTROL_DIR / f"control_{run_date.isoformat()}{csvstd.SUFFIX}"

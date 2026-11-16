@@ -16,6 +16,7 @@ from pathlib import Path
 import gradio as gr
 import httpx
 
+from nbx.fsdr import config
 from nbx.ui import fsdr_tabs as ft
 
 GROUP_LABELS = {"t1c": "Target 1 · a constraint (T1C, code 3)", "t1f": "Target 1 · b free (T1F, code 4)",
@@ -107,7 +108,7 @@ def _final_html(p: dict | None) -> str:
 def _files(out_dir: str) -> list[str]:
     root = Path(out_dir)
     found = sorted(root.glob("final/*.csv.gz"))
-    for t in ("target1", "target2"):
+    for t in config.TARGETS:
         found += sorted((root / t).glob("*.csv.gz")) + sorted((root / t).glob("*/*.csv.gz"))
         found += [root / t / "final_rules_report.csv"]
     found += sorted(root.glob("control/*.csv.gz"))
@@ -140,30 +141,31 @@ async def do_target2(d):
 async def do_push(d):
     r = await ft._post(f"/fsdr/v4/{_run(d)}/final-file")
     out = str(Path(r["step_dir"]).parent)
-    return _final_html(r) + ft._section("Control", ft._kv(r["control"])), _files(out)
+    return _final_html(r) + (ft._section("Control", ft._kv(r["control"])) if r["control"]["lines"] else ""), _files(out)
 
 
 async def do_run_all(d):
     r = await ft._post(f"/fsdr/v4/{_run(d)}/run")
     p = r["panel"]
     html = ft._section(f"P1 panel · {p['mode']} · {p['status']}", ft._kv(p["sizes"]))
-    html += "".join(_target_html(r[t]) for t in ("target1", "target2") if t in r)
-    html += _final_html(r["final"]) + ft._section("Control", ft._kv(r["control"]))
+    html += "".join(_target_html(r[t]) for t in config.TARGETS if t in r)
+    html += _final_html(r["final"]) + (ft._section("Control", ft._kv(r["control"])) if r["control"]["lines"] else "")
     return html, _files(str(Path(r["final"]["step_dir"]).parent))
 
 
 async def do_show(d):
     o = await ft._get(f"/fsdr/v4/{_run(d)}/output")
-    html = "".join(_target_html(o[t]) for t in ("target1", "target2") if o.get(t))
+    html = "".join(_target_html(o[t]) for t in config.TARGETS if o.get(t))
     return html + _final_html(o.get("final")), _files(o["folder"])
 
 
 def build() -> None:
     with gr.Tab("FSDR Targets & Output", id="fsdr-groups"):
-        gr.HTML('<div class="nbx-muted">V4.0: <b>Target 1</b> = a constraint (T1C, code 3) + b free (T1F, code 4) · '
-                '<b>Target 2</b> = a challenger constraint (T2C, CC-v1) + b challenger free (T2F, CF-v1) · '
-                '<b>control</b>. Each target is scored on its own into <code>data/output/&lt;D&gt;/&lt;target&gt;/</code>, '
-                'up to 6 offers per line. Decisions use the LLM agents\' fallbacks until Phases 5-6.</div>')
+        groups = list(config.TARGET_FILES)                     # the active groups (FSDR_TARGETS, FSDR_CONTROL_SIZE)
+        gr.HTML('<div class="nbx-muted">V4.0: active targets <b>' + ", ".join(config.TARGETS) + '</b> (groups '
+                + ", ".join(groups) + '). Target 2 = a constraint (T2C, CC-v1) + b free (T2F, CF-v1), 50k each. '
+                'Scored into <code>data/output/&lt;D&gt;/&lt;target&gt;/</code>, up to 6 offers per line. Here the '
+                'decisions are the rule fallbacks; the LLM agents run in notebooks 03 / 04.</div>')
         run_date = gr.Textbox(label="Run date D (YYYY-MM-DD)", value=date.today().isoformat())
         with gr.Group():
             gr.Markdown("**1 · Data and training** — `data/training/<D>/` + `data/scoring/<D>/` (5 folders each, `.csv.gz`)")
@@ -175,9 +177,9 @@ def build() -> None:
                 prep_btn = gr.Button("1b · Training (validate + features + segments)", variant="primary", scale=1)
             out1 = gr.HTML()
         with gr.Group():
-            gr.Markdown("**2 · Target lists** — `data/scoring/<D>/target1|target2/a_constraint|b_free/` and `control/`")
+            gr.Markdown("**2 · Target lists** — `data/scoring/<D>/` + " + ", ".join(f"`{config.TARGET_FILES[k]}.csv.gz`" for k in groups))
             with gr.Row():
-                grp = gr.Dropdown([(v, k) for k, v in GROUP_LABELS.items()], value="t1c", label="Group", scale=2)
+                grp = gr.Dropdown([(GROUP_LABELS[k], k) for k in groups], value=groups[0], label="Group", scale=2)
                 up = gr.File(label="List (.csv.gz with access_method_val)", file_types=[".gz", ".csv", ".json", ".jsonl"],
                              scale=3)
             with gr.Row():
@@ -186,17 +188,17 @@ def build() -> None:
                 check_btn = gr.Button("2c · Check the lists")
             out2 = gr.HTML()
         with gr.Group():
-            gr.Markdown("**3 · Scoring, one target at a time** — `data/output/<D>/target1/`, `target2/`, `final/`")
+            gr.Markdown("**3 · Scoring, one target at a time** — " + ", ".join(f"`data/output/<D>/{t}/`" for t in config.TARGETS) + ", `final/`")
             with gr.Row():
                 panel_btn = gr.Button("3a · Panel (from the lists)")
-                t1_btn = gr.Button("3b · Score Target 1", variant="primary")
-                t2_btn = gr.Button("3c · Score Target 2", variant="primary")
-                final_btn = gr.Button("3d · Save the final file (both targets)")
+                t1_btn = gr.Button("3b · Score Target 1", variant="primary", visible="target1" in config.TARGETS)
+                t2_btn = gr.Button("3c · Score Target 2", variant="primary", visible="target2" in config.TARGETS)
+                final_btn = gr.Button("3d · Save the final file")
             with gr.Row():
                 all_btn = gr.Button("3a → 3d in one go")
                 show_btn = gr.Button("Show the last output")
             out3 = gr.HTML()
-            files = gr.File(label="4 · Download: final file, per-target and per-group files, details, rules reports, control",
+            files = gr.File(label="4 · Download: final file, per-target and per-group files, details, rules reports",
                             file_count="multiple", interactive=False)
         gen_btn.click(do_generate, inputs=[run_date, gen_n, gen_force], outputs=out1)
         prep_btn.click(do_prepare, inputs=[run_date, prep_force], outputs=out1)

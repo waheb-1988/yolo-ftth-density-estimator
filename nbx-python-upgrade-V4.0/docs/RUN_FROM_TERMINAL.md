@@ -49,7 +49,7 @@ data/scoring/2026-10-22/           this week's tables + the target lists (scorin
 ├── subscription/   subscriptions_tg, sub_btl_3months
 ├── catalog/        btl_catalog, BTL_script_english_arabic_ok, conflicting_offers_h
 ├── others/         targeting_auto, consent_contact, party_scoring, sample_cg_tg_* (optional)
-├── target1/a_constraint/  target1/b_free/  target2/a_constraint/  target2/b_free/  control/   (section 5a)
+├── target2/a_constraint/  target2/b_free/      the lists of group a and group b (section 5a)
 └── _manifest.json
 ```
 
@@ -129,16 +129,21 @@ partition by partition, and prints the segment counts. Same inputs again → `sk
 | `priors.json` | B-10 priors: configured and recomputed from week 0, with the week-0 take rate per action |
 | `value_usage.csv`, `young_split.csv` | context bands; the under-25 / 25–39 split to test in Phase 4 |
 
-## 5. The panel and the four groups (two targets)
+## 5. The panel and the groups
 
-**V4.0: each target is scored separately** (section 5a):
+**V4.0 deployment: Target 2 only**, group a (T2C) and group b (T2F), 50,000 lines each, **no control group**
+(`FSDR_TARGETS=target2`, `FSDR_CONTROL_SIZE=0`). Target 1 is not scored; `FSDR_TARGETS=target1,target2` and
+`FSDR_CONTROL_SIZE=20000` bring Target 1 and the control back (the tables below describe all the groups).
 
 ```powershell
-uv run python run.py fsdr-score-target --target target1 --panel   # P1, then P6 + final of Target 1 (T1C a, T1F b)
-uv run python run.py fsdr-score-target --target target2           # P6 + final of Target 2 (T2C a, T2F b)
-uv run python run.py fsdr-final-file                                     # both targets merged (both PASS) -> data/output/<D>/final/
-uv run python run.py fsdr-run-targets                              # the three above in one go
+uv run python run.py fsdr-folders --date 2026-11-19              # the folders of a run date + the file of every table
+uv run python run.py fsdr-score-target --target target2 --panel   # P1, then P6 + final of Target 2 (T2C a, T2F b)
+uv run python run.py fsdr-final-file                              # -> data/output/<D>/final/ (Target 2 PASS)
+uv run python run.py fsdr-run-targets                             # the two above in one go
 ```
+
+These use the rule fallbacks. The LLM agents (Agent 3 action, Agent 4 offers, Agent 2b dictionary) run in the
+notebooks 03 (Ollama) and 04 (vLLM).
 
 The V3.0 commands still score the four groups together (`data/runs/<D>/score/P6_offers/`, `data/runs/<D>/final/`):
 
@@ -149,18 +154,18 @@ uv run python run.py fsdr-offers                # P6 of the 4 groups together: c
 
 | Group | Rules | Offer universe | Rule action (NBA hint) | Tables |
 |---|---|---|---|---|
-| T1C (25k) | production code 3 (B-20 … B-32) | families + generosity by action | `action_original` | `TG_40K_constraint_scored_nba`, `recos_monthly/weekly_40k_constraint` |
-| T1F (25k) | production code 4 (FR-01 … FR-14) | L2, DATA / COMBO, action not used | `action_original` | `TG_40k_free_scored_nba`, `recos_monthly/weekly_tg_free` |
-| T2C (25k) | challenger CC-v1 | as T1C | `action_agent` | `TG_challenger_constraint_scored_nba`, `recos_*_challenger_constraint` |
-| T2F (25k) | challenger CF-v1 | as T1F | `action_agent` | `TG_challenger_free_scored_nba`, `recos_*_challenger_free` |
-| control (20k) | never contacted | — | — | — |
+| **T2C, group a (50k)** | challenger CC-v1 | families + generosity by action (the code-3 universe) | `action_agent` | `TG_challenger_constraint_scored_nba`, `recos_*_challenger_constraint` |
+| **T2F, group b (50k)** | challenger CF-v1 | L2, DATA / COMBO, action not used (the code-4 universe) | `action_agent` | `TG_challenger_free_scored_nba`, `recos_*_challenger_free` |
+| T1C (off) | production code 3 (B-20 … B-32) | as T2C | `action_original` | `TG_40K_constraint_scored_nba`, `recos_monthly/weekly_40k_constraint` |
+| T1F (off) | production code 4 (FR-01 … FR-14) | as T2F | `action_original` | `TG_40k_free_scored_nba`, `recos_monthly/weekly_tg_free` |
+| control (off) | never contacted | — | — | — |
 
 `data/runs/<D>/score/P1_panel/`: `panel.parquet` (+ preview), `group_sizes.csv`, `balance.csv` (share of every
 stratum value per group, max gap in points, chi-square p), `summary.json`. The provided sample
 `sample_cg_tg_new_7oct2026` is used when present (cstr → T1C, free → T1F, cg → control); `--no-sample` ignores it.
-A base smaller than 120k eligible lines gets every group scaled down by the same factor (printed).
+A base smaller than the groups' total (100k) gets every group scaled down by the same factor (printed).
 
-`data/runs/<D>/score/P6_offers_target1/` and `P6_offers_target2/` (V4.0, one per target, with that target's tables
+`data/runs/<D>/score/P6_offers_target2/` (V4.0, one per active target, with that target's tables
 only) or `P6_offers/` (V3.0, the 4 groups): the tables as `.csv.gz` with their `.schema.json` and `_outputs_manifest.json`,
 `group_report.csv` (offers per rule / pass, 10.1 retries, LLM coverage at the 10 h budget), `traces.csv` (2 customers
 of the same type per group: action → candidates → score → pass / rule → offers), `audit_groups.json` (A-12, A-12b,
@@ -173,25 +178,23 @@ A-17, A-21, A-30, A-31). Exit code 1 if the audit fails (final file blocked).
 
 Its `selected_by` is `EXT-6` (`pass` 6). `FSDR_RECO_OFFERS=4` restores the V3.0 selection.
 
-Until the LLM agents (Phases 5–6), the action is the group's rule action and the offer score is the NBO fallback
-(own past purchase, then buyer share); every row says so in `decided_by` / `score_source`.
+In these commands the action is the group's rule action and the offer score is the NBO fallback (own past purchase,
+then buyer share). In the notebooks 03 / 04 the LLM agents decide (`decided_by = llm_nba`, `score_source = llm:<model>`);
+every row says who decided.
 
-Sizes and switches (`.env`): `FSDR_T1_CONSTRAINT_SIZE`, `FSDR_T1_FREE_SIZE`, `FSDR_T2_CONSTRAINT_SIZE`,
-`FSDR_T2_FREE_SIZE`, `FSDR_CONTROL_SIZE`, `FSDR_T2_SPLIT` (false = one 50k T2 with the CC rules),
+Sizes and switches (`.env`): `FSDR_TARGETS` (default `target2`), `FSDR_T2_CONSTRAINT_SIZE` / `FSDR_T2_FREE_SIZE`
+(default 50000), `FSDR_CONTROL_SIZE` (default 0), `FSDR_T1_CONSTRAINT_SIZE`, `FSDR_T1_FREE_SIZE`, `FSDR_T2_SPLIT` (false = one 50k T2 with the CC rules),
 `FSDR_LLM_WEEKLY_BUDGET_H`, `FSDR_GUARD_MODE_TARGET1`.
 
-## 5a. Your own target lists, each target scored separately, and the final file
+## 5a. Your own target lists (group a and group b) and the final file
 
 **Upload folder.** Put one list per group in the run's **scoring** folder, one folder per target and one sub-folder per
 group (any extra columns are kept in the details):
 
 ```
 data/scoring/2026-10-22/
-├── target1/a_constraint/target1_a.csv.gz     T1C  production code 3
-├── target1/b_free/target1_b.csv.gz           T1F  production code 4
-├── target2/a_constraint/target2_a.csv.gz     T2C  challenger CC-v1
-├── target2/b_free/target2_b.csv.gz           T2F  challenger CF-v1
-└── control/control.csv.gz                    never contacted
+├── target2/a_constraint/target2_a.csv.gz     T2C, group a, 50,000 lines: challenger CC-v1
+└── target2/b_free/target2_b.csv.gz           T2F, group b, 50,000 lines: challenger CF-v1
 ```
 
 Each file needs an `access_method_val` (or `msisdn`) column. `.csv.gz` in production; `.csv` / `.json` for tests.
@@ -200,13 +203,13 @@ When the folder holds lists, the panel uses them; otherwise it draws the groups 
 ```powershell
 uv run python run.py fsdr-targets --generate      # dummy lists for testing (stratified draw of the eligible base)
 uv run python run.py fsdr-targets                 # check the lists that are there
-uv run python run.py fsdr-run-targets             # panel (your lists) -> Target 1 -> Target 2 -> control -> final file
+uv run python run.py fsdr-run-targets             # panel (your lists) -> Target 2 (a + b) -> final file
 uv run python run.py fsdr-score-target --target target2   # re-score one target only (after fixing its list: add --panel)
-uv run python run.py fsdr-final-file                    # rebuild the final file from the two target folders
+uv run python run.py fsdr-final-file                    # rebuild the final file from the target folder
 ```
 
-Through the app (API): `POST /fsdr/targets/<D>/<group>` (file upload, group = t1c / t1f / t2c / t2f / control),
-`GET /fsdr/targets/<D>` (lists + check), `POST /fsdr/v4/<D>/panel`, `POST /fsdr/v4/<D>/score/<target1|target2>`,
+Through the app (API): `POST /fsdr/targets/<D>/<group>` (file upload, group = t2c / t2f),
+`GET /fsdr/targets/<D>` (lists + check), `POST /fsdr/v4/<D>/panel`, `POST /fsdr/v4/<D>/score/target2`,
 `POST /fsdr/v4/<D>/final-file`, `POST /fsdr/v4/<D>/run`, `GET /fsdr/v4/<D>/output`.
 
 **Checks of the lists:** a line in two groups or a missing list **blocks**; a line that is not an 8-digit MSISDN, not in
@@ -218,13 +221,11 @@ more than 2 % is a warning.
 
 | File | What |
 |---|---|
-| `final/input_flytxt.csv.gz` | **the final file**: the 38 columns of code 5, both targets, one row per MSISDN. Written only when both targets passed and no MSISDN is in two targets; otherwise `final/BLOCKED.txt` says why (H-08) |
-| `target1/input_flytxt_target1.csv.gz` | Target 1's file (only when Target 1 passed, else `target1/BLOCKED.txt`) |
-| `target1/a_constraint/input_flytxt_t1c.csv.gz`, `target1/b_free/input_flytxt_t1f.csv.gz` | the same rows, per group |
-| `target2/…` | the same for Target 2 (`t2c`, `t2f`) |
-| `target1/a_constraint/details_t1c.csv.gz`, `target1/b_free/details_t1f.csv.gz`, `target2/…/details_t2c`, `details_t2f` | **the details ("big data")**: one row per line of the group, ≈ 240 columns: group, stratum, profile and bands, segment and its triggers, `action_original` / `action_agent` / action sent / agreement / 10.1 retry, every feature (scores, missing flags, revenue, trends), B-26 and F-05 anchors, the recommended offers per validity with their pass or rule, the 6 slots with their reason (recommended / favourite / forced) and the rule that cleared them (F-09 / F-11 / F-12), in the file or not and why |
-| `target1/details_target1.parquet`, `target2/details_target2.parquet` | all the details of the target in one table (for the notebook / Excel via Power Query) |
-| `control/control_<D>.csv.gz` | the control list kept for measurement |
+| `final/input_flytxt.csv.gz` | **the final file**: the 38 columns of code 5, one row per MSISDN. Written only when Target 2 passed and no MSISDN is in two groups; otherwise `final/BLOCKED.txt` says why (H-08) |
+| `target2/input_flytxt_target2.csv.gz` | Target 2's file (only when it passed, else `target2/BLOCKED.txt`) |
+| `target2/a_constraint/input_flytxt_t2c.csv.gz`, `target2/b_free/input_flytxt_t2f.csv.gz` | the same rows, per group (a, b) |
+| `target2/a_constraint/details_t2c.csv.gz`, `target2/b_free/details_t2f.csv.gz` | **the details ("big data")**: one row per line of the group, ≈ 240 columns: group, stratum, profile and bands, segment and its triggers, `action_original` / `action_agent` / action sent / agreement / 10.1 retry, every feature (scores, missing flags, revenue, trends), B-26 and F-05 anchors, the recommended offers per validity with their pass or rule, the 6 slots with their reason (recommended / favourite / forced) and the rule that cleared them (F-09 / F-11 / F-12), in the file or not and why |
+| `target2/details_target2.parquet` | all the details of the target in one table (for the notebook / Excel via Power Query) |
 | `<target>/final_rules_report.csv` | per group: lines, rows in the file, offers per line, F-04 drops, favourites, forced bundles, F-09 / F-11 / F-12 clearings |
 | `<target>/output_checks.json`, `audit_groups.json`, `_outputs_manifest.json`, `*.schema.json`, `summary.json` | the checks A-20 … A-24, the P6 group audit, rows and SHA-256 of every file, the column types |
 
@@ -247,7 +248,7 @@ tables of its two groups). The V3.0 `fsdr-run-groups` / `fsdr-final` still write
 
 ```powershell
 uv run python run.py notebook --name training    # 01_training_step_by_step.ipynb: data -> T0 -> cache -> T2 -> T3
-uv run python run.py notebook --name scoring     # 02_scoring_step_by_step.ipynb: lists -> P1 -> Target 1 -> Target 2 -> final file
+uv run python run.py notebook --name scoring     # 02_scoring_step_by_step.ipynb: lists -> P1 -> Target 2 (a + b) -> final file
 ```
 
 They call the same functions as the commands above and write the same files. Rebuild them after editing
@@ -300,7 +301,7 @@ uv run python run.py fsdr-generate --date 2026-10-22 --mode small --layout folde
 | 2b | `fsdr-targets` (your lists or `--generate`), then `fsdr-run-targets` = panel + each target (P6 + final) + final file (V4.0, LLM fallbacks) | `score/P1_panel/`, `score/P6_offers_target1/`, `…_target2/`, and `data/output/<D>/` (target1 / target2 / control / final) | **built** |
 | 3 | `fsdr-train --weekly` (T1 feedback, T4 evidence … T8 bundle) | `train/T1_feedback/`, `T4_evidence/ … T8_validate/`, `models/bundle_<D>/` | 4–5, 9 |
 | 4 | `fsdr-score --bundle <D>` (P0 … P10, batches of 1,000) | `score/P0_bundle/ … P10_report/` | 5–8 |
-| 5 | — (written by scoring on audit PASS) | `final/input_flytxt.csv.gz` (≈100k rows, 38 columns), `input_flytxt_t1c/_t1f/_t2c/_t2f`, control, `summary.json` | 7 |
+| 5 | — (written by scoring on audit PASS) | `final/input_flytxt.csv.gz` (≈100k rows, 38 columns), `input_flytxt_t2c/_t2f`, `summary.json` | 7 |
 | 6 | — (no automatic sending: you hand over `data/output/<D>/final/input_flytxt.csv.gz` yourself) | — | — |
 | — | `fsdr-run-week` = 1 to 4 | everything above | 9 |
 | any time | `notebook` / `notebook-html` | `fsdr_results_<D>.html` | **built** |
@@ -312,7 +313,7 @@ The V1.0 commands (`fsdr-train`, `fsdr-score`, `fsdr-recommend`, `fsdr-weekly`, 
 | Folder | What | In git? |
 |---|---|---|
 | `data/training/<D>/`, `data/scoring/<D>/` | input tables (5 folders each), the target lists | no |
-| `data/output/<D>/` | each target's files, the control, the final file | no |
+| `data/output/<D>/` | Target 2's files (groups a and b), the final file | no |
 | `data/input/<D>/` | V3.0 single input folder (still accepted) | no |
 | `data/cache/<D>/` | Parquet cache, 16 partitions | no |
 | `data/runs/<D>/` | every step's outputs, the final file, the HTML report | no |

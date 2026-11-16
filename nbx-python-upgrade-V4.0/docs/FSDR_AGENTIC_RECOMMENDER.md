@@ -1,6 +1,6 @@
 # FSDR Agentic Recommender
 
-> **V4.0 note.** This is a V1.0 document. In V4.0 the competitor (market intelligence) agent, its tools, the scraper, `data/competitors/` and the `/competitors/*` routes are removed: the agents are action → offer → critic → messenger, and every competitor passage below no longer applies. The V4.0 data folders, the two targets scored separately and the 6 offers are in [SETUP_NEW_LAPTOP.md](SETUP_NEW_LAPTOP.md).
+> **V4.0 note.** This is a V1.0 document. In V4.0 the competitor (market intelligence) agent, its tools, the scraper, `data/competitors/` and the `/competitors/*` routes are removed: the agents are action → offer → critic → messenger, and every competitor passage below no longer applies. **V4.0 deployment:** only Target 2 is scored, group a (T2C) and group b (T2F) at 50,000 each, with no Target 1 and no control group. The LLM agents run in notebooks 03 (Ollama) and 04 (vLLM); the data folders and the 6 offers are in [SETUP_NEW_LAPTOP.md](SETUP_NEW_LAPTOP.md), and the first real run in [REAL_DATA_2026-11-19.md](REAL_DATA_2026-11-19.md).
 
 The **FSDR Agentic Recommender** decides, for one customer of the `llm` arm, **what to do this week** (the action),
 **which offers to send** for it, and **how they compare with the competition**. Three agents work in a row: the

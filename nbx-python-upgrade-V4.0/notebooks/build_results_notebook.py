@@ -19,7 +19,7 @@ by one with their explanations, use `01_training_step_by_step.ipynb` and `02_sco
 | Where | What |
 |---|---|
 | `data/training/<D>/` + `data/scoring/<D>/` | the input (V4.0): 5 folders `usage/ models/ subscription/ catalog/ others/` each |
-| `data/output/<D>/target1/ target2/ control/ final/` | V4.0: each target's files, the control, the final file |
+| `data/output/<D>/target2/ control/ final/` | V4.0: Target 2's files (groups a and b), the control, the final file (`target1/` only if Target 1 is on) |
 | `data/runs/<D>/train/T0_load … T8_*/` | training steps on the full base (≈ 1M lines) |
 | `data/runs/<D>/score/P0_* … P10_*/` | scoring steps on the 40k panel + 10k control |
 | `data/runs/<D>/final/` | V3.0 runs only: the four groups together |
@@ -191,8 +191,8 @@ else:
 
     md("""## 8. The panel and the scoring of each target (`fsdr-run-targets`)
 
-Target 1 = T1C (a, production code 3) + T1F (b, production code 4) · Target 2 = T2C (a, challenger CC-v1) + T2F (b,
-challenger CF-v1) · control. V4.0 scores each target separately (`score/P6_offers_target1/`, `P6_offers_target2/`);
+V4.0 default: **Target 2 only** = T2C (a, CC-v1, 50k) + T2F (b, CF-v1, 50k) · control (20k), in `score/P6_offers_target2/`.
+Target 1 (T1C + T1F, the production rules) appears only if `FSDR_TARGETS` includes it (`score/P6_offers_target1/`);
 a V3.0 run has one `score/P6_offers/` for the four groups. P6 uses the documented fallbacks of the LLM agents until
 Phases 5-6; the universes, anchors, passes and bands are final."""),
     code("""P1 = RUN / "score" / "P1_panel"
@@ -249,9 +249,9 @@ for phase in ("train", "score", "final"):
 
     md("""## 10. Final output: each target, the final file, and the details
 
-V4.0, `data/output/<D>/`: `target1/` and `target2/` (each scored separately: `input_flytxt_<target>.csv.gz` on PASS,
+V4.0, `data/output/<D>/`: `target2/` (and `target1/` if it is on; each scored separately: `input_flytxt_<target>.csv.gz` on PASS,
 `a_constraint/` and `b_free/` with the per-group file and `details_<group>.csv.gz`, `details_<target>.parquet`),
-`control/`, and `final/input_flytxt.csv.gz` (both targets, only when both PASS). A V3.0 run is read from
+`control/`, and `final/input_flytxt.csv.gz` (the active targets, only when they PASS). A V3.0 run is read from
 `data/runs/<D>/final/` instead."""),
     code("""OUT = config.output_folder(str(RUN_DATE))
 FIN = RUN / "final"

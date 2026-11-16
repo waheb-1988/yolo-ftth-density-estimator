@@ -116,11 +116,13 @@ Open http://localhost:8000/health. Expected: `{"status": "ok" or "degraded", "op
 | **FSDR Offers** | Offers per arm (cstr / free / llm), download as CSV | 8 |
 | **FSDR Agentic Recommender** | Run the agents for one customer with the full trace, or for a batch | 9 |
 | **FSDR Simulation** | Closed-loop simulation over several weeks; feedback, operations agents, weekly report, campaign log | 10 |
-| **FSDR Targets & Output** | **V4.0:** training of a run date, the target lists, Target 1 and Target 2 scored separately, the final file and the details | **4** |
+| **FSDR Targets & Output** | **V4.0:** training of a run date, the target lists, Target 2 (group a + group b) scored, the final file and the details | **4** |
 
 ---
 
 ## 4. Main workflow: two targets, scored separately, and the final file
+
+> **V4.0 deployment: Target 2 only.** Group **a** (T2C) and group **b** (T2F), 50,000 lines each, **no control group** (`FSDR_TARGETS=target2`, `FSDR_CONTROL_SIZE=0`). The tab shows only the active groups, and the **3b · Score Target 1** button is hidden. The Target 1 and control rows below apply only if you switch them back on (`FSDR_TARGETS=target1,target2`, `FSDR_CONTROL_SIZE=20000`). This tab uses the rule fallbacks; the LLM agents run in notebooks 03 (Ollama) and 04 (vLLM).
 
 Tab **FSDR Targets & Output**. One run date, four steps. It takes about 1 minute on 3,000 lines and a few minutes on 1M lines, after a 15-minute T0.
 
@@ -128,13 +130,13 @@ Tab **FSDR Targets & Output**. One run date, four steps. It takes about 1 minute
 
 | Target | Group (sub-folder) | Rules | Offer universe | Action used as hint / fallback |
 |---|---|---|---|---|
-| **Target 1** | **T1C** (`a_constraint`) | production code 3 (B-20 … B-32) | the action's offer families, L2 | `action_original` (your segment → action dictionary) |
-| **Target 1** | **T1F** (`b_free`) | production code 4 (FR-01 … FR-14) | L2, DATA / COMBO, action not used | `action_original` |
-| **Target 2** | **T2C** (`a_constraint`) | challenger CC-v1 (price band 1.0–1.5 × the anchor, best score × price) | as T1C | `action_agent` (the agent's dictionary) |
-| **Target 2** | **T2F** (`b_free`) | challenger CF-v1 | as T1F | `action_agent` |
-| **Control** | `control` | never contacted, kept to measure the uplift | — | — |
+| **Target 2** (on) | **T2C**, group a (`a_constraint`) | challenger CC-v1 (price band 1.0–1.5 × the customer's own spend, best score × price) | the action's offer families, L2 (code-3 universe) | `action_agent` (the agent's dictionary; Agent 3 per customer in the GPU notebooks) |
+| **Target 2** (on) | **T2F**, group b (`b_free`) | challenger CF-v1 | L2, DATA / COMBO, action not used (code-4 universe) | not used |
+| Target 1 (off) | T1C (`a_constraint`) | production code 3 (B-20 … B-32) | as T2C | `action_original` |
+| Target 1 (off) | T1F (`b_free`) | production code 4 (FR-01 … FR-14) | as T2F | `action_original` |
+| Control (off) | `control` | never contacted, kept to measure the uplift | — | — |
 
-The configured sizes are 25,000 per group and 20,000 for control. They are set in `.env`: `FSDR_T1_CONSTRAINT_SIZE`, `FSDR_T1_FREE_SIZE`, `FSDR_T2_CONSTRAINT_SIZE`, `FSDR_T2_FREE_SIZE`, `FSDR_CONTROL_SIZE`.
+The configured sizes are **50,000 for group a and 50,000 for group b**, with no control group. They are set in `.env`: `FSDR_T2_CONSTRAINT_SIZE`, `FSDR_T2_FREE_SIZE`, `FSDR_CONTROL_SIZE` (0), and `FSDR_TARGETS` (`target2`).
 
 **Each target is scored on its own.** Each target has its own P6 step, its own group audit, its own code-5 run and checks, and its own folder `data/output/<D>/<target>/`. The final file merges both targets, and only when both passed.
 
@@ -162,7 +164,7 @@ data/scoring/2026-10-22/                        this week's tables + the target 
 ├── subscription/   subscriptions_tg, sub_btl_3months
 ├── catalog/        btl_catalog, BTL_script_english_arabic_ok, conflicting_offers_h
 ├── others/         targeting_auto, consent_contact, party_scoring, sample_cg_tg_* (optional)
-├── target1/ target2/ control/                  the lists (step 2)
+├── target2/a_constraint/ target2/b_free/       the lists of group a and group b (step 2)
 └── _manifest.json
 ```
 
@@ -205,11 +207,8 @@ A second click with the same files is instant: the steps are skipped. Tick **Re-
 **Where they go:** in the scoring folder of the date, one folder per target and one sub-folder per group:
 
 ```
-data/scoring/<D>/target1/a_constraint/target1_a.csv.gz     T1C
-data/scoring/<D>/target1/b_free/target1_b.csv.gz           T1F
-data/scoring/<D>/target2/a_constraint/target2_a.csv.gz     T2C
-data/scoring/<D>/target2/b_free/target2_b.csv.gz           T2F
-data/scoring/<D>/control/control.csv.gz                    control
+data/scoring/<D>/target2/a_constraint/target2_a.csv.gz     T2C, group a, 50,000 lines
+data/scoring/<D>/target2/b_free/target2_b.csv.gz           T2F, group b, 50,000 lines
 ```
 
 **What a list contains:**
@@ -217,7 +216,7 @@ data/scoring/<D>/control/control.csv.gz                    control
 - Any other columns (plan, stratum `Final`, region, …) are kept and appear in the details file.
 - Production format: `.csv.gz`; `.csv` / `.json` / `.jsonl` are accepted for tests.
 
-Example (`target1_a.csv`, before compressing):
+Example (`target2_a.csv`, before compressing):
 
 ```
 access_method_val,plan,Final
@@ -262,13 +261,13 @@ Every dropped line and its reason is saved in `data/runs/<D>/score/P1_panel/targ
 | Button | What it does | Output folder |
 |---|---|---|
 | **3a · Panel (from the lists)** | **P1**: takes your lists (mode `uploaded`) or draws the groups (mode `drawn`); sizes (A-30) and balance (A-31) | `data/runs/<D>/score/P1_panel/` |
-| **3b · Score Target 1** | **P6** for T1C + T1F only (rule action `action_original`; code 3 / code 4 passes; EXT-6 third offer; 10.1 retry for T1C), then **code 5** on Target 1 → its files and checks | `data/runs/<D>/score/P6_offers_target1/`, **`data/output/<D>/target1/`** |
-| **3c · Score Target 2** | The same for T2C + T2F (rule action `action_agent`; CC-v1 / CF-v1 bands) | `…/P6_offers_target2/`, **`data/output/<D>/target2/`** |
-| **3d · Save the final file (both targets)** | The control file, then both targets merged into the final file, only when **both** passed and no MSISDN is in two targets | **`data/output/<D>/control/`**, **`data/output/<D>/final/`** |
-| **3a → 3d in one go** | The four buttons above, in order | all of the above |
+| 3b · Score Target 1 | hidden in V4.0 (Target 1 is off); with `FSDR_TARGETS=target1,target2`: P6 + code 5 of T1C / T1F | `…/P6_offers_target1/`, `data/output/<D>/target1/` |
+| **3c · Score Target 2** | **P6** for T2C (group a) + T2F (group b): rule action `action_agent`, CC-v1 / CF-v1 bands, EXT-6 third offer, 10.1 retry for T2C; then **code 5** → its files and checks | `…/P6_offers_target2/`, **`data/output/<D>/target2/`** |
+| **3d · Save the final file** | The final file of the active targets (Target 2), only when it passed and no MSISDN is in two groups | **`data/output/<D>/final/`** |
+| **3a → 3d in one go** | The buttons above, in order | all of the above |
 | **Show the last output** | Shows the result of the last run of that date again, without re-running | — |
 
-You can score Target 1 and Target 2 in any order, and re-score one target without touching the other: for example, after correcting a Target 2 list, click **3a** then **3c** and **3d**.
+You can re-score Target 2 at any time: for example, after correcting a list, click **3a** then **3c** and **3d**.
 
 **What you see after 3b / 3c:**
 1. **P6 of the target:**
@@ -303,13 +302,12 @@ The box **4 · Download** lists the files of the run. Click a file to download i
 | File | What it is | Who uses it |
 |---|---|---|
 | `final/input_flytxt.csv.gz` | **The final file**: the 38 lower-case columns of code 5, both targets, one row per MSISDN. Written **only when both targets passed** | You, to hand over to the campaign platform (the engine sends nothing) |
-| `target1/input_flytxt_target1.csv.gz` | Target 1's file (T1C + T1F), written only when Target 1 passed | Target 1 review |
-| `target1/a_constraint/input_flytxt_t1c.csv.gz`, `target1/b_free/input_flytxt_t1f.csv.gz` | The same rows, per group | Audit, per-group review |
+| `target2/input_flytxt_target2.csv.gz` | Target 2's file (T2C + T2F), written only when Target 2 passed | Review |
+| `target2/a_constraint/input_flytxt_t2c.csv.gz`, `target2/b_free/input_flytxt_t2f.csv.gz` | The same rows, per group (a, b) | Audit, per-group review |
 | `target2/…` | The same for Target 2 (`t2c`, `t2f`) | Target 2 review |
-| `target1/a_constraint/details_t1c.csv.gz` … `target2/b_free/details_t2f.csv.gz` | **The details ("big data")**: one row per customer of the group, about 240 columns (below) | Validation, analysis |
-| `target1/details_target1.parquet`, `target2/details_target2.parquet` | The details of the whole target in one table (notebook, Power BI) | Validation |
-| `control/control_<D>.csv.gz` | The control lines (never contacted) and their strata | Measuring the uplift next week |
-| `target1/final_rules_report.csv`, `target2/…` | Per group: lines, rows in the file, offers per line, F-04 drops, favourites, forced bundles, F-09 / F-11 / F-12 clearings | Quick review |
+| `target2/a_constraint/details_t2c.csv.gz`, `target2/b_free/details_t2f.csv.gz` | **The details ("big data")**: one row per customer of the group, about 240 columns (below) | Validation, analysis |
+| `target2/details_target2.parquet` | The details of the whole target in one table (notebook, Power BI) | Validation |
+| `target2/final_rules_report.csv` | Per group: lines, rows in the file, offers per line, F-04 drops, favourites, forced bundles, F-09 / F-11 / F-12 clearings | Quick review |
 
 Each target folder also holds `output_checks.json`, `audit_groups.json`, `summary.json` and `_outputs_manifest.json` (rows + SHA-256 of every file).
 
@@ -502,11 +500,11 @@ Open **http://localhost:8000/docs**: a local page (no CDN) that lists every rout
 | `POST /fsdr/v4/{run}/generate` | Dummy data of the date in `data/training/<D>/` + `data/scoring/<D>/` (button 1a). Body: `{"n": 2000, "seed": 42, "force": false}` |
 | `POST /fsdr/v4/{run}/prepare?force=false` | Training T0 + T2 + T3 (button 1b) |
 | `POST /fsdr/v4/{run}/targets/generate` | Dummy lists (button 2b) |
-| `POST /fsdr/targets/{run}/{group}` | Upload one list (`group` = `t1c`, `t1f`, `t2c`, `t2f`, `control`; form field `file`) |
+| `POST /fsdr/targets/{run}/{group}` | Upload one list (`group` = `t2c` or `t2f` in V4.0; form field `file`) |
 | `GET /fsdr/targets/{run}` | The lists and their check (button 2c) |
 | `POST /fsdr/v4/{run}/panel` | P1 (button 3a) |
-| `POST /fsdr/v4/{run}/score/{target}` | One target, `target1` or `target2`: P6 + final (buttons 3b / 3c). HTTP 409 without a panel |
-| `POST /fsdr/v4/{run}/final-file` | Control file + final file (button 3d) |
+| `POST /fsdr/v4/{run}/score/{target}` | One active target (`target2` in V4.0): P6 + final (button 3c). HTTP 409 without a panel, 400 for an inactive target |
+| `POST /fsdr/v4/{run}/final-file` | The final file (button 3d) |
 | `POST /fsdr/v4/{run}/run` | 3a → 3d in one call. HTTP 409 when the lists block |
 | `GET /fsdr/v4/{run}/output` | Each target's summary, the final file's state and the files of `data/output/<D>/` |
 
@@ -529,8 +527,8 @@ If `FSDR_API_KEY` is set in `.env`, add the header `-H "X-API-Key: <key>"`; the 
 uv run python run.py fsdr-generate --date 2026-10-22 --n 3000
 uv run python run.py fsdr-load --date 2026-10-22
 uv run python run.py fsdr-features --date 2026-10-22
-uv run python run.py fsdr-targets --date 2026-10-22 --generate     # or copy your lists into data/scoring/<D>/target1|2/
-uv run python run.py fsdr-run-targets --date 2026-10-22            # or fsdr-score-target --target target1|target2, fsdr-final-file
+uv run python run.py fsdr-targets --date 2026-10-22 --generate     # or copy your lists into data/scoring/<D>/target2/
+uv run python run.py fsdr-run-targets --date 2026-10-22            # or fsdr-score-target --target target2, fsdr-final-file
 ```
 
 See `docs/RUN_FROM_TERMINAL.md` for every command.
@@ -542,13 +540,13 @@ See `docs/RUN_FROM_TERMINAL.md` for every command.
 | Folder | What | Committed to git? |
 |---|---|---|
 | `data/training/<D>/` | The training input of the date (5 folders) | no |
-| `data/scoring/<D>/` | The scoring input (5 folders) and the lists `target1/`, `target2/` (`a_constraint/`, `b_free/`), `control/` | no |
+| `data/scoring/<D>/` | The scoring input (5 folders) and the lists `target2/a_constraint/`, `target2/b_free/` | no |
 | `data/cache/<D>/` | The Parquet cache (16 partitions per table) | no |
 | `data/runs/<D>/train/T0_load … T3_segments/` | Validation report, completeness, features, segments, both dictionaries, crosswalk, priors | no |
 | `data/runs/<D>/score/P1_panel/` | `panel.parquet`, `group_sizes.csv`, `balance.csv`, `targets_rejected.csv`, `targets_check.json` | no |
-| `data/runs/<D>/score/P6_offers_target1/`, `P6_offers_target2/` | Per target: the code-2 tables of its groups (`TG_*_scored_nba`, `results_scoring_nba`), its 4 reco tables (`recos_monthly/weekly_…`), `traces.csv`, `group_report.csv`, `audit_groups.json`, `decisions.parquet` | no |
-| `data/output/<D>/target1/`, `target2/` | `input_flytxt_<target>.csv.gz`, `a_constraint/`, `b_free/` (per-group file + details), `details_<target>.parquet`, `final_rules_report.csv`, `output_checks.json`, `audit_groups.json`, `_outputs_manifest.json`, `summary.json` | no |
-| `data/output/<D>/control/`, `final/` | The control file; the final file (or `BLOCKED.txt`) | no |
+| `data/runs/<D>/score/P6_offers_target2/` | Per target: the code-2 tables of its groups (`TG_*_scored_nba`, `results_scoring_nba`), its 4 reco tables (`recos_monthly/weekly_…`), `traces.csv`, `group_report.csv`, `audit_groups.json`, `decisions.parquet` | no |
+| `data/output/<D>/target2/` | `input_flytxt_<target>.csv.gz`, `a_constraint/`, `b_free/` (per-group file + details), `details_<target>.parquet`, `final_rules_report.csv`, `output_checks.json`, `audit_groups.json`, `_outputs_manifest.json`, `summary.json` | no |
+| `data/output/<D>/final/` | The final file (or `BLOCKED.txt`) | no |
 | `data/fsdr/<D>/` | The V1.0 run folders (tabs of sections 5–10) | no |
 | `.env` | Your settings and keys | no |
 
@@ -562,7 +560,7 @@ Every step folder has a `_step.json`: status, start, duration, rows, input finge
 
 ```powershell
 uv run python run.py notebook --name training    # 01_training_step_by_step.ipynb: run T0 -> T2 -> T3, cell by cell
-uv run python run.py notebook --name scoring     # 02_scoring_step_by_step.ipynb: lists -> P1 -> Target 1 -> Target 2 -> final file
+uv run python run.py notebook --name scoring     # 02_scoring_step_by_step.ipynb: lists -> P1 -> Target 2 (a + b) -> final file
 uv run python run.py notebook                    # fsdr_results.ipynb: read-only view of a run (then Run All)
 uv run python run.py notebook-html --date 2026-10-22   # no browser: an HTML report of fsdr_results in data/runs/<D>/
 ```
@@ -592,7 +590,7 @@ Set `RUN_DATE` in the first code cell. They are stored without outputs; do not c
 | 3d: **Final file BLOCKED** | A target is blocked or not scored yet | Read `final/BLOCKED.txt`: it names the target; score or fix it, then 3d again |
 | Many customers with `DROP_RULE = F-04` | Their spend anchor is above every offer price, so no offer fits (code 3 / 4 rule BR-82); frequent on dummy data, whose catalogue is small | Normal on dummy data; on real data, check the catalogue and the anchors in the details file |
 | `forced_F08` is always 0 | The forced bundles `CM_*` / `DM_*` are not in the catalogue, or slot 6 is already taken by the 3rd weekly offer | Normal on dummy data; on real data they apply when they are in `btl_catalog` and slot 6 is empty |
-| A size warning (`configured 25,000`) | Your lists are smaller or larger than the configured sizes | Information only; change the sizes in `.env` if your design differs |
+| A size warning (`configured 50,000`) | Your lists are smaller or larger than the configured sizes | Information only; change the sizes in `.env` if your design differs |
 | A port is busy at start | An earlier app is still running | Section 2.3 (`netstat`, `taskkill`) |
 
 ---
@@ -603,8 +601,8 @@ Set `RUN_DATE` in the first code cell. They are stored without outputs; do not c
 |---|---|
 | **Run date D** | The Thursday of the campaign; every file of the week belongs to it |
 | **Training / scoring folder** | `data/training/<D>/` (the base, the history, the model scores) and `data/scoring/<D>/` (this week's tables, the lists); read as one run |
-| **Target 1 / Target 2** | Production (T1C a + T1F b) and challenger (T2C a + T2F b), each scored separately; **control** is never contacted |
-| **T1C / T1F / T2C / T2F** | The four contacted groups (section 4.0) |
+| **Target 2** | V4.0: the only target scored, group a (T2C) + group b (T2F), 50,000 each; Target 1 (production) and the control group are off |
+| **T2C / T2F** | **T**arget **2**, **C**onstraint (group a: offers of the action's families) / **F**ree (group b: DATA / COMBO, action not used); T1C / T1F = the same for Target 1 (off) |
 | **Action** | One of 7: CROSS SELL DATA, UPSELL DATA, RETAIN, MAINTAIN, UPSELL, CROSS SELL VOICE, UPSELL VOICE |
 | **`action_original`** | Your original segment → action dictionary (code 1), via the segment engine or the crosswalk |
 | **`action_agent`** | The agent's dictionary (week 0: a copy of the original; the LLM will update it weekly) |

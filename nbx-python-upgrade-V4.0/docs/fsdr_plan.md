@@ -2,6 +2,8 @@
 
 Status: **V3.0**. Built: Phases 1–3 (contract and T0; features T2; segments and the two actions T3, §17) and the V3.0 changes: the `.csv.gz` contract and the four groups T1C / T1F / T2C / T2F + control (§18). Where §1–§16 say "Target 1 (20k) / Target 2 (20k) / 40k", read the four groups of §18.
 
+> **V4.0 deployment (2026-11):** only **Target 2** is scored: group a (T2C, CC-v1) and group b (T2F, CF-v1) at 50,000 each, with no Target 1 and no control group (`FSDR_TARGETS=target2`, `FSDR_CONTROL_SIZE=0`). The LLM agents (2b dictionary, 3 NBA, 4 NBO, 1 / 2 / 8 / 9 narratives) run on the laptop GPU in notebooks 03 (Ollama) and 04 (vLLM). Where this plan says Target 1, T1C, T1F or control, that part is switched off; `FSDR_TARGETS=target1,target2` and `FSDR_CONTROL_SIZE=20000` bring it back. §19 below and [REAL_DATA_2026-11-19.md](REAL_DATA_2026-11-19.md) describe the current set-up.
+
 Spec of record: `docs/fsdr_reference/PROMPT_FSDR_MASTER.md` (the master prompt). Section numbers below (§) refer to it.
 Starting point: **V1.0** (`nbx-python-upgrade-V1.0`, 216 tests, 45 contract tables, vectorised for 1.7 M lines).
 

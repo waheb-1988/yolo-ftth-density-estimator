@@ -6,6 +6,8 @@ The steps assume the project is in `D:\production\nbx-python-upgrade-V4.0` and t
 
 ---
 
+> **Simpler: one weekly folder (the GPU notebook).** If you export fresh `*_auto` tables every week, you need neither the `*_score` tables nor a separate scoring folder. Put everything for the week in `data/weekly/<D>/` and run `notebooks/03_gpu_agents_step_by_step.ipynb`. It runs every agent, with the LLM on your GPU. Every week is then a week-0 run on fresh history. The tables to copy are in [GPU_AGENTS_NOTEBOOK.md](GPU_AGENTS_NOTEBOOK.md) §2. The rest of this guide describes the two-folder layout of notebooks 01 and 02.
+
 ## 0. The full flow, week by week
 
 ```
@@ -23,9 +25,8 @@ WEEK 0 · run date D (e.g. 2026-11-19)
      │
      └─ 3. SCORING OF THE TARGETS .................. notebook 02  (or fsdr-run-targets)
            P1  panel = your 5 lists joined with T3                   → data/runs/D/score/P1_panel/
-           P6 + code 5 Target 1 (T1C, T1F)                           → data/output/D/target1/
            P6 + code 5 Target 2 (T2C, T2F)                           → data/output/D/target2/
-           control + final file (both targets PASS)                        → data/output/D/control/, final/
+           final file (Target 2 PASS)                                → data/output/D/final/
            → check it, then hand over final/input_flytxt.csv.gz yourself
 
 WEEK 1 · run date D+7 (e.g. 2026-11-26): NEW folders, same 3 steps
@@ -33,7 +34,7 @@ WEEK 1 · run date D+7 (e.g. 2026-11-26): NEW folders, same 3 steps
      ├─ 1. TRAINING again (pipeline train_weekly: features from the *_score tables)
      │     T3 takes the agent dictionary of week 0 from data/runs/D/ (keep the old runs)
      ├─ 2. whole base: segments and actions of this week
-     └─ 3. targets: P1 → Target 1 → Target 2 → final file      → data/output/D+7/…
+     └─ 3. targets: P1 → Target 2 (a + b) → final file          → data/output/D+7/…
 
 WEEK 2 · D+14, and so on: same as week 1.
 ```
@@ -77,7 +78,7 @@ $D = "2026-11-19"                        # your run date
 foreach ($side in "training", "scoring") {
   foreach ($f in "usage", "models", "subscription", "catalog", "others") {
     New-Item -ItemType Directory -Force "data\$side\$D\$f" | Out-Null } }
-foreach ($t in "target1\a_constraint", "target1\b_free", "target2\a_constraint", "target2\b_free", "control") {
+foreach ($t in "target2\a_constraint", "target2\b_free") {
   New-Item -ItemType Directory -Force "data\scoring\$D\$t" | Out-Null }
 ```
 
@@ -86,8 +87,7 @@ The result:
 ```
 data\training\2026-11-19\   usage\  models\  subscription\  catalog\  others\
 data\scoring\2026-11-19\    usage\  models\  subscription\  catalog\  others\
-                            target1\a_constraint\  target1\b_free\
-                            target2\a_constraint\  target2\b_free\  control\
+                            target2\a_constraint\  target2\b_free\
 ```
 
 ---
@@ -98,7 +98,7 @@ data\scoring\2026-11-19\    usage\  models\  subscription\  catalog\  others\
 
 **Formats:**
 - `.csv.gz` is the production format.
-- `.csv`, `.parquet`, `.json` and `.jsonl` are also read.
+- **Only `.csv.gz` for real data:** validation blocks `.csv`, `.parquet`, `.json` and `.jsonl` (test formats), unless `FSDR_ALLOW_TEST_FORMATS=true` is set in `.env`.
 - Use one file per table: two files for the same table (for example `.csv` and `.csv.gz`) block T0.
 
 **CSV rules:** UTF-8, comma separator, one header row, a dot as the decimal point, dates `YYYY-MM-DD`, and an empty field for missing values. IDs are read as text, so leading zeros are kept.
@@ -157,11 +157,8 @@ You can copy one file per group:
 
 | File | Group | Rules |
 |---|---|---|
-| `data\scoring\<D>\target1\a_constraint\target1_a.csv.gz` | T1C | production code 3, `action_original` |
-| `data\scoring\<D>\target1\b_free\target1_b.csv.gz` | T1F | production code 4 |
 | `data\scoring\<D>\target2\a_constraint\target2_a.csv.gz` | T2C | challenger CC-v1, `action_agent` |
 | `data\scoring\<D>\target2\b_free\target2_b.csv.gz` | T2F | challenger CF-v1 |
-| `data\scoring\<D>\control\control.csv.gz` | control | never contacted |
 
 Or upload the lists in the web interface, tab "FSDR Targets & Output", step 2a.
 
@@ -169,7 +166,7 @@ Or upload the lists in the web interface, tab "FSDR Targets & Output", step 2a.
 - One row per line and at least the column `access_method_val` (the 8-digit MSISDN, without a country prefix).
   - Any other column (stratum `Final`, plan, nationality, …) is kept and copied to the details file.
 - A line must be in only one list.
-- Configured sizes: 25,000 per group and 20,000 for control. A list more than 2% off its size only gets a warning.
+- Configured sizes: 50,000 for group a (T2C) and 50,000 for group b (T2F); no control group and no Target 1 in V4.0 (`FSDR_CONTROL_SIZE=20000` adds a control list `control\control.csv.gz`). A list more than 2% off its size only gets a warning.
 - **Real lists are recognised by themselves.** The dummy generator records a checksum of every list it writes in `_targets_manifest.json`. A list you copy over a dummy one has another checksum, so it is treated as yours: it is never overwritten, and it is checked against the configured sizes. Deleting `_targets_manifest.json` is no longer needed (it does no harm).
 
 **Without lists:** if you have no lists for this run, you can let the engine draw them from the eligible base (dummy lists). Do this only for a test, never for a real campaign.
@@ -241,9 +238,9 @@ uv run python run.py fsdr-features --date $D     # T2 + T3, about 1-2 min
    - the checks: **blocking** stops the run. Each **dropped** line has its reason in `targets_rejected.csv`: not an 8-digit MSISDN, not in the eligible base, Nursering, or in another campaign this week.
    - Many lines dropped as "not in the eligible base" usually means the MSISDN format differs between the lists and `base_prepaid`, for example a `968` country prefix or a leading zero.
 5. **Step 3 (P1):** sizes per group, the balance of the panel, and `SOURCE = uploaded`.
-6. **Steps 4–5 (Target 1):**
+6. **Target 2, group a and group b (Steps 4–5):**
    - the group audit must be `PASS`;
-   - the final files are written to `data\output\<D>\target1\`;
+   - the final files are written to `data\output\<D>\target2\`;
    - `output_checks.json` must have every check passed.
 7. **Steps 6–7 (Target 2):** the same checks, written to `data\output\<D>\target2\`.
 8. **Step 8 (final file):**
@@ -256,7 +253,7 @@ uv run python run.py fsdr-features --date $D     # T2 + T3, about 1-2 min
 
 ```powershell
 uv run python run.py fsdr-targets --date $D        # checks the lists only (NO --generate)
-uv run python run.py fsdr-run-targets --date $D    # P1, Target 1, Target 2, control, final file
+uv run python run.py fsdr-run-targets --date $D    # P1, Target 2 (a + b), final file
 ```
 
 ---
@@ -264,8 +261,7 @@ uv run python run.py fsdr-run-targets --date $D    # P1, Target 1, Target 2, con
 ## 8. Validate and hand over
 
 1. **Read the reports:**
-   - `data\output\<D>\target1\` and `target2\`: `output_checks.json`, `audit_groups.json`, and `details_<target>.parquet` (every line with all its columns);
-   - `data\output\<D>\control\control_<D>.csv.gz`: the control lines, with their strata.
+   - `data\output\<D>\target2\`: `output_checks.json`, `audit_groups.json`, and `details_<target>.parquet` (every line with all its columns);
 2. **Get the business to validate** a sample of `details_*`.
 3. **Once checked**, hand over `data\output\<D>\final\input_flytxt.csv.gz` yourself. The engine saves it in the campaign format; it sends nothing.
 4. **Keep the run** (`data\runs\<D>\`, `data\output\<D>\`). Next week's feedback and uplift are measured against it.
@@ -306,7 +302,7 @@ Never delete the folders of a real run you still need.
 | Many "missing model scores" in T2 | The model tables use other IDs than `base_prepaid`. Check `access_method_val` / `access_method_id` in the model files. |
 | Almost every list line "not in the eligible base" | The MSISDN format differs between tables (country prefix, leading zero, `.0` added by Excel). Export the IDs as text, 8 digits. |
 | Wrong numbers after opening a CSV in Excel | Excel changes IDs and dates. Never save an export from Excel; take the file straight from the database. |
-| Step 2 of scoring: `MISSING` for a group | The list file name or folder is wrong. It must be exactly `target1\a_constraint\target1_a.csv.gz` (and so on, §4). |
-| Size warnings on real lists | Your lists are more than 2 % off the configured sizes (25,000 per group, 20,000 control: `.env`). A group far below its size can make the group audit FAIL and block the final file; Step 9 then prints the reason. |
+| Step 2 of scoring: `MISSING` for a group | The list file name or folder is wrong. It must be exactly `target2\a_constraint\target2_a.csv.gz` (and so on, §4). |
+| Size warnings on real lists | Your lists are more than 2 % off the configured sizes (50,000 per group: `.env`). A group far below its size can make the group audit FAIL and block the final file; Step 9 then prints the reason. |
 | `final\BLOCKED.txt` | One target did not PASS, or one MSISDN is in two targets. The file says which. Fix the lists and run Steps 2–8 again. |
 | The kernel dies or "access denied" | See [SETUP_NEW_LAPTOP.md](SETUP_NEW_LAPTOP.md) §13. |

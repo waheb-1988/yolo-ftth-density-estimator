@@ -43,6 +43,7 @@ FSDR_RUNS_DIR = Path(os.getenv("FSDR_RUNS_DIR", str(nbx_config.DATA_DIR / "runs"
 TRAINING_FOLDER, SCORING_FOLDER = "training", "scoring"
 FSDR_TRAINING_DIR = Path(os.getenv("FSDR_TRAINING_DIR", str(nbx_config.DATA_DIR / TRAINING_FOLDER)))
 FSDR_SCORING_DIR = Path(os.getenv("FSDR_SCORING_DIR", str(nbx_config.DATA_DIR / SCORING_FOLDER)))
+FSDR_WEEKLY_DIR = Path(os.getenv("FSDR_WEEKLY_DIR", str(nbx_config.DATA_DIR / "weekly")))   # notebooks 03 / 04: one folder
 FSDR_OUTPUT_DIR = Path(os.getenv("FSDR_OUTPUT_DIR", str(nbx_config.DATA_DIR / "output")))
 INPUT_FOLDERS = ("usage", "models", "subscription", "catalog", "others")
 INPUT_FORMATS = (".csv.gz", ".json", ".jsonl", ".csv", ".parquet")   # V3.0: .csv.gz = production (master §2)
@@ -466,13 +467,15 @@ _ACT_SCORE = ["activities_w1_score", "activities_w2_score", "activities_w3_score
 _SCORES = [m.table for m in MODEL_SCORE_REGISTRY]
 PIPELINE_TABLES = {
     "train_week0": {
-        "required": ["base_prepaid", "consumer_aact_account", "access_method_id_auto", "party_auto", "party_scoring",
-                     "subs_amt_auto", *_ACT_AUTO, "subs_amt_score", *_ACT_SCORE, *_SCORES, "subscriptions_tg",
+        "required": ["base_prepaid", "consumer_aact_account", "access_method_id_auto", "party_auto",
+                     "subs_amt_auto", *_ACT_AUTO, *_SCORES, "subscriptions_tg",
                      "usage_data_voice_payg_tg", "targeting_dataiku_auto", "targeting_auto", "subs_btl_auto",
                      "sub_btl_3months", "btl_catalog"],
-        # customer_profile missing -> AGE from party_scoring, tenure from access_method_subs_start_dt (§2.1)
+        # customer_profile missing -> AGE from the party table, tenure from access_method_subs_start_dt (§2.1).
+        # V4.0: week 0 reads only the *_auto history, so the D-anchored *_score tables are optional here: a weekly
+        # export of fresh *_auto tables (one folder, no *_score) is a complete week-0 run.
         "optional": [PROFILE_TABLE, "location_auto", "DEVICEBEHAVIORSEGMENTATION.dv_segment", "paygo_activity_auto",
-                     CONSENT_TABLE],
+                     CONSENT_TABLE, "party_scoring", "subs_amt_score", *_ACT_SCORE],
     },
     "train_weekly": {
         "required": ["base_prepaid", "consumer_aact_account", "party_scoring", "subs_amt_score", *_ACT_SCORE, *_SCORES,
@@ -594,9 +597,10 @@ AGENT_DICTIONARY_PREFIX = "dict_segm_actions_agent_v"
 # ---------------------------------------------------------------------------
 T1_CONSTRAINT_SIZE = int(os.getenv("FSDR_T1_CONSTRAINT_SIZE", "25000"))
 T1_FREE_SIZE = int(os.getenv("FSDR_T1_FREE_SIZE", "25000"))
-T2_CONSTRAINT_SIZE = int(os.getenv("FSDR_T2_CONSTRAINT_SIZE", "25000"))
-T2_FREE_SIZE = int(os.getenv("FSDR_T2_FREE_SIZE", "25000"))
-CONTROL_SIZE = int(os.getenv("FSDR_CONTROL_SIZE", "20000"))        # open item 1 (10k = less precise per 25k group)
+# V4.0: Target 2 only by default (the LLM agents' target), 50k a (T2C) + 50k b (T2F); Target 1 is off (FSDR_TARGETS)
+T2_CONSTRAINT_SIZE = int(os.getenv("FSDR_T2_CONSTRAINT_SIZE", "50000"))
+T2_FREE_SIZE = int(os.getenv("FSDR_T2_FREE_SIZE", "50000"))
+CONTROL_SIZE = int(os.getenv("FSDR_CONTROL_SIZE", "0"))            # V4.0: no control group by default; 20000 = a baseline
 T2_SPLIT = os.getenv("FSDR_T2_SPLIT", "true").lower() == "true"     # false -> one 50k T2 with the CC rules
 GROUP_SIZE_TOLERANCE = 0.02                       # A-30: sizes within +-2 %
 BALANCE_MAX_POINTS = 2.0                          # A-31: stratum shares differ by at most 2 points between groups
@@ -638,13 +642,17 @@ SUPERSEDED_TABLES = ["TG_40k_challenger_scored_nba", "recos_monthly_challenger",
 
 
 def group_sizes() -> dict[str, int]:
-    """Configured size of every panel group (t2_split false: one T2 of both sizes, with the CC rules)."""
-    sizes = {"t1c": T1_CONSTRAINT_SIZE, "t1f": T1_FREE_SIZE}
-    if T2_SPLIT:
-        sizes.update(t2c=T2_CONSTRAINT_SIZE, t2f=T2_FREE_SIZE)
-    else:
-        sizes["t2c"] = T2_CONSTRAINT_SIZE + T2_FREE_SIZE
-    sizes[CONTROL_GROUP] = CONTROL_SIZE
+    """Configured size of every panel group of the ACTIVE targets (t2_split false: one T2 of both sizes, CC rules)."""
+    sizes = {}
+    if "target1" in TARGETS:
+        sizes.update(t1c=T1_CONSTRAINT_SIZE, t1f=T1_FREE_SIZE)
+    if "target2" in TARGETS:
+        if T2_SPLIT:
+            sizes.update(t2c=T2_CONSTRAINT_SIZE, t2f=T2_FREE_SIZE)
+        else:
+            sizes["t2c"] = T2_CONSTRAINT_SIZE + T2_FREE_SIZE
+    if CONTROL_SIZE > 0:                                # V4.0 default 0: no control list, no control file
+        sizes[CONTROL_GROUP] = CONTROL_SIZE
     return sizes
 
 
@@ -679,10 +687,31 @@ LEVEL2_MAX_INPUT_TOKENS = 1500
 #   data/scoring/<D>/target2/a_constraint/target2_a.csv.gz   T2C   target2/b_free/target2_b.csv.gz   T2F
 #   data/scoring/<D>/control/control.csv.gz                   never contacted
 TARGETS_FOLDER = os.getenv("FSDR_TARGETS_FOLDER", ".")
-TARGET_FILES = {"t1c": "target1/a_constraint/target1_a", "t1f": "target1/b_free/target1_b",
-                "t2c": "target2/a_constraint/target2_a", "t2f": "target2/b_free/target2_b", "control": "control/control"}
-TARGETS = {"target1": ["t1c", "t1f"], "target2": ["t2c", "t2f"]}       # scored separately (V4.0)
-GROUP_SUBFOLDER = {k: v.split("/")[1] for k, v in TARGET_FILES.items() if k != "control"}   # t1c -> a_constraint
+ALL_TARGET_FILES = {"t1c": "target1/a_constraint/target1_a", "t1f": "target1/b_free/target1_b",
+                    "t2c": "target2/a_constraint/target2_a", "t2f": "target2/b_free/target2_b", "control": "control/control"}
+ALL_TARGETS = {"target1": ["t1c", "t1f"], "target2": ["t2c", "t2f"]}   # scored separately (V4.0)
+GROUP_SUBFOLDER = {k: v.split("/")[1] for k, v in ALL_TARGET_FILES.items() if k != "control"}   # t1c -> a_constraint
+# V4.0: the targets this deployment scores. Default: Target 2 only (where the LLM agents decide); Target 1 (the
+# production rules) is not scored, its lists are not read and its folders are not written. FSDR_TARGETS=target1,target2
+# brings it back.
+TARGETS: dict[str, list[str]] = {}
+TARGET_FILES: dict[str, str] = {}
+
+
+def set_targets(names) -> None:
+    """Activates these targets (in place, so every module sees it): TARGETS and the list files they read."""
+    names = [n for n in names if n]
+    unknown = [n for n in names if n not in ALL_TARGETS]
+    if unknown or not names:
+        raise ValueError(f"FSDR_TARGETS must name one or more of {list(ALL_TARGETS)}, got {names}")
+    TARGETS.clear()
+    TARGETS.update({t: ALL_TARGETS[t] for t in ALL_TARGETS if t in names})
+    TARGET_FILES.clear()
+    TARGET_FILES.update({k: v for k, v in ALL_TARGET_FILES.items()
+                         if (k == CONTROL_GROUP and CONTROL_SIZE > 0) or any(k in g for g in TARGETS.values())})
+
+
+set_targets([t.strip() for t in os.getenv("FSDR_TARGETS", "target2").split(",")])
 # V4.0: recommended offers per customer. 6 = 3 monthly + 3 weekly (slots 1-2 monthly, 3-4 weekly, 5 = monthly
 # rank 3, 6 = weekly rank 3; a favourite / forced offer only fills a slot 5 / 6 left empty). 4 = the V3.0 file.
 RECO_OFFERS = int(os.getenv("FSDR_RECO_OFFERS", "6"))

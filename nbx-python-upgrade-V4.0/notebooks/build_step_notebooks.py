@@ -3,7 +3,7 @@
     uv run python notebooks/build_step_notebooks.py
 
     notebooks/01_training_step_by_step.ipynb   data -> T0 validation + cache -> T2 features -> T3 segments and actions
-    notebooks/02_scoring_step_by_step.ipynb    target lists -> P1 panel -> Target 1 (P6 + final) -> Target 2 -> final file
+    notebooks/02_scoring_step_by_step.ipynb    target lists -> P1 panel -> Target 2 (P6 + final, groups a and b) -> final file
 
 Standalone: the code of every engine module the steps use is copied into the notebook (Part A, one cell per
 module, `%%engine <module>`), so a notebook imports nothing from the project folder and never loads vowpalwabbit.
@@ -118,7 +118,7 @@ assigns the segments, and decides the two actions of every line. The scoring not
 ```
 data/training/<D>/   usage/ models/ subscription/ catalog/ others/     the base, history, model scores
 data/scoring/<D>/    usage/ models/ subscription/ catalog/ others/     this week's scoring tables
-                     target1/a_constraint/ target1/b_free/ target2/a_constraint/ target2/b_free/ control/
+                     target2/a_constraint/ target2/b_free/                the target lists (Target 2 only)
 ```
 
 T0 reads the two folders **as one run**. A table filed on the wrong side is still loaded, with a warning.
@@ -126,8 +126,8 @@ T0 reads the two folders **as one run**. A table filed on the wrong side is stil
 **How to use:** set the run date in the next cell, then run the cells one by one (Shift+Enter). Read the explanation above each step.
 Every step is **resumable**: a step already done with the same inputs is skipped, and `FORCE = True` re-runs it."""),
     code("""# --- settings -------------------------------------------------------------------
-RUN_DATE = "2026-10-22"     # the run date D (a Thursday in production)
-GENERATE = True             # True: dummy data for D (tests). REAL DATA: False (real exports are never overwritten)
+RUN_DATE = "2026-11-19"     # the run date D of your real exports (a Thursday in production)
+GENERATE = False            # False: your real exports. True: dummy data for a test (real exports are never overwritten)
 N_LINES = 3000              # dummy lines (2000 = 30 s; 1,000,000 = the production size, ~16 min to generate)
 WORKERS = 2                 # partitions in parallel for T2 / T3 (2 on a laptop, 8 on a big machine)
 FORCE = False               # True: re-run every step even if its inputs did not change
@@ -152,6 +152,9 @@ The manifest says `source: generator`, so real exports are never overwritten: wi
     run = generator.generate(N_LINES, D, ["baseline"], config.GENERATOR_SEED, TRAINING, "csv.gz", "split")
     print(f"{len(run.tables)} tables generated for {N_LINES:,} lines")
 else:
+    if not any(p.is_file() for p in TRAINING.rglob("*.csv*")) if TRAINING.exists() else True:
+        raise SystemExit(f"no exports in {TRAINING}: create the folders with `uv run python run.py fsdr-folders "
+                         f"--date {RUN_DATE} --layout split`, copy the files, then run again (or GENERATE = True for a test)")
     print("GENERATE = False: using the files already in", TRAINING, "and", SCORING)"""),
 
     md("""## Step 1 · The two input folders
@@ -281,7 +284,7 @@ For every line of T2:
 - **Micro-segment** = nationality | age band | tenure band. It is used for the balance of the panel and the median anchor.
 - **Week-0 history**: what the production engine targeted last week (`W0_*`), and who took an offer.
 - **Two actions per line** (one of the 7 actions):
-  - `ACTION_ORIGINAL`: the production dictionary (segment -> action). Target 1 uses it.
+  - `ACTION_ORIGINAL`: the production dictionary (segment -> action), kept for reference (Target 1 is not scored in V4.0).
   - `ACTION_AGENT`: the agent dictionary, versioned and checked against the previous version. Target 2 uses it.
 
 Outputs:
@@ -365,33 +368,38 @@ display(Markdown(f"**One line, end to end** (`details_{{TARGET}}.parquet` has {{
 display(one[[c for c in cols if c in one.index]].to_frame("value"))'''
 
 SCORING_CELLS = [
-    md("""# 02 · Scoring, step by step (FSDR V4.0), each target separately
+    md("""# 02 · Scoring of Target 2, step by step (FSDR V4.0)
 
-Scoring runs after training (`01_training_step_by_step.ipynb`) on the **same run date**. It takes the target lists, builds the panel, and scores **Target 1** and **Target 2 separately**, each into its own output folder.
-It then saves the single final file of both targets (`input_flytxt.csv.gz`, the campaign format). Nothing is sent anywhere: the files stay in `data/output/<D>/`.
+Scoring runs after training (`01_training_step_by_step.ipynb`) on the **same run date**: the whole base is trained,
+then the target lists are joined with it and **Target 2** is scored, group a and group b, into `data/output/<D>/`.
+It then saves the final file (`input_flytxt.csv.gz`, the campaign format). Nothing is sent anywhere.
 
-| Target | Group a (`a_constraint`) | Group b (`b_free`) | Action used |
-|---|---|---|---|
-| **Target 1** (production) | T1C · code 3, the action's offer families | T1F · code 4, L2 DATA / COMBO | `action_original` |
-| **Target 2** (challenger) | T2C · CC-v1, relative ARPU band | T2F · CF-v1, relative band, L2 | `action_agent` |
-| **Control** | never contacted | | |
+**V4.0: Target 2 only** (the target where the LLM agents decide, notebooks 03 / 04). Target 1 (the production rules)
+is not scored: its lists are not read and its folders are not written (`FSDR_TARGETS=target2`, the default;
+`FSDR_TARGETS=target1,target2` brings it back).
+
+| Group | Name | Lines | Universe of offers | Action | Rules |
+|---|---|---|---|---|---|
+| **a** `a_constraint` | **T2C** = Target 2, Constraint | 50,000 | the offer families of the customer's action (code 3 universe) | `action_agent` (the agent dictionary) | CC-v1: price 1.0–1.5x the customer's own spend |
+| **b** `b_free` | **T2F** = Target 2, Free | 50,000 | L2 DATA / COMBO offers, no voice, whatever the action (code 4 universe) | not used | CF-v1: price 1.0–1.5x the customer's own spend |
+| control | — | 0 | no control group by default (`FSDR_CONTROL_SIZE=0`); set `FSDR_CONTROL_SIZE=20000` and add `control/control.csv.gz` to measure the uplift against never-contacted lines | — | — |
 
 | Step | What it does | Writes |
 |---|---|---|
 | 1 | check that training is done | — |
-| 2 | the target lists (upload, or dummy lists), their checks | `data/scoring/<D>/target1/…`, `target2/…`, `control/` |
+| 2 | the target lists (upload, or dummy lists), their checks | `data/scoring/<D>/target2/…` |
 | 3 | **P1** panel from the lists, sizes, balance | `data/runs/<D>/score/P1_panel/` |
-| 4–5 | **Target 1**: P6 offers, then the final files | `data/runs/<D>/score/P6_offers_target1/`, `data/output/<D>/target1/` |
-| 6–7 | **Target 2**: the same | `…/P6_offers_target2/`, `data/output/<D>/target2/` |
-| 8 | control file and the **final file** (both targets PASS) | `data/output/<D>/control/`, `data/output/<D>/final/` |
-| 9 | validate the final file | — |
+| 4 | **Target 2** P6: the offers of T2C and T2F | `data/runs/<D>/score/P6_offers_target2/` |
+| 5 | **Target 2** final files (code 5) | `data/output/<D>/target2/` |
+| 6 | the **final file** (Target 2 PASS) | `data/output/<D>/final/` |
+| 7 | validate the final file | — |
 
 **Up to 6 offers per line (V4.0).** Slots 1–2 are the 2 best monthly offers and slots 3–4 the 2 best weekly ones. Slot 5 is the 3rd monthly offer and slot 6 the 3rd weekly one (rule EXT-6: same universe, above the anchor, not the same service and price). Favourites and forced bundles only fill a slot 5 / 6 left empty. Set `FSDR_RECO_OFFERS=4` in `.env` for the V3.0 file (4 recommended offers).
 
 Decisions use the documented fallbacks of the LLM agents (rule action, NBO order E-O3 + E-O1) until Phases 5–6 build them, and every row says so (`DECIDED_BY`, `score_source`)."""),
     code("""# --- settings -------------------------------------------------------------------
-RUN_DATE = "2026-10-22"         # the same run date as the training notebook
-GENERATE_TARGETS = True         # True: dummy lists (tests). REAL LISTS: False (real lists are never overwritten)
+RUN_DATE = "2026-11-19"         # the same run date as the training notebook
+GENERATE_TARGETS = False        # False: your real lists. True: dummy lists for a test (real lists are never overwritten)
 FORCE = True                    # scoring is quick: re-run every step by default
 PREVIEW_ROWS = 8
 """ + SETUP + """
@@ -412,11 +420,8 @@ print("training OK")"""),
 You get one list per group, chosen outside the engine. Each list has one row per line and at least `access_method_val`; any other column is kept and carried to the details.
 
 ```
-data/scoring/<D>/target1/a_constraint/target1_a.csv.gz    T1C
-data/scoring/<D>/target1/b_free/target1_b.csv.gz          T1F
-data/scoring/<D>/target2/a_constraint/target2_a.csv.gz    T2C
-data/scoring/<D>/target2/b_free/target2_b.csv.gz          T2F
-data/scoring/<D>/control/control.csv.gz                   control
+data/scoring/<D>/target2/a_constraint/target2_a.csv.gz    T2C (group a), 50,000 lines
+data/scoring/<D>/target2/b_free/target2_b.csv.gz          T2F (group b), 50,000 lines
 ```
 
 **Checks:**
@@ -464,28 +469,26 @@ show(P1 / "group_sizes.csv")
 bal = pd.read_csv(P1 / "balance.csv")
 show(bal.sort_values("max_gap_points", ascending=False), n=10, title="balance: largest gaps between groups")"""),
 
-    md("""## Step 4 · Target 1, scoring (P6): T1C (a) and T1F (b) · Agents 3 (③) NBA, 4 (④) NBO, 6A (⑥A) production rules, 9 (⑨) auditor
+    md("""## Step 4 · Target 2, scoring (P6): T2C (a) and T2F (b) · Agents 3 (③), 4 (④), 6B (⑥B) challenger rules, 9 (⑨) auditor
 
-These rules apply only to the two groups of Target 1:
+**The difference between a and b:** group a (T2C) gets offers of the families of its **action** (a retention action
+gets retention offers, an upsell action bigger bundles); group b (T2F) gets the best L2 DATA / COMBO offers for its
+spend, **whatever the action**. Both use the customer's own spend as the price anchor.
 
-1. **Action** = `action_original`, the production dictionary.
-2. **Candidates** per validity (30 days, then 7 days):
-   - T1C: the offer families of the action (B-21);
-   - T1F: the L2 DATA / COMBO offers, without VOICE (FR-02 / FR-03).
-   - Only offers bought in the base in the last 270 days count (B-20b), at most 25 per validity.
-3. **Price passes** around the anchor (the customer's average spend, B-26 / B-27):
-   - pass 1: anchor < price < anchor + k;
-   - pass 2: the missing type;
-   - pass 3: nothing found yet.
-   - k = 2 or 3 by action for code 3, k = 3 for code 4.
-4. **EXT-6 (V4.0)**: a third offer per validity.
-5. **10.1 consistency** (T1C only): a customer with no offer is retried once with his second action.
+These rules apply to the two groups:
 
-The **group audit** (A-12 universe, A-12b catalogue, A-17 rules version, A-21 no control line, A-30 / A-31) must PASS, or the final file is not written."""),
-    code(TARGET_P6.format(t="target1")),
-    code(TARGET_P6_DETAIL.format(a="t1c")),
+1. **Action** = `action_agent`, the agent dictionary.
+2. **Challenger anchor** (CC-03 / CF-03): the customer's spend, split data / voice. A customer with no spend gets the median of his micro-segment.
+3. **Relative band** (CC-02 / CF-02): price between 1.0× and 1.5× the anchor. UPSELL actions need at least +0.5 OMR, and no offer is ever a downgrade.
+   - The pick is the best `score × price` (C-04).
+   - If nothing fits, the band is widened once, to 2.0×.
+   - Then the production (code 3 / code 4) passes apply as a fallback (logged as `fallback …`).
+4. **EXT-6**: the third offer per validity.
+5. **10.1 consistency**: T2C only."""),
+    code(TARGET_P6.format(t="target2")),
+    code(TARGET_P6_DETAIL.format(a="t2c")),
 
-    md("""## Step 5 · Target 1, final files (code 5) → `data/output/<D>/target1/` · Agent 7 (⑦) code 5
+    md("""## Step 5 · Target 2, final files (code 5) → `data/output/<D>/target2/` · Agent 7 (⑦) code 5
 
 Code 5 turns the recommended offers into the campaign file `input_flytxt`, which has 38 columns:
 
@@ -499,54 +502,33 @@ Code 5 turns the recommended offers into the campaign file `input_flytxt`, which
 5. Scripts in English and Arabic, segment, BTL-taker flags, dates (F-13 … F-19).
 
 The **output checks** A-20 … A-24 run on the file: 38 columns in order, one row per MSISDN, no control line, the dates, every offer in the catalogue, and the segment being one of the 7 actions.
-`input_flytxt_target1.csv.gz` is written **only when everything passes** (H-08); otherwise you get `BLOCKED.txt` with the reasons.
+`input_flytxt_target2.csv.gz` is written **only when everything passes** (H-08); otherwise you get `BLOCKED.txt` with the reasons.
 
 | File | Content |
 |---|---|
-| `input_flytxt_target1.csv.gz` | the file of Target 1 (both groups) |
-| `a_constraint/input_flytxt_t1c.csv.gz`, `b_free/input_flytxt_t1f.csv.gz` | the same, per group |
-| `a_constraint/details_t1c.csv.gz`, `b_free/details_t1f.csv.gz` | every line of the group with every column |
-| `details_target1.parquet` | the big file to validate: profile, segment, both actions, features, anchors, offers, slots, reasons, removals |
+| `input_flytxt_target2.csv.gz` | the file of Target 2 (both groups) |
+| `a_constraint/input_flytxt_t2c.csv.gz`, `b_free/input_flytxt_t2f.csv.gz` | the same, per group |
+| `a_constraint/details_t2c.csv.gz`, `b_free/details_t2f.csv.gz` | every line of the group with every column |
+| `details_target2.parquet` | the big file to validate: profile, segment, both actions, features, anchors, offers, slots, reasons, removals |
 | `final_rules_report.csv`, `output_checks.json`, `audit_groups.json`, `summary.json` | the checks and counts |"""),
     code(TARGET_FINAL.format()),
     code(TARGET_DETAILS.format()),
 
-    md("""## Step 6 · Target 2, scoring (P6): T2C (a) and T2F (b), the challenger · Agents 3 (③), 4 (④), 6B (⑥B) challenger rules, 9 (⑨) auditor
+    md("""## Step 6 · The final file · Agent 9 (⑨) auditor: no final file unless Target 2 PASSES
 
-These rules apply only to the two groups of Target 2:
-
-1. **Action** = `action_agent`, the agent dictionary.
-2. **Challenger anchor** (CC-03 / CF-03): the customer's spend, split data / voice. A customer with no spend gets the median of his micro-segment.
-3. **Relative band** (CC-02 / CF-02): price between 1.0× and 1.5× the anchor. UPSELL actions need at least +0.5 OMR, and no offer is ever a downgrade.
-   - The pick is the best `score × price` (C-04).
-   - If nothing fits, the band is widened once, to 2.0×.
-   - Then the Target 1 passes apply as a fallback (logged as `fallback …`).
-4. **EXT-6**: the third offer per validity.
-5. **10.1 consistency**: T2C only."""),
-    code(TARGET_P6.format(t="target2")),
-    code(TARGET_P6_DETAIL.format(a="t2c")),
-
-    md("""## Step 7 · Target 2, final files → `data/output/<D>/target2/` · Agent 7 (⑦) code 5
-
-Same code 5 and the same checks as Target 1, on the Target 2 lines only. The files are the same, with `t2c` / `t2f` in their names."""),
-    code(TARGET_FINAL.format()),
-    code(TARGET_DETAILS.format()),
-
-    md("""## Step 8 · Control file and the final file · Agent 9 (⑨) auditor: no final file unless both targets PASS
-
-- `data/output/<D>/control/control_<D>.csv.gz` holds the control lines, which are never contacted (H-01), with their strata. They are the baseline for measuring uplift.
-- `data/output/<D>/final/input_flytxt.csv.gz` holds both target files merged. It is written **only if both targets passed** and no MSISDN is in two targets (A-30); otherwise you get `final/BLOCKED.txt`.
+- Control: no control group by default (`FSDR_CONTROL_SIZE=0`); set `FSDR_CONTROL_SIZE=20000` and add `control/control.csv.gz` to measure the uplift against never-contacted lines (then `data/output/<D>/control/` holds them, never contacted).
+- `data/output/<D>/final/input_flytxt.csv.gz` holds the Target 2 file (groups a and b). It is written **only if Target 2 passed** and no MSISDN is in two groups (A-30); otherwise you get `final/BLOCKED.txt`.
 
 The engine only **saves** these files in the campaign format (38 columns, `.csv.gz`); it sends nothing. You hand
-`final/input_flytxt.csv.gz` over yourself, once you have checked it (Step 9)."""),
+`final/input_flytxt.csv.gz` over yourself, once you have checked it (Step 7)."""),
     code("""ctrl = scoring_groups.write_control(D)
-print(f"control: {ctrl['lines']:,} lines -> {ctrl['file']}")
+print(f"control: {ctrl['lines']:,} lines -> {ctrl['file']}" if ctrl["file"] else "control: none (FSDR_CONTROL_SIZE=0)")
 fin = scoring_groups.run_final_file(D)
 print(f"final file {'READY' if fin['ready'] else 'BLOCKED'} -- {fin['input_flytxt_rows']:,} rows {fin['rows_per_target']}"
       + (f" -- reasons: {fin['reasons']}" if fin["reasons"] else ""))
 tree(OUTPUT, depth=3)"""),
 
-    md("""## Step 9 · Validate the final file
+    md("""## Step 7 · Validate the final file
 
 These are the last checks before handing the file over:
 - the 38 columns in order;
@@ -557,7 +539,7 @@ These are the last checks before handing the file over:
     code("""final_file = OUTPUT / "final" / f"input_flytxt{csvstd.SUFFIX}"
 if not final_file.exists():
     blocked = OUTPUT / "final" / "BLOCKED.txt"
-    print("NO FINAL FILE: it is blocked. Fix the reason below, then run Steps 2-8 again.")
+    print("NO FINAL FILE: it is blocked. Fix the reason below, then run Steps 2-6 again.")
     print()
     print(blocked.read_text(encoding="utf-8") if blocked.exists() else "final/ is empty: run Step 8 first")
     for t in config.TARGETS:
@@ -571,7 +553,8 @@ if not final_file.exists():
 else:
     f = csvstd.read_csv(final_file)
     details = pd.concat([pd.read_parquet(OUTPUT / t / f"details_{t}.parquet") for t in config.TARGETS])
-    control = csvstd.read_csv(OUTPUT / "control" / f"control_{RUN_DATE}{csvstd.SUFFIX}")
+    cfile = OUTPUT / "control" / f"control_{RUN_DATE}{csvstd.SUFFIX}"
+    control = csvstd.read_csv(cfile) if cfile.exists() else pd.DataFrame({"ACCESS_METHOD_VAL": []})   # no control group
     n = f[[f"destination_offer_name_{i}" for i in range(1, 7)]].ne("").sum(axis=1)
     checks = {
         "38 columns in order": list(f.columns) == config.INPUT_FLYTXT_COLUMNS,
@@ -889,12 +872,12 @@ say which agent works in each step.
 | **Agent 1** ① | Data agent | 01 · Step 2 (T0) | validates the 47 tables, completeness, cache; **blocks the run** on bad data | rules (contract checks); its summary is fixed text |
 | **Agent 2** ② | Segmentation | 01 · Step 5 (T3) | S-rules → segment, bands, micro-segment | rules (first rule that matches wins) |
 | **Agent 2b** ②b | Agent dictionary | 01 · Step 5 (T3) | segment → `action_agent` (used by Target 2) | week 0: a copy of the production dictionary (v0) |
-| **Agent 3** ③ | NBA, next best action | 02 · Steps 4 and 6 | the action of each line | fallback: the rule action (`action_original` for Target 1, `action_agent` for Target 2) |
-| **Agent 4** ④ | NBO, next best offer | 02 · Steps 4 and 6 | scores the allowed offers of each line | fallback: the order E-O3 + E-O1 (`score_source` says it) |
-| **Agent 6A** ⑥A | Production rules | 02 · Step 4 | Target 1: code 3 (B-20 … B-32) and code 4 (FR-01 … FR-14) passes, up to 6 offers | rules (YAML in `nbx/fsdr/rules/`) |
-| **Agent 6B** ⑥B | Challenger rules | 02 · Step 6 | Target 2: CC-v1 and CF-v1, relative ARPU band | rules |
-| **Agent 7** ⑦ | Code 5 | 02 · Steps 5 and 7 | the 38-column `input_flytxt` file, F-01 … F-19 | rules |
-| **Agent 9** ⑨ | Auditor | 02 · Steps 4, 6 and 8 | A-12, A-12b, A-17, A-30, A-31; **blocks the final file** on any FAIL | rules |
+| **Agent 3** ③ | NBA, next best action | 02 · Step 4 | the action of each T2C line | fallback: the rule action `action_agent` (the LLM decides in notebooks 03 / 04) |
+| **Agent 4** ④ | NBO, next best offer | 02 · Step 4 | scores the allowed offers of each T2C / T2F line | fallback: the order E-O3 + E-O1 (`score_source` says it) |
+| **Agent 6A** ⑥A | Production rules | — | Target 1 (not scored in V4.0); its code 3 / code 4 passes remain the fallback of 6B | rules (YAML in `nbx/fsdr/rules/`) |
+| **Agent 6B** ⑥B | Challenger rules | 02 · Step 4 | Target 2: CC-v1 (group a) and CF-v1 (group b), relative ARPU band | rules |
+| **Agent 7** ⑦ | Code 5 | 02 · Step 5 | the 38-column `input_flytxt` file, F-01 … F-19 | rules |
+| **Agent 9** ⑨ | Auditor | 02 · Steps 4 and 6 | A-12, A-12b, A-17, A-30, A-31; **blocks the final file** on any FAIL | rules |
 
 Not in these notebooks: Agent 5 ⑤ (market intelligence, removed in V4.0), Agent 8 ⑧ (strategy report),
 Agents 10 / 11 (⑩ bandit, ⑪ ranker: evidence helpers), Agent 12 ⑫ (ledger), Agent 13 ⑬ (revenue guard) and the
@@ -916,18 +899,17 @@ the old weeks stay. The full guide, with every table, is `docs/DATA_UPDATE.md`.
    ```
    data/training/<D>/  usage/ models/ subscription/ catalog/ others/
    data/scoring/<D>/   usage/ models/ subscription/ catalog/ others/
-                       target1/a_constraint/ target1/b_free/ target2/a_constraint/ target2/b_free/ control/
+                       target2/a_constraint/ target2/b_free/
    ```
-2. **Copy the exports**: file name = the exact table name + `.csv.gz` (or `.csv`, `.parquet`), e.g. `activities_w1_score.csv.gz`.
+2. **Copy the exports**: file name = the exact table name + `.csv.gz` (the only format accepted for real data), e.g. `activities_w1_auto.csv.gz`.
    - **Training side**: `base_prepaid`, `consumer_aact_account`, `subs_btl_auto`, the 11 model tables, `btl_catalog`.
      **Week 0 only**: the history `activities_*_auto`, `subs_amt_auto`, `party_auto`, `access_method_id_auto`,
      `targeting_dataiku_auto`. **Leave them out from week 1 on**, or T0 runs week 0 again on the old history.
    - **Scoring side** (every week): `subscriptions_tg`, `usage_data_voice_payg_tg`, `sub_btl_3months`,
      `activities_w1…w4_score`, `activities_m1…m3_score`, `subs_amt_score`, `party_scoring`, `targeting_auto`,
      `btl_catalog`, `BTL_script_english_arabic_ok`, `conflicting_offers_h`, `consent_contact`.
-3. **Copy the 5 target lists** (column `access_method_val`, 8 digits): `target1/a_constraint/target1_a.csv.gz`,
-   `target1/b_free/target1_b.csv.gz`, `target2/a_constraint/target2_a.csv.gz`, `target2/b_free/target2_b.csv.gz`,
-   `control/control.csv.gz`.
+3. **Copy the 3 target lists** (column `access_method_val`, 8 digits): `target2/a_constraint/target2_a.csv.gz`
+   (group a, 50,000 lines) and `target2/b_free/target2_b.csv.gz` (group b, 50,000 lines). No control list by default.
 4. **Settings**: `RUN_DATE = "<D>"` in both notebooks, `GENERATE = False` (training) and `GENERATE_TARGETS = False`
    (scoring). Real exports and real lists are never overwritten by dummy data, even if you forget.
 5. **Run** training (T0 → T2 → T3), then scoring. Check: T0 **DONE** (`train_week0` the first week,

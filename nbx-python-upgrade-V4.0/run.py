@@ -12,7 +12,7 @@ FSDR V4.0 (step by step: docs/SETUP_NEW_LAPTOP.md and notebooks/01_training_step
     fsdr-load --date 2026-10-22           step T0: validate both twins, completeness, Parquet cache (data/runs/<date>/train)
     fsdr-features --date 2026-10-22       steps T2 + T3: features, segments, the two actions (training)
     fsdr-targets --generate               dummy lists in data/scoring/<date>/target1|2/a_constraint|b_free/ + control/
-    fsdr-run-targets                      panel -> target 1 -> target 2 (scored separately) -> control -> final file
+    fsdr-run-targets                      panel -> the active targets (default target2: a + b) -> control -> final file
     fsdr-score-target --target target1    one target only -> data/output/<date>/target1/
     fsdr-final-file                             data/output/<date>/final/input_flytxt.csv.gz (both targets PASS)
     fsdr-validate --data-dir data/training/2026-10-22
@@ -212,6 +212,7 @@ def cmd_test(args) -> int:
 
 
 FSDR_COMMANDS = {
+    "fsdr-folders": "V4.0: create the folders of a run date (--layout weekly | split) and list the file of every table",
     "fsdr-generate": "write dummy data: data/training/<D>/ + data/scoring/<D>/ (5 folders each, .csv.gz)",
     "fsdr-load": "step T0: validate + completeness + Parquet cache (data agent)",
     "fsdr-features": "steps T2 + T3: features, segments, micro-segments, action_original / action_agent",
@@ -222,7 +223,7 @@ FSDR_COMMANDS = {
     "fsdr-run-groups": "V3.0 flow: the 4 groups together -> data/runs/<D>/final/",
     "fsdr-score-target": "V4.0: one target (--target target1|target2) -> data/output/<D>/<target>/",
     "fsdr-final-file": "V4.0: both targets merged -> data/output/<D>/final/input_flytxt.csv.gz",
-    "fsdr-run-targets": "V4.0: panel -> target 1 -> target 2 -> control -> final file, in one go",
+    "fsdr-run-targets": "V4.0: panel -> the active targets (default target2) -> control -> final file, in one go",
     "fsdr-validate": "validate a run folder against the data contract",
     "fsdr-schemas": "export one JSON Schema per table",
     "fsdr-train": "train the NBA bandit on a run folder",
@@ -243,7 +244,7 @@ def cmd_fsdr(args) -> int:
 
 
 VLLM_VARS = ("VLLM_API_KEY", "VLLM_HF_MODEL", "VLLM_SERVED_NAME", "VLLM_PORT", "VLLM_MAX_MODEL_LEN",
-             "VLLM_GPU_UTIL", "VLLM_MAX_SEQS", "VLLM_OFFLINE")
+             "VLLM_GPU_UTIL", "VLLM_MAX_SEQS", "VLLM_OFFLINE", "VLLM_VERSION")
 
 
 def cmd_vllm(args) -> int:
@@ -267,7 +268,9 @@ def cmd_vllm(args) -> int:
 NOTEBOOK = ROOT / "notebooks" / "fsdr_results.ipynb"
 NOTEBOOKS = {"results": (NOTEBOOK, "notebooks/build_results_notebook.py"),
              "training": (ROOT / "notebooks" / "01_training_step_by_step.ipynb", "notebooks/build_step_notebooks.py"),
-             "scoring": (ROOT / "notebooks" / "02_scoring_step_by_step.ipynb", "notebooks/build_step_notebooks.py")}
+             "scoring": (ROOT / "notebooks" / "02_scoring_step_by_step.ipynb", "notebooks/build_step_notebooks.py"),
+             "gpu": (ROOT / "notebooks" / "03_gpu_agents_step_by_step.ipynb", "notebooks/build_gpu_notebook.py"),
+             "vllm": (ROOT / "notebooks" / "04_vllm_agents_step_by_step.ipynb", "notebooks/build_gpu_notebook.py")}
 
 
 def cmd_notebook(args) -> int:

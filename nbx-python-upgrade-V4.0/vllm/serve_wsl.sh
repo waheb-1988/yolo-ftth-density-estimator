@@ -11,8 +11,16 @@
 # The served name must match DEFAULT_LLM in .env (the app falls back to the served model anyway).
 set -euo pipefail
 
-MODEL="${VLLM_HF_MODEL:-Qwen/Qwen2.5-3B-Instruct-GPTQ-Int4}"
-NAME="${VLLM_SERVED_NAME:-qwen2.5:3b}"
+# V4.0: the profile written by install_wsl.sh. modern (compute >= 8.0, e.g. RTX PRO Blackwell 24 GB): Qwen3-8B 4-bit
+# AWQ (~6 GB), the V1 engine with CUDA graphs and batching of up to 32 sequences. legacy (GTX 1650): as described above.
+PROFILE="$(cat "$HOME/vllm-env/.fsdr_profile" 2>/dev/null || echo legacy)"
+if [ "$PROFILE" = modern ]; then
+  MODEL="${VLLM_HF_MODEL:-Qwen/Qwen3-8B-AWQ}"
+  NAME="${VLLM_SERVED_NAME:-qwen3:8b}"
+else
+  MODEL="${VLLM_HF_MODEL:-Qwen/Qwen2.5-3B-Instruct-GPTQ-Int4}"
+  NAME="${VLLM_SERVED_NAME:-qwen2.5:3b}"
+fi
 PORT="${VLLM_PORT:-8001}"
 # Review #19: the key goes through the environment (vLLM reads VLLM_API_KEY), never on the command line, so it
 # is not printed with the arguments in the startup log.
@@ -26,9 +34,16 @@ if [ "${VLLM_OFFLINE:-0}" = "1" ]; then export HF_HUB_OFFLINE=1 TRANSFORMERS_OFF
 
 # shellcheck disable=SC1091
 source "$HOME/vllm-env/bin/activate"
-export VLLM_USE_V1=0
 # Triton compiles a small C helper at the first request: use gcc if present, else the zig compiler.
 command -v gcc >/dev/null || export CC="${CC:-$HOME/vllm-env/cc/cc}"
+echo "vLLM profile $PROFILE: serving $MODEL as $NAME on http://127.0.0.1:$PORT"
+if [ "$PROFILE" = modern ]; then
+  exec vllm serve "$MODEL" --served-model-name "$NAME" --host 127.0.0.1 --port "$PORT" \
+    --max-model-len "${VLLM_MAX_MODEL_LEN:-8192}" \
+    --gpu-memory-utilization "${VLLM_GPU_UTIL:-0.85}" \
+    --max-num-seqs "${VLLM_MAX_SEQS:-32}"
+fi
+export VLLM_USE_V1=0
 exec vllm serve "$MODEL" --served-model-name "$NAME" --host 127.0.0.1 --port "$PORT" \
   --dtype half \
   --max-model-len "${VLLM_MAX_MODEL_LEN:-8192}" \

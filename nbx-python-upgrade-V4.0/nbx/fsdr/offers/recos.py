@@ -9,6 +9,11 @@ every row says so:
   score   the NBO fallback order without helpers yet: E-O3 own past purchase, then E-O1 buyer share of the offer
           in the 270-day base; SCORE_SOURCE = fallback:E-O3+E-O1
   proba   the logged propensity: 1.0 for a deterministic fallback
+V4.0 agents (optional, `agents=` of build_group_recos; the GPU notebook passes them):
+  actions  ③ NBA: a table ACCESS_METHOD_VAL, ACTION, PROBA, DECIDED_BY that replaces the rule action of those lines
+  nbo      ④ NBO: a function (group key, candidates) -> score in [0, 1] per candidate row (NaN = keep the fallback);
+           it scores the candidates the RULES allowed, and the passes (price bands, families, EXT-6) still choose
+  groups   the group keys the agents act on (Target 2 by default: Target 1 stays the production baseline)
 10.1 consistency (constraint groups only): a customer with no offer at all for his action is sent back once with
 his second action (action_agent rank 2, else the other dictionary's action, else the next B-10 prior); final.
 """
@@ -54,7 +59,8 @@ def fallback_scores(cands: pd.DataFrame, bought: pd.DataFrame, base_lines: int) 
     return (0.5 * own + 0.5 * cands["BTL_NAME"].map(share).fillna(0.0)).round(6)
 
 
-def _candidates(key: str, cust: pd.DataFrame, rec: pd.DataFrame, validity: int, ctx: dict) -> pd.DataFrame:
+def _raw_candidates(key: str, cust: pd.DataFrame, rec: pd.DataFrame, validity: int, ctx: dict) -> pd.DataFrame:
+    """The offers the rules allow for each line of one validity, with the fallback score (E-O3 + E-O1)."""
     g = config.GROUPS[key]
     if g["universe"] == "constraint":
         c = universe.constraint_candidates(cust, rec, validity, ctx["bought"])
@@ -62,7 +68,28 @@ def _candidates(key: str, cust: pd.DataFrame, rec: pd.DataFrame, validity: int, 
         c = universe.free_candidates(cust, rec, validity, ctx["bought"])
     if not len(c):
         return c
-    c = c.assign(SCORE=fallback_scores(c, ctx["bought"], ctx["base_lines"]), SCORE_SOURCE="fallback:E-O3+E-O1")
+    return c.assign(SCORE=fallback_scores(c, ctx["bought"], ctx["base_lines"]), SCORE_SOURCE="fallback:E-O3+E-O1")
+
+
+def _llm_scores(key: str, raw: dict[int, pd.DataFrame], ctx: dict) -> dict[int, pd.DataFrame]:
+    """④ NBO: one call of the agent for the candidates of both validities (one prompt per line inside it)."""
+    agents = ctx.get("agents") or {}
+    if not agents.get("nbo") or key not in agents.get("groups", ()) or not any(len(c) for c in raw.values()):
+        return raw
+    both = pd.concat([c.assign(_V=v) for v, c in raw.items() if len(c)], ignore_index=True)
+    both = both.assign(ANCHOR=anc.anchor_for(both, ctx["anchors"]))         # the price reference the agent sees
+    s = pd.to_numeric(pd.Series(agents["nbo"](key, both), index=both.index), errors="coerce").clip(0.0, 1.0)
+    llm = s.notna()
+    both.loc[llm, "SCORE"] = s[llm].round(6)
+    both.loc[llm, "SCORE_SOURCE"] = f"llm:{agents.get('label', 'agent')}"
+    return {v: both[both["_V"] == v].drop(columns="_V").reset_index(drop=True) for v in raw}
+
+
+def _finish(key: str, c: pd.DataFrame, ctx: dict) -> pd.DataFrame:
+    """Rank, keep at most 25 per validity, and the anchors (B-27, challenger band)."""
+    g = config.GROUPS[key]
+    if not len(c):
+        return c
     c = c.sort_values([VAL, "SCORE", "PRICE"], ascending=[True, False, False], kind="mergesort")
     c = c.assign(RANK=c.groupby(VAL).cumcount() + 1)
     c = c[c["RANK"] <= config.MAX_CANDIDATES_PER_VALIDITY]                 # §10: at most 25 per validity
@@ -72,10 +99,15 @@ def _candidates(key: str, cust: pd.DataFrame, rec: pd.DataFrame, validity: int, 
     return c.reset_index(drop=True)
 
 
+def _candidates(key: str, cust: pd.DataFrame, rec: pd.DataFrame, validity: int, ctx: dict) -> pd.DataFrame:
+    return _finish(key, _llm_scores(key, {validity: _raw_candidates(key, cust, rec, validity, ctx)}, ctx)[validity], ctx)
+
+
 def _select_group(key: str, cust: pd.DataFrame, rec: pd.DataFrame, ctx: dict) -> pd.DataFrame:
     parts = []
+    raw = _llm_scores(key, {v: _raw_candidates(key, cust, rec, v, ctx) for v in (30, 7)}, ctx)
     for validity in (30, 7):
-        c = _candidates(key, cust, rec, validity, ctx)
+        c = _finish(key, raw[validity], ctx)
         if len(c):
             sel = selection.select(key, c)
             if config.RECOS_PER_VALIDITY > 2:                                  # V4.0: the third offer (EXT-6)
@@ -92,8 +124,25 @@ def _micro_median(panel: pd.DataFrame, anchors: pd.DataFrame) -> pd.Series:
     return pd.Series(df["MS"].map(med).to_numpy(), index=df[VAL])
 
 
-def build_group_recos(panel: pd.DataFrame, src, no_contact: set[str] | None = None) -> dict[str, pd.DataFrame]:
-    """panel: assign_panel output joined with the T3 segment columns. src: the run's cache (CacheSource)."""
+def apply_agent_actions(contacted: pd.DataFrame, agents: dict | None) -> pd.DataFrame:
+    """③ NBA: the agent's action (and its logged propensity) replaces the rule action of the lines it decided."""
+    contacted["PROBA"] = 1.0
+    acts = (agents or {}).get("actions")
+    if acts is None or not len(acts):
+        return contacted
+    a = acts.drop_duplicates(VAL).set_index(VAL)
+    m = contacted[VAL].isin(a.index) & contacted["GROUP_KEY"].isin(agents.get("groups", ()))
+    m &= contacted[VAL].map(a["ACTION"]).isin(config.ACTIONS)                  # an invented action is never used
+    contacted.loc[m, "ACTION"] = contacted.loc[m, VAL].map(a["ACTION"])
+    contacted.loc[m, "PROBA"] = contacted.loc[m, VAL].map(a["PROBA"]).astype(float)
+    contacted.loc[m, "DECIDED_BY"] = contacted.loc[m, VAL].map(a["DECIDED_BY"]).fillna("agent")
+    return contacted
+
+
+def build_group_recos(panel: pd.DataFrame, src, no_contact: set[str] | None = None,
+                      agents: dict | None = None) -> dict[str, pd.DataFrame]:
+    """panel: assign_panel output joined with the T3 segment columns. src: the run's cache (CacheSource).
+    agents: the V4.0 LLM agents ③ / ④ (see the module docstring); None = the deterministic fallbacks."""
     catalog = load_catalog(src)
     bought = universe.purchases(src)
     bought = bought[bought["BTL_NAME"].isin(set(catalog["BTL_NAME"]))]          # B-20: catalogue offers only
@@ -101,8 +150,8 @@ def build_group_recos(panel: pd.DataFrame, src, no_contact: set[str] | None = No
     item_id = {b: i for i, b in enumerate(rec["BTL_NAME"])}
     a = anc.b26_anchors(src)
     ctx = {"bought": bought, "base_lines": int(src.read("base_prepaid").shape[0]) if src.has("base_prepaid") else len(panel),
-           "anchors": a, "share": anc.data_share(src), "micro_median": _micro_median(panel, a)}
-    contacted = group_actions(panel)
+           "anchors": a, "share": anc.data_share(src), "micro_median": _micro_median(panel, a), "agents": agents}
+    contacted = apply_agent_actions(group_actions(panel), agents)
     if no_contact:                                                             # C-05: do-not-disturb (Target 2)
         dnd = contacted[VAL].isin(no_contact) & contacted["TARGET"].eq("target2")
         contacted.loc[dnd, "DECIDED_BY"] = "no_contact_C-05"
@@ -159,4 +208,4 @@ def results_scoring(contacted: pd.DataFrame) -> pd.DataFrame:
     """B-12 results_scoring_nba: access_method_val, action, proba (= logged propensity), tg_flag."""
     c = contacted[contacted["DECIDED_BY"] != "no_contact_C-05"]
     return pd.DataFrame({"access_method_val": c[VAL].to_numpy(), "action": c["ACTION"].to_numpy(),
-                         "proba": 1.0, "tg_flag": c["GROUP_KEY"].map(lambda k: config.GROUPS[k]["tg_flag"]).to_numpy()})
+                         "proba": (c["PROBA"].to_numpy() if "PROBA" in c.columns else 1.0), "tg_flag": c["GROUP_KEY"].map(lambda k: config.GROUPS[k]["tg_flag"]).to_numpy()})

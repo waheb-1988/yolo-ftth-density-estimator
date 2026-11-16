@@ -106,7 +106,7 @@ nbx-python-upgrade-V4.0/
 ├── run.py                          the launcher: every command below
 ├── .env.example                    every setting, documented (copy to .env)
 ├── nbx/                            the engine (fsdr/), API (api/), web UI (ui/), LLM backends (llms/)
-├── notebooks/                      01_training_step_by_step, 02_scoring_step_by_step, fsdr_results (+ their builders)
+├── notebooks/                      01_training, 02_scoring, 03_gpu_agents (Ollama), 04_vllm_agents (step by step), fsdr_results (+ their builders)
 ├── docs/                           this guide, interface guide, terminal guide, plan, rules, references
 ├── tests/                          the test suite
 ├── vllm/                           optional: scripts to serve a local LLM on a GPU (WSL2 / Linux)
@@ -212,23 +212,19 @@ data/
 │   ├── subscription/              subscriptions_tg, sub_btl_3months
 │   ├── catalog/                   btl_catalog, BTL_script_english_arabic_ok, conflicting_offers_h
 │   ├── others/                    targeting_auto, consent_contact, party_scoring, sample_cg_tg_* (optional)
-│   ├── target1/
-│   │   ├── a_constraint/target1_a.csv.gz     group T1C: production code 3 (constraint universe)
-│   │   └── b_free/target1_b.csv.gz           group T1F: production code 4 (free universe)
+│   └── target2/
+│       ├── a_constraint/target2_a.csv.gz     group a, T2C (Target 2 Constraint), 50,000 lines: CC-v1
+│       └── b_free/target2_b.csv.gz           group b, T2F (Target 2 Free), 50,000 lines: CF-v1
+├── weekly/<D>/                    the GPU notebooks 03 / 04: ONE folder per week (same 5 sub-folders + target2/),
+│                                  fresh *_auto history, no *_score tables
+├── output/<D>/                    RESULTS
 │   ├── target2/
-│   │   ├── a_constraint/target2_a.csv.gz     group T2C: challenger CC-v1
-│   │   └── b_free/target2_b.csv.gz           group T2F: challenger CF-v1
-│   └── control/control.csv.gz                never contacted
-├── output/<D>/                    RESULTS, one folder per target, each scored separately
-│   ├── target1/
-│   │   ├── input_flytxt_target1.csv.gz       Target 1's file (written only when its checks PASS)
-│   │   ├── a_constraint/input_flytxt_t1c.csv.gz   details_t1c.csv.gz
-│   │   ├── b_free/input_flytxt_t1f.csv.gz         details_t1f.csv.gz
-│   │   ├── details_target1.parquet           every line, every column (≈ 240): the big file to validate
+│   │   ├── input_flytxt_target2.csv.gz       Target 2's file (written only when its checks PASS)
+│   │   ├── a_constraint/input_flytxt_t2c.csv.gz   details_t2c.csv.gz
+│   │   ├── b_free/input_flytxt_t2f.csv.gz         details_t2f.csv.gz
+│   │   ├── details_target2.parquet           every line, every column (≈ 240): the big file to validate
 │   │   └── final_rules_report.csv, output_checks.json, audit_groups.json, summary.json
-│   ├── target2/                   the same for T2C / T2F
-│   ├── control/control_<D>.csv.gz the control lines and their strata
-│   └── final/input_flytxt.csv.gz   THE FINAL FILE: both targets merged (only when both PASS; else BLOCKED.txt)
+│   └── final/input_flytxt.csv.gz   THE FINAL FILE (only when Target 2 PASSES; else BLOCKED.txt)
 ├── runs/<D>/train/ score/         every step's folder: _step.json (status, rows, time), reports, Parquet outputs
 └── cache/<D>/                     Parquet cache of every table, 16 partitions (built by T0)
 ```
@@ -244,7 +240,7 @@ data/
 - **Target lists**: one row per line, with at least `access_method_val` (or `msisdn`). The other columns are kept and carried to the details.
   - Without lists, the panel is drawn at random (stratified).
 - Training and scoring use the **same run date** *D*.
-- **Each target is scored on its own**: it has its own P6 step, its own checks and its own folder. The final file waits for both targets to pass.
+- **V4.0: Target 2 only** (`FSDR_TARGETS=target2`), groups a and b at 50,000 each, **no control** (`FSDR_CONTROL_SIZE=0`). `fsdr-folders --date D` creates the folders of a run date. Target 1 and a control group come back with `FSDR_TARGETS=target1,target2` and `FSDR_CONTROL_SIZE=20000` (lists `target1/…`, `control/control.csv.gz`).
 
 ---
 
@@ -263,7 +259,8 @@ Every value has a default, so `.env` is optional. The settings that matter on a 
 | `DEFAULT_LLM` | `qwen2.5:3b` | The model name the server answers to; the model catalogue is in `.env.example`. |
 | `FSDR_LOCAL_ONLY` | `true` | Refuses any LLM server or tracing endpoint that is not on this machine (§12a). |
 | `FSDR_RECO_OFFERS` | `6` | Up to 6 offers per line: 3 monthly + 3 weekly. `4` = the V3.0 file. |
-| `FSDR_T1_CONSTRAINT_SIZE` … `FSDR_CONTROL_SIZE` | 25000 ×4, 20000 | The group sizes the lists are checked against (±2 %). |
+| `FSDR_TARGETS` | `target2` | The targets scored. V4.0: Target 2 only; `target1,target2` brings Target 1 back. |
+| `FSDR_T2_CONSTRAINT_SIZE`, `FSDR_T2_FREE_SIZE`, `FSDR_CONTROL_SIZE` | 50000, 50000, 0 | The group sizes the lists are checked against (±2 %); control 0 = no control group. |
 | `FSDR_TRAINING_DIR`, `FSDR_SCORING_DIR`, `FSDR_OUTPUT_DIR` | unset | Defaults `data/training`, `data/scoring`, `data/output`; set them to put the data on another disk. |
 | `FSDR_FEATURE_WORKERS` | `2` (laptop) / `8` (big machine) | Partitions processed in parallel in T2 / T3. |
 | `FSDR_API_KEY` | empty on a laptop | Required as soon as the API listens on the network (`--host 0.0.0.0`). |
@@ -304,7 +301,7 @@ uv run python run.py fsdr-features --date 2026-10-22
 ```bash
 uv run python run.py fsdr-targets --generate --date 2026-10-22
 ```
-**Dummy target lists.** These come from a stratified draw of the eligible base and are written to `data/scoring/<D>/target1|target2/a_constraint|b_free/` and `control/`. Without `--generate`, the command checks the lists you put there and prints what is kept, dropped and blocking.
+**Dummy target lists.** These come from a stratified draw of the eligible base and are written to `data/scoring/<D>/target2/a_constraint|b_free/` (group a and group b). Without `--generate`, the command checks the lists you put there and prints what is kept, dropped and blocking.
 
 Then score. Pick one of the two ways below.
 
@@ -314,39 +311,39 @@ Then score. Pick one of the two ways below.
 uv run python run.py fsdr-run-targets --date 2026-10-22
 ```
 
-**Or one target at a time** (same result):
+**Or step by step** (same result):
 
 ```bash
-uv run python run.py fsdr-score-target --target target1 --panel --date 2026-10-22   # P1 panel, then Target 1
-uv run python run.py fsdr-score-target --target target2 --date 2026-10-22           # Target 2 on the same panel
-uv run python run.py fsdr-final-file --date 2026-10-22                                   # merge both -> final file/
+uv run python run.py fsdr-score-target --target target2 --panel --date 2026-10-22   # P1 panel, then Target 2 (a + b)
+uv run python run.py fsdr-final-file --date 2026-10-22                              # -> final/
 ```
 
-The output looks like this:
+The output looks like this (dummy data; the lists are scaled to the base):
 
 ```
-P1_panel DONE -- mode uploaded, sizes {'t1c': 465, 't1f': 465, 't2c': 465, 't2f': 465, 'control': 372}
-target1 final DONE -- READY; input_flytxt_target1 762 rows; 6 offers per line max; details 930 lines x 242 columns
-  checks: A-20 PASS, A-21 PASS, A-21 PASS, A-22 PASS, A-23 PASS, A-24 PASS | group audit PASS
-  t1c  a_constraint production_constraint  lines 465  in file 391  offers/line 4.96  F-04 dropped 74 ...
-  t1f  b_free       production_free        lines 465  in file 371  offers/line 4.79  F-04 dropped 94 ...
+P1_panel DONE -- mode uploaded, sizes {'t2c': 1118, 't2f': 1118}
 target2 final DONE -- READY; ...
-final file READY -- 1,562 rows
+  checks: A-20 PASS, A-21 PASS, A-21 PASS, A-22 PASS, A-23 PASS, A-24 PASS | group audit PASS
+  t2c  a_constraint CC-v1   lines 1,118  in file 978  offers/line 4.92  F-04 dropped 140 ...
+  t2f  b_free       CF-v1   lines 1,118  in file 943  offers/line 4.86  F-04 dropped 175 ...
+final file READY -- 1,921 rows
 ```
+
+These commands use the rule fallbacks. The LLM agents run in notebooks 03 (Ollama) and 04 (vLLM).
 
 **What each scoring step does:**
 
-| Step | Target 1 (T1C a / T1F b) | Target 2 (T2C a / T2F b) |
+| Step | Group a: T2C (Target 2 Constraint) | Group b: T2F (Target 2 Free) |
 |---|---|---|
 | P1 panel | the lists (or a stratified draw), joined to the T3 segments; sizes A-30, balance A-31 | (shared) |
-| Action | `action_original` | `action_agent` |
-| Candidates | a: the action's families (B-21); b: L2 DATA / COMBO, no VOICE | the same universes |
-| Price rule | 3 passes around the ARPU anchor (B-28 … B-30 / FR-09 … FR-11) | relative band 1.0×–1.5× the challenger anchor, widened once to 2.0× (CC / CF-02 … 04) |
+| Action | `action_agent` (the agent dictionary; Agent 3 per customer in notebooks 03 / 04) | not used |
+| Candidates | the action's offer families (B-21) | L2 DATA / COMBO, no VOICE |
+| Price rule | relative band 1.0×–1.5× the customer's own spend, +0.5 OMR for an upsell, widened once to 2.0× (CC-02 … 04) | the same band (CF-02 … 04) |
 | 6 offers | EXT-6: a 3rd offer per validity, above the anchor, not the same service and price | the same |
 | Final (code 5) | slots 1–2 monthly, 3–4 weekly, 5 = 3rd monthly, 6 = 3rd weekly; favourites / forced fill an empty 5 / 6; F-09 / F-11 / F-12 clearing; scripts; checks A-20 … A-24 | the same |
-| Writes | `data/output/<D>/target1/` | `data/output/<D>/target2/` |
+| Writes | `data/output/<D>/target2/a_constraint/` | `data/output/<D>/target2/b_free/` |
 
-**The final file.** `data/output/<D>/final/input_flytxt.csv.gz` is written only when both targets passed and no MSISDN is in two targets. Otherwise you get `final/BLOCKED.txt` with the reasons. Nothing is sent: you check the file and hand it over yourself (H-08) before the file goes to the campaign platform.
+**The final file.** `data/output/<D>/final/input_flytxt.csv.gz` is written only when Target 2 passed and no MSISDN is in two groups. Otherwise you get `final/BLOCKED.txt` with the reasons. Nothing is sent: you check the file and hand it over yourself (H-08) before the file goes to the campaign platform.
 
 `uv run python run.py check` now shows `[ok]` for `data/training/`, `data/scoring/` and `data/output/`.
 
@@ -354,12 +351,14 @@ final file READY -- 1,562 rows
 
 ## 8. The notebooks: training and scoring, step by step
 
-There are three notebooks in `notebooks/`, stored without outputs:
+There are five notebooks in `notebooks/`, stored without outputs:
 
 | Notebook | Use it to |
 |---|---|
 | `01_training_step_by_step.ipynb` | run T0 → T2 → T3 one cell at a time. Each step has an explanation of its rules and shows what it wrote: the validation issues, completeness, the cache, feature statistics, segment counts, the action cross-table, the priors. |
-| `02_scoring_step_by_step.ipynb` | run the target lists → P1 → Target 1 (P6, final) → Target 2 (P6, final) → control + final file → the final validation of the final file. Each step shows its audit, its rules (`selected_by`), the offers per line, what fills each of the 6 slots, and one line end to end. |
+| `02_scoring_step_by_step.ipynb` | run the target lists → P1 → Target 2 (P6 and code 5, group a = T2C and group b = T2F) → the final file → its final validation (rules only, no LLM). Each step shows its audit, its rules (`selected_by`), the offers per line, what fills each of the 6 slots, and one line end to end. |
+| `03_gpu_agents_step_by_step.ipynb` | **the whole week with every agent (1 → 9), the LLM agents on the laptop GPU through Ollama**: one weekly folder `data/weekly/<D>/` (fresh `*_auto` tables, no `*_score`), a GPU / Ollama check, a speed test with the time estimate, then Agent 1 … Agent 9 one by one. Target 1 stays the production rules; the agents decide Target 2. No API, no Gradio. See [GPU_AGENTS_NOTEBOOK.md](GPU_AGENTS_NOTEBOOK.md). |
+| `04_vllm_agents_step_by_step.ipynb` | the same steps and agents as 03, with **vLLM** (WSL2) instead of Ollama: several times faster for the per-customer agents. Set-up (WSL2, `run.py vllm-install`, `run.py vllm-serve`, `.env`): [VLLM_AGENTS_NOTEBOOK.md](VLLM_AGENTS_NOTEBOOK.md). |
 | `fsdr_results.ipynb` | read-only view of a run (computes nothing). |
 
 **The two step-by-step notebooks are standalone.** They import nothing from the project folder:
@@ -426,7 +425,7 @@ The full step-by-step guide for real data, with every table and check, is [DATA_
    data/scoring/2026-11-12/{usage,models,subscription,catalog,others}/
    ```
 2. Copy each export, as `<table>.csv.gz`, into its folder: the lists in §5 (see `config.TABLE_FOLDERS` / `config.SCORING_TABLES`). The file name must be the exact table name.
-3. Put the four target lists and the control in `data/scoring/<D>/target1|target2/a_constraint|b_free/` and `control/`. You can also upload them from the web interface (§10, step 2a).
+3. Put the two target lists in `data/scoring/<D>/target2/a_constraint/target2_a.csv.gz` (group a, 50,000) and `target2/b_free/target2_b.csv.gz` (group b, 50,000). `uv run python run.py fsdr-folders --date D --layout split` creates the folders and lists every file. You can also upload the lists from the web interface (§10, step 2a). For the GPU notebooks, use one weekly folder instead: [REAL_DATA_2026-11-19.md](REAL_DATA_2026-11-19.md).
 4. Run §7 **without** `fsdr-generate` and without `--generate`. Or use the notebooks with `GENERATE = False` and `GENERATE_TARGETS = False`.
 5. Read the checks before anything else:
    - `data/runs/<D>/train/T0_load/validation_report.md` (data);
@@ -436,13 +435,13 @@ The full step-by-step guide for real data, with every table and check, is [DATA_
 
 The generator refuses to overwrite a folder that holds non-generated data unless you pass `--force`. Real exports cannot be replaced by dummy data by mistake.
 
-At the production size (1M base, 100k contacted + 20k control), on a 32 GB laptop with `FSDR_FEATURE_WORKERS=2`:
+At the production size (1M base; 1.2M takes about 20 % more), Target 2 of 100k lines, on a 32 GB laptop with `FSDR_FEATURE_WORKERS=2`, rules only (the LLM agents of notebooks 03 / 04 add 3–14 h, [REAL_DATA_2026-11-19.md](REAL_DATA_2026-11-19.md) §6):
 
 | Step | Time |
 |---|---|
 | T0 | about 14 min |
 | T2 + T3 | about 1–2 min |
-| Each target | about 1 min |
+| Target 2 (a + b), rules and code 5 | about 2 min |
 
 ---
 
@@ -457,14 +456,13 @@ Open <http://localhost:7860> and go to the tab **FSDR Targets & Output**. Then:
 1. **Data and training.** Set the run date, then:
    - **1a** generates dummy data, or skip it with real data;
    - **1b** runs the training (T0 + T2 + T3).
-2. **Target lists.** Pick a group, choose its `.csv.gz` file, then **2a · Upload this list**. Do this once per group and once for the control, or click **2b** for dummy lists. **2c** checks them.
+2. **Target lists.** Pick a group, choose its `.csv.gz` file, then **2a · Upload this list**. Do this once per group (a and b), or click **2b** for dummy lists. **2c** checks them.
 3. **Scoring, one target at a time:**
    - **3a** builds the panel;
-   - **3b** scores Target 1;
-   - **3c** scores Target 2;
+   - **3c** scores Target 2 (the **3b** Target 1 button only appears when `FSDR_TARGETS` includes `target1`);
    - **3d** builds the final file.
 
-   **3a → 3d in one go** does all four steps.
+   **3a → 3d in one go** does all the steps.
 4. **Download.** The final file, each target's and group's files, the details and the rules reports appear in the download box.
 
 API equivalent (local docs with a *Try it* form at <http://localhost:8000/docs>):
@@ -473,12 +471,12 @@ API equivalent (local docs with a *Try it* form at <http://localhost:8000/docs>)
 |---|---|
 | `POST /fsdr/v4/<D>/generate` | dummy training + scoring data |
 | `POST /fsdr/v4/<D>/prepare` | training T0 + T2 + T3 |
-| `POST /fsdr/targets/<D>/<t1c\|t1f\|t2c\|t2f\|control>` | upload one list |
+| `POST /fsdr/targets/<D>/<t2c\|t2f>` | upload one list (group a, group b) |
 | `GET /fsdr/targets/<D>` | the lists and their check |
 | `POST /fsdr/v4/<D>/targets/generate` | dummy lists |
 | `POST /fsdr/v4/<D>/panel` | P1 |
-| `POST /fsdr/v4/<D>/score/<target1\|target2>` | one target: P6 + final |
-| `POST /fsdr/v4/<D>/final-file` | control file + final file |
+| `POST /fsdr/v4/<D>/score/target2` | Target 2: P6 + final |
+| `POST /fsdr/v4/<D>/final-file` | the final file |
 | `POST /fsdr/v4/<D>/run` | everything after training |
 | `GET /fsdr/v4/<D>/output` | the summaries and the files of `data/output/<D>/` |
 
@@ -594,10 +592,10 @@ uv run python run.py fsdr-generate --date D --n 3000          # dummy data only
 uv run python run.py fsdr-load --date D                       # T0      (training)
 uv run python run.py fsdr-features --date D                   # T2 + T3 (training)
 uv run python run.py fsdr-targets --generate --date D         # dummy lists only (else: check yours)
-uv run python run.py fsdr-score-target --target target1 --panel --date D
-uv run python run.py fsdr-score-target --target target2 --date D
+uv run python run.py fsdr-score-target --target target2 --panel --date D   # Target 2: group a + group b
 uv run python run.py fsdr-final-file --date D                       # -> data/output/D/final/input_flytxt.csv.gz
-#   (or the last 3 in one: uv run python run.py fsdr-run-targets --date D)
+#   (or the last 2 in one: uv run python run.py fsdr-run-targets --date D)
+# real data: uv run python run.py fsdr-folders --date D [--layout split]  creates the folders and lists every file
 
 # notebooks, interface, tests
 uv run python run.py notebook --name training
