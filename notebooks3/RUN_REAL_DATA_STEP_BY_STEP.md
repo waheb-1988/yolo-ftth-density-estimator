@@ -154,6 +154,41 @@ Then repeat 02 and 03 with `RUN_SIZE = 5_000` or `10_000` if you want a bigger t
 
 ---
 
+## Step 5b · The real run with `04_agents_nba_fast_ollama_real25k.ipynb` (recommended)
+
+This notebook is 03 for the real run. After notebook 02 has written the real week (`RUN_SIZE = "all"` or any size: it
+always writes `data/weekly/<D>/`):
+
+1. **Settings (first cell):** `RUN_SIZE` = the target lines scored (`1_000`, `10_000`, `25_000`, `50_000` or `"all"`,
+   split between the groups of `SCORE_GROUPS`), `SCORE_GROUPS` (`["t2c"]` = group a, both groups), `TRAIN_LINES = "all"`
+   (training on the whole prepaid base; a number = a random sample, for a faster test), `MODEL`, `PARALLEL` (the
+   same as `OLLAMA_NUM_PARALLEL`). Nothing else to type: there is no `RUN_DATE`. To go from a 1k test to the 25k run,
+   change only `RUN_SIZE`: step 0 rebuilds the copy.
+2. **Run it**, from Jupyter (Restart & Run All) or headless, with no cell timeout:
+
+   ```powershell
+   python notebooks3\run_notebook04.py
+   ```
+
+   The executed copy goes to `data/real25k/executed/`. Follow the LLM in another window:
+   `Get-Content data\real25k\runs\<D>\agents\llm_progress.log -Wait`.
+3. **What it does differently from 03:**
+   - **Step 0** reads the dates from the data: D = the most recent purchase day (`subs_btl_auto`), T = the campaign day
+     (`date1`). Takers are counted from T to D. It **stops** when there is more than one `date1`, when fewer than 95 %
+     of the purchases fall between T and D, or when an `*_auto` window goes past T.
+   - **Step 0** builds `data/real25k/weekly/<D>/`: the whole eligible prepaid base to train (outside the lists; the
+     tables are hard-linked, not copied) + `RUN_SIZE` random lines of the lists to score.
+   - **No budget:** every customer gets an LLM answer. Retries, Ollama restart, the cache (a re-run resumes), Windows
+     kept awake, the pre-flight check, a progress line every 100 answers.
+   - **Step 7b / 8b:** the top-up to 6 offers, and why lines had fewer; **A-25** blocks the file unless every row
+     has 6 distinct, valid offers.
+   - **Final report:** dates, takers and taker rate, agent 3 propensities, offers before / after, LLM answers
+     (fresh / cached / retried / failed), the cell-policy share (must be 0), customers per minute
+     (`data/real25k/output/<D>/real_report_<RUN_SIZE>.json`).
+4. **Time:** with no budget, step 5b prints the GPU minutes of the level `auto` picks (with no budget it picks
+   `fine`, about one answer per customer). To go faster, set `PROFILE_LEVEL = "coarse"` or `"minimal"` and check the
+   quality line of step 6.
+
 ## Step 6 · Follow the time of every step
 
 Every step prints `[time]` lines:

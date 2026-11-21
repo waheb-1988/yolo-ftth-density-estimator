@@ -50,8 +50,9 @@ PREP_SETTINGS_SWAPS = [
     ("FIX_HEADERS = False               # a file without header: True = add the contract header when the sanity check passes",
      "FIX_HEADERS = True                # a file without header: add the contract header when the column count and the IDs match"),
     ("TEST_10K = True                   # True: also build data/weekly_sample/<D>/ for notebook 03 / 04 (TEST_10K = True there too)",
-     'RUN_SIZE = 10_000                 # 1_000 | 5_000 | 10_000 = also write a test copy of that many target lines\n'
-     '                                  #   | "all" = the full week only (~50k per list). The SAME RUN_SIZE in 03 / 04\n'
+     'RUN_SIZE = "all"                  # "all" = the full week only (~50k per list): for 04_..._real25k (whole base to\n'
+     '                                  #   train, its own RUN_SIZE scored) and for 03 / 04 with RUN_SIZE = "all"\n'
+     '                                  #   | 1_000 | 5_000 | 10_000 = also a test copy for 03 / 04 (the SAME RUN_SIZE there)\n'
      'TEST_10K = RUN_SIZE != "all"      # (from RUN_SIZE)\n'
      'LAST_CAMPAIGN_DAYS = 7            # targeting_dataiku_auto holds the history: keep the latest campaign only (its last 7 days)'
      + DATES_SETTINGS.rstrip("\n")),
@@ -299,7 +300,8 @@ def heading_key(src: str) -> str:
     return h.split(" · ")[0].strip() if " · " in h else re.sub(r"\s*[`(:].*$", "", h).strip()
 
 
-def add_timer(pairs, after: int, nb: str, defaults: dict, size_suffix: str, first_key: str | None = None):
+def add_timer(pairs, after: int, nb: str, defaults: dict, size_suffix: str, first_key: str | None = None,
+              timer_src: str | None = None):
     """pairs: [(kind, src)] of a notebook. Inserts the timer cell at `after`, puts step("<key>") at the top of the first
     code cell after each "## " heading that follows it, and adds the time report at the end."""
     out, order, pending = list(pairs[:after]), [first_key] if first_key else [], None
@@ -314,7 +316,7 @@ def add_timer(pairs, after: int, nb: str, defaults: dict, size_suffix: str, firs
             pending = None
         out.append((kind, src))
     order.append("Time per step")
-    timer = (TIMER.replace("__ORDER__", repr(order)).replace("__DEFAULT__", repr(defaults))
+    timer = ((timer_src or TIMER).replace("__ORDER__", repr(order)).replace("__DEFAULT__", repr(defaults))
              .replace("__NB__", nb).replace("__SIZE_SUFFIX__", size_suffix))
     if first_key:
         timer += f'step("{first_key}")\n'

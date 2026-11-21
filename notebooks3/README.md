@@ -10,6 +10,7 @@ notebooks2 cell, and the engine (`nbx/`) is not modified.
 | 02 | `02_prepare_week.ipynb` | CPU | `data_raw/` → `data/weekly/<D>/`: the new export names, D = t1 / T = t1 − 7, the latest campaign of `targeting_dataiku_auto`, the NBA dedup, and a test copy of `RUN_SIZE` = 1k / 5k / 10k lines |
 | 03 | `03_agents_nba_fast_ollama_gpu.ipynb` | GPU (Ollama) | every agent; agents 3 / 4 per profile |
 | 04 | `04_agents_nba_fast_vllm_gpu.ipynb` | GPU (vLLM, WSL2) | the same, with vLLM as the server |
+| 04 real | `04_agents_nba_fast_ollama_real25k.ipynb` | GPU (Ollama) | **the real run**: dates from the data (D = last purchase, T = campaign day), training on the whole prepaid base, `RUN_SIZE` lines scored (1k / 10k / 25k / 50k / all), no LLM budget (retries, Ollama restart, resume), 6 offers per line (top-up + audit A-25), final report. Headless: `python notebooks3/run_notebook04.py` |
 
 Optional helpers in `notebooks2/`: **01** duplicates, and **05** column check (only if step 2 of 03 is BLOCKED).
 Every notebook prints the time of each step, its estimate and the time left (`[time]` lines).
