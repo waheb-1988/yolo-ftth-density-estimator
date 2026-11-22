@@ -40,6 +40,22 @@ SETTINGS_SWAPS = [
      'TIME_BUDGET_MIN = float("inf")  # no time budget: every customer gets an LLM answer, nobody gets the cell policy'),
 ]
 
+# the real run, fast (applied to the settings cell of this notebook only)
+SPEED_SWAPS = [
+    (('SCORE_GROUPS = ["t2c", "t2f"]   # ["t2c"] = group a only (target2_a, ~50k) | ["t2f"] = group b only (target2_b, ~50k)\n'
+     '                                #   | ["t2c", "t2f"] = both (~100k). The other list is not read, not scored, not in the file.'),
+     ('SCORE_GROUPS = ["t2c"]          # ["t2c"] = group a only: all RUN_SIZE lines from target2_a (the default here)\n'
+     '                                #   | ["t2f"] = group b only | ["t2c", "t2f"] = both, RUN_SIZE split between them')),
+    (('PROFILE_LEVEL = "auto"          # "fine" | "medium" | "coarse" | "minimal" | "off" (= one call per customer, as notebooks2)\n'
+     '                                #   "auto" = the finest level whose estimate (step 5b) fits TIME_BUDGET_MIN'),
+     ('PROFILE_LEVEL = "minimal"       # the fastest: several customers per LLM answer (step 5b prints how many)\n'
+     '                                #   "coarse" = finer, slower | "fine" = about one answer per customer (very slow with no budget)\n'
+     '                                #   | "off" = one call per customer | "auto" = the finest that fits TIME_BUDGET_MIN (= "fine" here)')),
+    ("NBO_SHORTLIST = 8               # agent 4: offers per validity the LLM scores per customer (the best by the rules)",
+     ("NBO_SHORTLIST = 4               # agent 4: offers per validity the LLM scores (4 x 2 validities = 8 offers for 6 slots;\n"
+     "                                #   8 = longer prompts and answers, slower); the other allowed offers keep their rule score")),
+]
+
 REAL_SETTINGS = r'''
 # --- notebook 04 real: the real week of notebook 02, the dates from the data, the sizes ---------------------------------
 RUN_SIZE = 25_000                 # target lines SCORED: 1_000 | 10_000 | 25_000 | 50_000 | "all" (the full lists, ~50k each)

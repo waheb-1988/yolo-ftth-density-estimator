@@ -147,6 +147,7 @@ def agents_real25k() -> list:
     cut = base.index("import time as _time\n")
     settings = (base[:cut] + fm.FAST_SETTINGS.lstrip("\n") + nr.REAL_SETTINGS.lstrip("\n")
                 + "import time as _time\nNB_START = _time.time()\n")
+    settings = gb._swap(settings, nr.SPEED_SWAPS)
     pairs = [("md", nr.TITLE), ("md", ag.OLLAMA_SETUP), ("code", settings), *nr.STEP0,
              *_pairs(sb._engine_cells(sb.engine_modules(b2.ROOTS))),
              ("md", "## Part B · The steps\n\nThe engine is loaded. Each step below calls it and shows what it wrote."),
