@@ -12,6 +12,13 @@ notebooks2 cell, and the engine (`nbx/`) is not modified.
 | 04 | `04_agents_nba_fast_vllm_gpu.ipynb` | GPU (vLLM, WSL2) | the same, with vLLM as the server |
 | 04 real | `04_agents_nba_fast_ollama_real25k.ipynb` | GPU (Ollama) | **the real run**: dates from the data (D = last purchase, T = campaign day), training on the whole prepaid base, `RUN_SIZE` lines scored (1k / 10k / 25k / 50k / all), no LLM budget (retries, Ollama restart, resume), 6 offers per line (top-up + audit A-25), final report. Headless: `python notebooks3/run_notebook04.py` |
 
+| **02 final** | `02_prepare_week_final.ipynb` | CPU | **the weekly run**: the raw exports + `nbx_llm_target.csv.gz` in `data_raw/` → `data/weekly/<D>/`; the target file is the only list (group a, constraint); stops if it is missing or if an export is older than the others by more than 5 days |
+| **04 final** | `04_nbx_llm_final.ipynb` | GPU (Ollama) | **the weekly run**: every line of `nbx_llm_target`, training on the whole base, constraint logic, no LLM stop, 6 offers per line; outputs in `data/nbx_llm/`. Headless: `python notebooks3/run_notebook04.py --final` |
+| 05 | `05_check_flytxt_results.ipynb` | CPU | every check of the final file and the 360 view, as tables, with the ARPU (no-downgrade) check and a scorecard |
+
+**Every week (final run):** this week's exports + `nbx_llm_target.csv.gz` in `data/data_raw/` (last week's files removed)
+→ `02_prepare_week_final` (Restart & Run All) → `python notebooks3/run_notebook04.py --final` → `05_check_flytxt_results`.
+
 Optional helpers in `notebooks2/`: **01** duplicates, and **05** column check (only if step 2 of 03 is BLOCKED).
 Every notebook prints the time of each step, its estimate and the time left (`[time]` lines).
 

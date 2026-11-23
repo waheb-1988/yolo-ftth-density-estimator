@@ -34,12 +34,16 @@ b2 = _load("build_notebooks2", HERE.parent / "notebooks2" / "build_notebooks2.py
 gb, sb, ag = b2.gb, b2.sb, b2.ag
 md, code = sb.md, sb.code
 sys.path.insert(0, str(HERE))
+import nb3_check as nc
 import nb3_data as nd
 import nb3_fast as fm
+import nb3_final as nf
 import nb3_real as nr
 
 NAMES = {"prep": "02_prepare_week.ipynb", "ollama": "03_agents_nba_fast_ollama_gpu.ipynb",
-         "vllm": "04_agents_nba_fast_vllm_gpu.ipynb", "real25k": "04_agents_nba_fast_ollama_real25k.ipynb"}
+         "vllm": "04_agents_nba_fast_vllm_gpu.ipynb", "real25k": "04_agents_nba_fast_ollama_real25k.ipynb",
+         "check": "05_check_flytxt_results.ipynb", "prep_final": "02_prepare_week_final.ipynb",
+         "final": "04_nbx_llm_final.ipynb"}
 
 
 def _write(cells, name, out_dir):
@@ -142,13 +146,16 @@ def steps_real25k() -> list:
     return s
 
 
-def agents_real25k() -> list:
+def agents_real25k(final: bool = False) -> list:
+    """04 real; final=True: 04 final (every line of nbx_llm_target, outputs in data/nbx_llm/)."""
     base = gb._swap(ag.SETTINGS, nr.SETTINGS_SWAPS)
     cut = base.index("import time as _time\n")
     settings = (base[:cut] + fm.FAST_SETTINGS.lstrip("\n") + nr.REAL_SETTINGS.lstrip("\n")
                 + "import time as _time\nNB_START = _time.time()\n")
     settings = gb._swap(settings, nr.SPEED_SWAPS)
-    pairs = [("md", nr.TITLE), ("md", ag.OLLAMA_SETUP), ("code", settings), *nr.STEP0,
+    if final:
+        settings = gb._swap(settings, nf.FINAL_SETTINGS_SWAPS)
+    pairs = [("md", nf.FINAL_TITLE if final else nr.TITLE), ("md", ag.OLLAMA_SETUP), ("code", settings), *nr.STEP0,
              *_pairs(sb._engine_cells(sb.engine_modules(b2.ROOTS))),
              ("md", "## Part B · The steps\n\nThe engine is loaded. Each step below calls it and shows what it wrote."),
              ("code", ag.SETUP), ("code", gb.LLM_HELPERS), *nr.RESILIENCE]
@@ -156,17 +163,44 @@ def agents_real25k() -> list:
     pairs += [("md", ("## Proof: nothing came from the project folder\n\nEvery engine module was defined by a cell of this "
                       "notebook, and no engine module uses vowpalwabbit (it may be preloaded by the environment).")),
               ("code", nr.PROOF)]
+    if final:
+        pairs = [(k, _replace_all(s, nf.FINAL_PATH_SWAPS)) for k, s in pairs]
     timer = nd.TIMER.replace(nr.TIMER_SAVE_OLD, nr.TIMER_SAVE_NEW)
     assert timer != nd.TIMER, "timer: the save line was not found"
-    pairs = nd.add_timer(pairs, 3, NAMES["real25k"][:-6], nr.DEFAULTS, '"|" + ",".join(SCORE_GROUPS) + "|train=" + str(TRAIN_LINES)',
+    pairs = nd.add_timer(pairs, 3, NAMES["final" if final else "real25k"][:-6], nr.DEFAULTS, '"|" + ",".join(SCORE_GROUPS) + "|train=" + str(TRAIN_LINES)',
                          timer_src=timer)
     return _cells(pairs)
+
+
+def _replace_all(s: str, swaps) -> str:
+    for a, b in swaps:
+        s = s.replace(a, b)
+    return s
+
+
+def prep_final() -> list:
+    """02 final: 02 with TARGET_FILE (nbx_llm_target) as the only target list, and the freshness check of the exports."""
+    pairs = nd.build_prep(b2.dt.PREP)
+    assert pairs[0][0] == "md"
+    pairs[0] = ("md", nf.PREP_TITLE)
+    out, hit = [], {"settings": 0, "step1": 0}
+    for k, s in pairs:
+        if k == "code" and s.lstrip().startswith("# --- settings"):
+            s, hit["settings"] = gb._swap(s, nf.PREP_SETTINGS_SWAPS), 1
+        if k == "code" and s.lstrip().startswith('step("Step 1")'):
+            s, hit["step1"] = gb._swap(s, nf.STEP1_SWAPS) + nf.STEP1_EXTRA, 1
+        out.append((k, s))
+    assert all(hit.values()), f"02 final: a cell was not found {hit}"
+    return _cells(out)
 
 
 def build(out_dir: Path = HERE) -> list[Path]:
     return [_write(_cells(nd.build_prep(b2.dt.PREP)), NAMES["prep"], out_dir),
             *[_write(agents(k), NAMES[k], out_dir) for k in ("ollama", "vllm")],
-            _write(agents_real25k(), NAMES["real25k"], out_dir)]
+            _write(agents_real25k(), NAMES["real25k"], out_dir),
+            _write(_cells(nc.CELLS), NAMES["check"], out_dir),
+            _write(prep_final(), NAMES["prep_final"], out_dir),
+            _write(agents_real25k(final=True), NAMES["final"], out_dir)]
 
 
 if __name__ == "__main__":
